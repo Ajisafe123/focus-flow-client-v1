@@ -6,7 +6,9 @@ export default function DailyHadith() {
 
   const fetchHadith = async () => {
     try {
-      const res = await fetch("http://localhost:8000/hadiths/day");
+      const res = await fetch(
+        "https://focus-flow-server-v1.onrender.com/hadiths/day"
+      );
       if (!res.ok) throw new Error("Failed to fetch hadith");
       const data = await res.json();
       setHadith(data);

@@ -117,7 +117,9 @@ export default function AdkarDuaSection() {
 
   const fetchAdkar = async () => {
     try {
-      const res = await fetch("http://127.0.0.1:8000/duas/");
+      const res = await fetch(
+        "https://focus-flow-server-v1.onrender.com/duas/"
+      );
       const data = await res.json();
       setMorningAdkar(data.filter((d) => d.category === "morning-dhikr"));
       setEveningAdkar(data.filter((d) => d.category === "evening-dhikr"));
@@ -244,7 +246,7 @@ export default function AdkarDuaSection() {
             ref={audioRef}
             src={
               current.audio_url ||
-              `http://127.0.0.1:8000/static/audio/${type}_dua.mp3`
+              `https://focus-flow-server-v1.onrender.com/static/audio/${type}_dua.mp3`
             }
             preload="metadata"
             onLoadedMetadata={(e) => {

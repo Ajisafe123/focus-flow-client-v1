@@ -76,7 +76,7 @@ export default function IslamicUserChat() {
       setShowEmojiPicker(false);
 
       if (soundEnabled) {
-        // Play send sound
+      
       }
 
       setIsTyping(true);
@@ -141,7 +141,6 @@ export default function IslamicUserChat() {
 
   return (
     <div className="fixed bottom-4 right-4 z-50 font-sans">
-      {/* Chat Widget Button */}
       {!isOpen && (
         <div className="relative">
           <button
@@ -155,8 +154,6 @@ export default function IslamicUserChat() {
               </span>
             )}
           </button>
-
-          {/* Floating Tooltip - Hidden on small screens */}
           <div className="hidden lg:block absolute bottom-20 right-0 bg-white rounded-lg shadow-lg p-3 w-64 border-l-4 border-emerald-600 mb-2">
             <p className="text-xs text-gray-600">
               <span className="font-semibold text-emerald-600">💬 Assalamu Alaikum!</span><br />
@@ -165,15 +162,12 @@ export default function IslamicUserChat() {
           </div>
         </div>
       )}
-
-      {/* Chat Window - Responsive */}
       {isOpen && (
         <div className={`bg-white rounded-2xl shadow-2xl flex flex-col transition-all ${
           isMinimized 
             ? 'w-72 sm:w-80 h-14' 
             : 'w-[calc(100vw-2rem)] sm:w-96 lg:w-[420px] h-[calc(100vh-2rem)] sm:h-[500px] lg:h-[580px] max-h-[90vh]'
         }`}>
-          {/* Header */}
           <div className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white p-3 sm:p-4 rounded-t-2xl flex items-center justify-between flex-shrink-0">
             <div className="flex items-center gap-2 sm:gap-3 min-w-0">
               <div className="w-8 h-8 sm:w-10 sm:h-10 bg-white/20 backdrop-blur rounded-full flex items-center justify-center flex-shrink-0">
@@ -224,11 +218,8 @@ export default function IslamicUserChat() {
               </button>
             </div>
           </div>
-
-          {/* Content */}
           {!isMinimized && (
             <>
-              {/* User Info Bar */}
               <div className="bg-emerald-50 px-3 sm:px-4 py-2 border-b border-emerald-100 flex items-center justify-between flex-shrink-0">
                 <div className="flex items-center gap-2 min-w-0">
                   <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
@@ -265,10 +256,8 @@ export default function IslamicUserChat() {
                   )}
                 </div>
               </div>
-
-              {/* Messages Area */}
               <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4 bg-gradient-to-b from-emerald-50/30 to-white">
-                {/* Welcome Banner - Only on first load */}
+                
                 {messages.length === 1 && (
                   <div className="bg-gradient-to-r from-emerald-100 to-teal-100 rounded-xl p-3 sm:p-4 border border-emerald-200">
                     <h4 className="font-bold text-emerald-800 text-xs sm:text-sm mb-2">🕌 Quick Help</h4>
@@ -287,7 +276,6 @@ export default function IslamicUserChat() {
                   </div>
                 )}
 
-                {/* Messages */}
                 {messages.map((msg) => (
                   <div key={msg.id} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
                     <div className={`max-w-[85%] sm:max-w-[75%] ${msg.sender === 'user' ? 'order-2' : 'order-1'}`}>
@@ -319,8 +307,6 @@ export default function IslamicUserChat() {
                     </div>
                   </div>
                 ))}
-
-                {/* Typing Indicator */}
                 {isTyping && (
                   <div className="flex justify-start">
                     <div className="flex items-center gap-2">
@@ -339,8 +325,6 @@ export default function IslamicUserChat() {
                 )}
                 <div ref={messagesEndRef} />
               </div>
-
-              {/* Emoji Picker */}
               {showEmojiPicker && (
                 <div className="bg-white border-t border-emerald-100 p-2 sm:p-3">
                   <div className="grid grid-cols-6 gap-2">
@@ -359,8 +343,6 @@ export default function IslamicUserChat() {
                   </div>
                 </div>
               )}
-
-              {/* Rating Modal */}
               {showRating && (
                 <div className="absolute inset-0 bg-black/50 flex items-center justify-center p-4 z-10 rounded-2xl">
                   <div className="bg-white rounded-xl p-4 sm:p-6 w-full max-w-sm">
@@ -395,8 +377,6 @@ export default function IslamicUserChat() {
                   </div>
                 </div>
               )}
-
-              {/* Input Area */}
               <div className="bg-white border-t border-emerald-100 p-2 sm:p-3 flex-shrink-0">
                 {isRecording ? (
                   <div className="flex items-center justify-between bg-red-50 rounded-xl p-3 border border-red-200">
@@ -470,8 +450,6 @@ export default function IslamicUserChat() {
                   </div>
                 )}
               </div>
-
-              {/* Footer */}
               <div className="px-3 sm:px-4 py-1.5 sm:py-2 border-t border-emerald-100 bg-emerald-50/50 flex-shrink-0">
                 <div className="flex items-center justify-center gap-2 text-[10px] sm:text-xs text-gray-500">
                   <span>🔒 Encrypted</span>

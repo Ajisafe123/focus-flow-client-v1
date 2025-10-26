@@ -20,7 +20,6 @@ class ApiService {
     return await response.json();
   }
 
-  // --- Auth ---
   async register({ username, email, password }) {
     const response = await fetch(`${API_BASE_URL}/auth/register`, {
       method: "POST",
@@ -31,7 +30,7 @@ class ApiService {
   }
 
   async login({ identifier, password }) {
-    const response = await fetch("https://focus-flow-server-v1.onrender.com/auth/login", {
+    const response = await fetch(`${API_BASE_URL}/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ identifier, password }),
@@ -61,7 +60,6 @@ class ApiService {
     return await this.handleResponse(response);
   }
 
-  // --- User Location ---
   async getUserLocation() {
     const headers = this.getAuthHeaders();
     const res = await fetch(`${API_BASE_URL}/auth/users/me/location`, {
@@ -81,7 +79,6 @@ class ApiService {
     return await this.handleResponse(res);
   }
 
-  // --- Prayer Times ---
   async getPrayerTimes(lat, lon, method = "ISNA", includeSun = false) {
     const url = new URL(`${API_BASE_URL}/prayer/location`);
     url.searchParams.append("lat", lat);

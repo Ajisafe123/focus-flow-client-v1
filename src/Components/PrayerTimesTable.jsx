@@ -23,7 +23,7 @@ export default function PrayerTimesTable() {
   const lastPrayerRef = useRef(null);
   const audioCtxRef = useRef(null);
   const audioBufferRef = useRef(null);
-  const BACKEND_URL = "http://127.0.0.1:8000";
+  const BACKEND_URL = "https://focus-flow-server-v1.onrender.com";
   const token = localStorage.getItem("token");
 
   const loadAudio = useCallback(async () => {

@@ -31,7 +31,9 @@ export default function IslamicCalendar() {
 
   const fetchToday = async () => {
     try {
-      const res = await fetch("http://127.0.0.1:8000/calendar/today");
+      const res = await fetch(
+        "https://focus-flow-server-v1.onrender.com/calendar/today"
+      );
       const data = await res.json();
       setToday(data);
     } catch (err) {
@@ -42,7 +44,7 @@ export default function IslamicCalendar() {
   const fetchMonth = async (month, year) => {
     try {
       const res = await fetch(
-        `http://127.0.0.1:8000/calendar/month?month=${month}&year=${year}`
+        `https://focus-flow-server-v1.onrender.com/calendar/month?month=${month}&year=${year}`
       );
       const data = await res.json();
       const startDay = new Date(year, month - 1, 1).getDay();

@@ -15,7 +15,7 @@ export default function DuaApp() {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
-  const BASE_URL = "http://127.0.0.1:8000/duas/";
+  const BASE_URL = "https://focus-flow-server-v1.onrender.com/duas/";
 
   useEffect(() => {
     fetchDuas();

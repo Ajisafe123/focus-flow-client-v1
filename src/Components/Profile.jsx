@@ -40,12 +40,15 @@ export default function ProfilePage() {
         return;
       }
 
-      const res = await fetch("http://localhost:8000/prayers/users/me", {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const res = await fetch(
+        "https://focus-flow-server-v1.onrender.com/prayers/users/me",
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       if (!res.ok) {
         if (res.status === 401) {
@@ -68,7 +71,7 @@ export default function ProfilePage() {
           : new Date().toLocaleDateString(),
         bio: data.bio || "As-salamu alaykum! May Allah bless you.",
         avatar: data.avatar_url
-          ? `http://localhost:8000${data.avatar_url}`
+          ? `https://focus-flow-server-v1.onrender.com${data.avatar_url}`
           : null,
         latitude: data.latitude || null,
         longitude: data.longitude || null,
@@ -134,13 +137,16 @@ export default function ProfilePage() {
       formData.append("longitude", tempData.longitude || 0);
       if (selectedAvatar) formData.append("avatar", selectedAvatar);
 
-      const res = await fetch("http://localhost:8000/auth/profile/update", {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body: formData,
-      });
+      const res = await fetch(
+        "https://focus-flow-server-v1.onrender.com/auth/profile/update",
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          body: formData,
+        }
+      );
 
       if (!res.ok) {
         const errText = await res.text();

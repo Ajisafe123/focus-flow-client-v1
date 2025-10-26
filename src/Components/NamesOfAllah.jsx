@@ -11,7 +11,9 @@ export default function NamesOfAllah() {
     setLoading(true);
     setError("");
     try {
-      const response = await fetch("http://localhost:8000/names/");
+      const response = await fetch(
+        "https://focus-flow-server-v1.onrender.com/names/"
+      );
       if (!response.ok) throw new Error("Failed to fetch all names");
       const data = await response.json();
       setNames(data);
@@ -35,7 +37,7 @@ export default function NamesOfAllah() {
       setError("");
       try {
         const response = await fetch(
-          `http://localhost:8000/names/search/?q=${searchTerm}`
+          `https://focus-flow-server-v1.onrender.com/names/search/?q=${searchTerm}`
         );
         if (!response.ok) throw new Error("Search failed");
         const data = await response.json();

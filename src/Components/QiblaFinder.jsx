@@ -16,11 +16,14 @@ export default function QiblaCompass() {
           setUserLocation({ lat: latitude, lng: longitude });
 
           try {
-            const res = await fetch("http://localhost:8000/qibla/", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ latitude, longitude }),
-            });
+            const res = await fetch(
+              "https://focus-flow-server-v1.onrender.com/qibla/",
+              {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ latitude, longitude }),
+              }
+            );
             const data = await res.json();
             setQiblaData(data);
           } catch (err) {

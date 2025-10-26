@@ -8,7 +8,7 @@ export default function HadithViewer() {
   const [page, setPage] = useState(1);
   const [error, setError] = useState(null);
   const limit = 10;
-  const BASE_URL = "http://127.0.0.1:8000/hadiths";
+  const BASE_URL = "https://focus-flow-server-v1.onrender.com/hadiths";
 
   useEffect(() => {
     const fetchHadiths = async () => {

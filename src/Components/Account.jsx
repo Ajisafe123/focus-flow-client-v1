@@ -25,11 +25,14 @@ export default function Account() {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const res = await fetch("http://127.0.0.1:8000/prayers/users/me", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const res = await fetch(
+          "https://focus-flow-server-v1.onrender.com/prayers/users/me",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
         if (!res.ok) throw new Error("Failed to fetch user info");
 
@@ -63,14 +66,17 @@ export default function Account() {
       if (settings.confirmPassword)
         payload.confirm_password = settings.confirmPassword;
 
-      const res = await fetch("http://127.0.0.1:8000/auth/account/update", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
-      });
+      const res = await fetch(
+        "https://focus-flow-server-v1.onrender.com/auth/account/update",
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(payload),
+        }
+      );
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.detail || "Failed to update account");
@@ -93,7 +99,7 @@ export default function Account() {
 
   const handleLogout = async () => {
     try {
-      await fetch("http://127.0.0.1:8000/auth/logout", {
+      await fetch("https://focus-flow-server-v1.onrender.com/auth/logout", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,

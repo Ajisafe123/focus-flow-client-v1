@@ -20,6 +20,7 @@ export default function AuthForm({ isLogin }) {
 
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    if (error) setError("");
   };
 
   const handleForgotPassword = () => {
@@ -106,7 +107,7 @@ export default function AuthForm({ isLogin }) {
   return (
     <form onSubmit={handleSubmit} className="relative space-y-5 sm:space-y-6">
       {!isLogin && (
-        <div className="group">
+        <div className="group animate-slideDown">
           <label className="block text-emerald-800 font-semibold mb-2 text-xs sm:text-sm tracking-wide uppercase">
             Username
           </label>
@@ -119,7 +120,7 @@ export default function AuthForm({ isLogin }) {
               name="username"
               value={formData.username}
               onChange={handleInputChange}
-              className="w-full pl-10 sm:pl-12 pr-3 sm:pr-4 py-3 sm:py-4 bg-white rounded-2xl focus:outline-none focus:ring-4 focus:ring-emerald-200 shadow-md hover:shadow-lg transition-all duration-300 text-gray-800 placeholder-gray-400 text-sm sm:text-base"
+              className="w-full pl-10 sm:pl-12 pr-3 sm:pr-4 py-3 sm:py-4 bg-white rounded-2xl focus:outline-none focus:ring-4 focus:ring-emerald-200 shadow-md hover:shadow-lg transition-all duration-300 text-gray-800 placeholder-gray-400 text-sm sm:text-base border border-transparent focus:border-emerald-300"
               placeholder="Choose a username"
               required={!isLogin}
             />
@@ -140,7 +141,7 @@ export default function AuthForm({ isLogin }) {
             name="identifier"
             value={formData.identifier}
             onChange={handleInputChange}
-            className="w-full pl-10 sm:pl-12 pr-3 sm:pr-4 py-3 sm:py-4 bg-white rounded-2xl focus:outline-none focus:ring-4 focus:ring-emerald-200 shadow-md hover:shadow-lg transition-all duration-300 text-gray-800 placeholder-gray-400 text-sm sm:text-base"
+            className="w-full pl-10 sm:pl-12 pr-3 sm:pr-4 py-3 sm:py-4 bg-white rounded-2xl focus:outline-none focus:ring-4 focus:ring-emerald-200 shadow-md hover:shadow-lg transition-all duration-300 text-gray-800 placeholder-gray-400 text-sm sm:text-base border border-transparent focus:border-emerald-300"
             placeholder={
               isLogin ? "your@email.com or username" : "your@email.com"
             }
@@ -174,7 +175,7 @@ export default function AuthForm({ isLogin }) {
             name="password"
             value={formData.password}
             onChange={handleInputChange}
-            className="w-full pl-10 sm:pl-12 pr-10 sm:pr-14 py-3 sm:py-4 bg-white rounded-2xl focus:outline-none focus:ring-4 focus:ring-emerald-200 shadow-md hover:shadow-lg transition-all duration-300 text-gray-800 placeholder-gray-400 text-sm sm:text-base"
+            className="w-full pl-10 sm:pl-12 pr-10 sm:pr-14 py-3 sm:py-4 bg-white rounded-2xl focus:outline-none focus:ring-4 focus:ring-emerald-200 shadow-md hover:shadow-lg transition-all duration-300 text-gray-800 placeholder-gray-400 text-sm sm:text-base border border-transparent focus:border-emerald-300"
             placeholder="Enter your password"
             required
           />
@@ -193,7 +194,7 @@ export default function AuthForm({ isLogin }) {
       </div>
 
       {!isLogin && (
-        <div className="group">
+        <div className="group animate-slideDown">
           <label className="block text-emerald-800 font-semibold mb-2 text-xs sm:text-sm tracking-wide uppercase">
             Confirm Password
           </label>
@@ -206,7 +207,7 @@ export default function AuthForm({ isLogin }) {
               name="confirmPassword"
               value={formData.confirmPassword}
               onChange={handleInputChange}
-              className="w-full pl-10 sm:pl-12 pr-10 sm:pr-14 py-3 sm:py-4 bg-white rounded-2xl focus:outline-none focus:ring-4 focus:ring-emerald-200 shadow-md hover:shadow-lg transition-all duration-300 text-gray-800 placeholder-gray-400 text-sm sm:text-base"
+              className="w-full pl-10 sm:pl-12 pr-10 sm:pr-14 py-3 sm:py-4 bg-white rounded-2xl focus:outline-none focus:ring-4 focus:ring-emerald-200 shadow-md hover:shadow-lg transition-all duration-300 text-gray-800 placeholder-gray-400 text-sm sm:text-base border border-transparent focus:border-emerald-300"
               placeholder="Confirm your password"
               required={!isLogin}
             />
@@ -226,36 +227,67 @@ export default function AuthForm({ isLogin }) {
       )}
 
       {error && (
-        <div className="bg-red-50 text-red-600 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm font-semibold shadow-md">
-          {error}
+        <div className="bg-red-50 border-l-4 border-red-500 text-red-700 px-3 sm:px-4 py-3 rounded-xl text-xs sm:text-sm font-medium shadow-md animate-shake">
+          <div className="flex items-center">
+            <svg
+              className="w-4 h-4 mr-2 flex-shrink-0"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path
+                fillRule="evenodd"
+                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                clipRule="evenodd"
+              />
+            </svg>
+            <span>{error}</span>
+          </div>
         </div>
       )}
 
       <button
         type="submit"
         disabled={loading}
-        className={`w-full bg-gradient-to-r from-emerald-600 via-emerald-700 to-teal-600 text-white py-3 sm:py-4 rounded-2xl font-bold shadow-lg hover:shadow-xl flex items-center justify-center space-x-2 transition-all duration-300 transform hover:-translate-y-1 hover:scale-[1.02] text-base sm:text-lg tracking-wide ${
+        className={`relative w-full bg-gradient-to-r from-emerald-600 via-emerald-700 to-teal-600 text-white py-3 sm:py-4 rounded-2xl font-bold shadow-lg hover:shadow-xl flex items-center justify-center space-x-2 transition-all duration-300 transform hover:-translate-y-1 hover:scale-[1.02] text-base sm:text-lg tracking-wide overflow-hidden ${
           loading
-            ? "opacity-80 cursor-not-allowed hover:translate-y-0 hover:scale-100"
+            ? "opacity-90 cursor-not-allowed hover:translate-y-0 hover:scale-100"
             : ""
         }`}
       >
-        {loading ? (
-          <>
-            <div className="w-5 h-5 sm:w-6 sm:h-6 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
-            <span>Processing...</span>
-          </>
-        ) : isLogin ? (
-          <>
-            <Lock className="w-4 h-4 sm:w-5 sm:h-5" />
-            <span>Sign In</span>
-          </>
-        ) : (
-          <>
-            <User className="w-4 h-4 sm:w-5 sm:h-5" />
-            <span>Create Account</span>
-          </>
+        {loading && (
+          <div className="absolute inset-0 bg-gradient-to-r from-emerald-700 via-teal-700 to-emerald-700 animate-shimmer"></div>
         )}
+        <div className="relative flex items-center space-x-2">
+          {loading ? (
+            <>
+              <div className="flex space-x-1">
+                <div
+                  className="w-2 h-2 bg-white rounded-full animate-bounce"
+                  style={{ animationDelay: "0ms" }}
+                ></div>
+                <div
+                  className="w-2 h-2 bg-white rounded-full animate-bounce"
+                  style={{ animationDelay: "150ms" }}
+                ></div>
+                <div
+                  className="w-2 h-2 bg-white rounded-full animate-bounce"
+                  style={{ animationDelay: "300ms" }}
+                ></div>
+              </div>
+              <span className="animate-pulse">Processing...</span>
+            </>
+          ) : isLogin ? (
+            <>
+              <Lock className="w-4 h-4 sm:w-5 sm:h-5" />
+              <span>Sign In</span>
+            </>
+          ) : (
+            <>
+              <User className="w-4 h-4 sm:w-5 sm:h-5" />
+              <span>Create Account</span>
+            </>
+          )}
+        </div>
       </button>
 
       <div className="relative my-6 sm:my-8">
@@ -270,6 +302,54 @@ export default function AuthForm({ isLogin }) {
       </div>
 
       <SocialLogin />
+
+      <style>{`
+        @keyframes slideDown {
+          from {
+            opacity: 0;
+            transform: translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        @keyframes shake {
+          0%,
+          100% {
+            transform: translateX(0);
+          }
+          25% {
+            transform: translateX(-5px);
+          }
+          75% {
+            transform: translateX(5px);
+          }
+        }
+
+        @keyframes shimmer {
+          0% {
+            background-position: -200% center;
+          }
+          100% {
+            background-position: 200% center;
+          }
+        }
+
+        .animate-slideDown {
+          animation: slideDown 0.4s ease-out;
+        }
+
+        .animate-shake {
+          animation: shake 0.4s ease-in-out;
+        }
+
+        .animate-shimmer {
+          background-size: 200% 100%;
+          animation: shimmer 1.5s infinite;
+        }
+      `}</style>
     </form>
   );
 }

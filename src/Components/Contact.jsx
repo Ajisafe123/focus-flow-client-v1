@@ -8,13 +8,36 @@ export default function Contact() {
     subject: "",
     message: "",
   });
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState("");
 
   const handleChange = (e) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(formData);
+    setLoading(true);
+    setSuccess("");
+    try {
+      const res = await fetch(
+        "https://focus-flow-server-v1.onrender.com/contact/send",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formData),
+        }
+      );
+      const data = await res.json();
+      if (res.ok) {
+        setSuccess(data.message || "Message sent successfully!");
+        setFormData({ name: "", email: "", subject: "", message: "" });
+      } else {
+        setSuccess(data.message || "Something went wrong!");
+      }
+    } catch (err) {
+      setSuccess("Failed to send message.");
+    }
+    setLoading(false);
   };
 
   return (
@@ -124,10 +147,17 @@ export default function Contact() {
               </div>
               <button
                 onClick={handleSubmit}
+                disabled={loading}
                 className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white py-3 rounded-lg font-bold text-lg md:text-xl shadow transition-all duration-200 flex items-center justify-center gap-2 hover:scale-105"
               >
-                <span>Send Message</span> <Send className="w-4 h-4" />
+                <span>{loading ? "Sending..." : "Send Message"}</span>{" "}
+                <Send className="w-4 h-4" />
               </button>
+              {success && (
+                <p className="text-center text-green-600 font-semibold mt-2">
+                  {success}
+                </p>
+              )}
             </div>
           </div>
         </div>

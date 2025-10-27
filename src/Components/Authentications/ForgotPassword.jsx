@@ -61,14 +61,11 @@ function ForgotPassword() {
     const startTime = Date.now();
 
     try {
-      const res = await fetch(
-        "https://focus-flow-server-v1.onrender.com/auth/forgot-password",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email }),
-        }
-      );
+      const res = await fetch("https://focus-flow-server-v1.onrender.com/auth/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
 
       const elapsed = Date.now() - startTime;
       await new Promise((resolve) =>

@@ -1,6 +1,13 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Lock, Eye, EyeOff, KeyRound, ShieldCheck } from "lucide-react";
+import {
+  Lock,
+  Eye,
+  EyeOff,
+  KeyRound,
+  ShieldCheck,
+  CheckCircle,
+} from "lucide-react";
 
 function ResetPassword() {
   const [code, setCode] = useState("");
@@ -11,9 +18,12 @@ function ResetPassword() {
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [verifiedMessage, setVerifiedMessage] = useState("");
   const [noToken, setNoToken] = useState(false);
   const [touchDots, setTouchDots] = useState([]);
   const [floatingElements, setFloatingElements] = useState([]);
+  const [step, setStep] = useState(1);
+  const [verified, setVerified] = useState(false);
 
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -50,9 +60,8 @@ function ResetPassword() {
     }
   };
 
-  const validate = () => {
+  const validatePasswords = () => {
     const errs = {};
-    if (!code.trim()) errs.code = "Verification code is required";
     if (!newPassword) errs.newPassword = "New password is required";
     else if (newPassword.length < 6)
       errs.newPassword = "Password must be at least 6 characters";
@@ -62,20 +71,51 @@ function ResetPassword() {
     return errs;
   };
 
-  const handleResetPassword = async (e) => {
+  const handleVerifyCode = async (e) => {
     e.preventDefault();
-    if (!email) {
-      setErrors({
-        api: "Please click the link in your email to reset your password.",
-      });
+    if (!code.trim()) {
+      setErrors({ code: "Verification code is required" });
       return;
     }
 
-    const validationErrors = validate();
+    setIsLoading(true);
+    setErrors({});
+    try {
+      const res = await fetch(
+        "https://focus-flow-server-v1.onrender.com/auth/verify-code",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, code }),
+        }
+      );
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.detail || "Invalid or expired code");
+      }
+
+      setVerified(true);
+      setVerifiedMessage("Code verified successfully!");
+      setTimeout(() => {
+        setStep(2);
+        setVerifiedMessage("");
+      }, 1500);
+    } catch (err) {
+      setErrors({ api: err.message });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleResetPassword = async (e) => {
+    e.preventDefault();
+    const validationErrors = validatePasswords();
     setErrors(validationErrors);
     if (Object.keys(validationErrors).length > 0) return;
 
     setIsLoading(true);
+    setErrors({});
     try {
       const res = await fetch(
         "https://focus-flow-server-v1.onrender.com/auth/reset-password",
@@ -143,172 +183,135 @@ function ResetPassword() {
           <p className="text-gray-500 text-sm">
             {noToken
               ? "Please click the link in your email to reset your password."
-              : "Enter your verification code and new password"}
+              : step === 1
+              ? "Enter your verification code to continue"
+              : "Enter your new password below"}
           </p>
         </div>
 
         {!noToken && (
-          <form onSubmit={handleResetPassword} className="space-y-4">
-            <div className="relative group">
-              <KeyRound
-                className="absolute left-3 top-3.5 text-emerald-400 group-focus-within:text-emerald-600 transition-colors"
-                size={18}
-              />
-              <input
-                type="text"
-                placeholder="Verification Code"
-                value={code}
-                onChange={(e) => {
-                  setCode(e.target.value);
-                  if (errors.code) setErrors({});
-                }}
-                className={`w-full pl-10 pr-3 py-3.5 text-gray-800 bg-white border-2 rounded-xl focus:outline-none focus:ring-4 transition-all duration-300 shadow-sm hover:shadow-md text-sm tracking-widest ${
-                  errors.code
-                    ? "border-red-500 focus:ring-red-200"
-                    : "border-emerald-200 focus:ring-emerald-200 focus:border-emerald-400"
-                }`}
-              />
-              {errors.code && (
-                <p className="text-red-500 text-xs mt-1.5 ml-1 flex items-center gap-1">
-                  <svg
-                    className="w-3 h-3"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  {errors.code}
-                </p>
-              )}
-            </div>
+          <form
+            onSubmit={step === 1 ? handleVerifyCode : handleResetPassword}
+            className="space-y-4"
+          >
+            {step === 1 && (
+              <div className="relative group">
+                <KeyRound
+                  className="absolute left-3 top-3.5 text-emerald-400 group-focus-within:text-emerald-600 transition-colors"
+                  size={18}
+                />
+                <input
+                  type="text"
+                  placeholder="Verification Code"
+                  value={code}
+                  onChange={(e) => {
+                    setCode(e.target.value);
+                    if (errors.code) setErrors({});
+                  }}
+                  className={`w-full pl-10 pr-3 py-3.5 text-gray-800 bg-white border-2 rounded-xl focus:outline-none focus:ring-4 transition-all duration-300 shadow-sm hover:shadow-md text-sm tracking-widest ${
+                    errors.code
+                      ? "border-red-500 focus:ring-red-200"
+                      : "border-emerald-200 focus:ring-emerald-200 focus:border-emerald-400"
+                  }`}
+                />
+                {errors.code && (
+                  <p className="text-red-500 text-xs mt-1.5 ml-1">
+                    {errors.code}
+                  </p>
+                )}
+              </div>
+            )}
 
-            <div className="relative group">
-              <Lock
-                className="absolute left-3 top-3.5 text-emerald-400 group-focus-within:text-emerald-600 transition-colors"
-                size={18}
-              />
-              <input
-                type={showNewPassword ? "text" : "password"}
-                placeholder="New Password"
-                value={newPassword}
-                onChange={(e) => {
-                  setNewPassword(e.target.value);
-                  if (errors.newPassword) setErrors({});
-                }}
-                className={`w-full pl-10 pr-10 py-3.5 text-gray-800 bg-white border-2 rounded-xl focus:outline-none focus:ring-4 transition-all duration-300 shadow-sm hover:shadow-md text-sm ${
-                  errors.newPassword
-                    ? "border-red-500 focus:ring-red-200"
-                    : "border-emerald-200 focus:ring-emerald-200 focus:border-emerald-400"
-                }`}
-              />
-              <button
-                type="button"
-                onClick={() => setShowNewPassword(!showNewPassword)}
-                className="absolute right-3 top-3.5 text-gray-400 hover:text-emerald-600 transition-colors"
-              >
-                {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
-              {errors.newPassword && (
-                <p className="text-red-500 text-xs mt-1.5 ml-1 flex items-center gap-1">
-                  <svg
-                    className="w-3 h-3"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  {errors.newPassword}
-                </p>
-              )}
-            </div>
+            {verifiedMessage && (
+              <div className="bg-green-50 border-l-4 border-green-500 text-green-700 px-3 py-2.5 rounded-lg text-xs font-medium shadow-sm animate-slideIn flex items-center gap-2">
+                <CheckCircle size={14} /> {verifiedMessage}
+              </div>
+            )}
 
-            <div className="relative group">
-              <Lock
-                className="absolute left-3 top-3.5 text-emerald-400 group-focus-within:text-emerald-600 transition-colors"
-                size={18}
-              />
-              <input
-                type={showConfirmPassword ? "text" : "password"}
-                placeholder="Confirm Password"
-                value={confirmPassword}
-                onChange={(e) => {
-                  setConfirmPassword(e.target.value);
-                  if (errors.confirmPassword) setErrors({});
-                }}
-                className={`w-full pl-10 pr-10 py-3.5 text-gray-800 bg-white border-2 rounded-xl focus:outline-none focus:ring-4 transition-all duration-300 shadow-sm hover:shadow-md text-sm ${
-                  errors.confirmPassword
-                    ? "border-red-500 focus:ring-red-200"
-                    : "border-emerald-200 focus:ring-emerald-200 focus:border-emerald-400"
-                }`}
-              />
-              <button
-                type="button"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-3 top-3.5 text-gray-400 hover:text-emerald-600 transition-colors"
-              >
-                {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
-              {errors.confirmPassword && (
-                <p className="text-red-500 text-xs mt-1.5 ml-1 flex items-center gap-1">
-                  <svg
-                    className="w-3 h-3"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
+            {step === 2 && (
+              <>
+                <div className="relative group">
+                  <Lock
+                    className="absolute left-3 top-3.5 text-emerald-400 group-focus-within:text-emerald-600 transition-colors"
+                    size={18}
+                  />
+                  <input
+                    type={showNewPassword ? "text" : "password"}
+                    placeholder="New Password"
+                    value={newPassword}
+                    onChange={(e) => {
+                      setNewPassword(e.target.value);
+                      if (errors.newPassword) setErrors({});
+                    }}
+                    className={`w-full pl-10 pr-10 py-3.5 text-gray-800 bg-white border-2 rounded-xl focus:outline-none focus:ring-4 transition-all duration-300 shadow-sm hover:shadow-md text-sm ${
+                      errors.newPassword
+                        ? "border-red-500 focus:ring-red-200"
+                        : "border-emerald-200 focus:ring-emerald-200 focus:border-emerald-400"
+                    }`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowNewPassword(!showNewPassword)}
+                    className="absolute right-3 top-3.5 text-gray-400 hover:text-emerald-600 transition-colors"
                   >
-                    <path
-                      fillRule="evenodd"
-                      d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  {errors.confirmPassword}
-                </p>
-              )}
-            </div>
+                    {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                  {errors.newPassword && (
+                    <p className="text-red-500 text-xs mt-1.5 ml-1">
+                      {errors.newPassword}
+                    </p>
+                  )}
+                </div>
+
+                <div className="relative group">
+                  <Lock
+                    className="absolute left-3 top-3.5 text-emerald-400 group-focus-within:text-emerald-600 transition-colors"
+                    size={18}
+                  />
+                  <input
+                    type={showConfirmPassword ? "text" : "password"}
+                    placeholder="Confirm Password"
+                    value={confirmPassword}
+                    onChange={(e) => {
+                      setConfirmPassword(e.target.value);
+                      if (errors.confirmPassword) setErrors({});
+                    }}
+                    className={`w-full pl-10 pr-10 py-3.5 text-gray-800 bg-white border-2 rounded-xl focus:outline-none focus:ring-4 transition-all duration-300 shadow-sm hover:shadow-md text-sm ${
+                      errors.confirmPassword
+                        ? "border-red-500 focus:ring-red-200"
+                        : "border-emerald-200 focus:ring-emerald-200 focus:border-emerald-400"
+                    }`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-3.5 text-gray-400 hover:text-emerald-600 transition-colors"
+                  >
+                    {showConfirmPassword ? (
+                      <EyeOff size={18} />
+                    ) : (
+                      <Eye size={18} />
+                    )}
+                  </button>
+                  {errors.confirmPassword && (
+                    <p className="text-red-500 text-xs mt-1.5 ml-1">
+                      {errors.confirmPassword}
+                    </p>
+                  )}
+                </div>
+              </>
+            )}
 
             {errors.api && (
               <div className="bg-red-50 border-l-4 border-red-500 text-red-700 px-3 py-2.5 rounded-lg text-xs font-medium shadow-sm animate-shake">
-                <div className="flex items-center">
-                  <svg
-                    className="w-4 h-4 mr-2 flex-shrink-0"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  {errors.api}
-                </div>
+                {errors.api}
               </div>
             )}
 
             {success && (
-              <div className="bg-green-50 border-l-4 border-green-500 text-green-700 px-3 py-2.5 rounded-lg text-xs font-medium shadow-sm animate-slideIn">
-                <div className="flex items-center">
-                  <svg
-                    className="w-4 h-4 mr-2 flex-shrink-0"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  Password successfully reset! Redirecting...
-                </div>
+              <div className="bg-green-50 border-l-4 border-green-500 text-green-700 px-3 py-2.5 rounded-lg text-xs font-medium shadow-sm animate-slideIn flex items-center gap-2">
+                <CheckCircle size={14} /> Password successfully reset!
+                Redirecting...
               </div>
             )}
 
@@ -321,120 +324,49 @@ function ResetPassword() {
                   : ""
               }`}
             >
-              {isLoading && (
-                <div className="absolute inset-0 bg-gradient-to-r from-emerald-700 via-teal-700 to-emerald-700 animate-shimmer"></div>
+              {isLoading ? (
+                <div className="flex items-center gap-2">
+                  <div className="flex space-x-1">
+                    <div className="w-2 h-2 bg-white rounded-full animate-bounce" />
+                    <div
+                      className="w-2 h-2 bg-white rounded-full animate-bounce"
+                      style={{ animationDelay: "150ms" }}
+                    />
+                    <div
+                      className="w-2 h-2 bg-white rounded-full animate-bounce"
+                      style={{ animationDelay: "300ms" }}
+                    />
+                  </div>
+                  <span className="animate-pulse">
+                    {step === 1 ? "Verifying..." : "Resetting..."}
+                  </span>
+                </div>
+              ) : (
+                <>
+                  <Lock className="w-4 h-4" />
+                  <span>{step === 1 ? "Verify Code" : "Reset Password"}</span>
+                </>
               )}
-              <div className="relative flex items-center gap-2">
-                {isLoading ? (
-                  <>
-                    <div className="flex space-x-1">
-                      <div
-                        className="w-2 h-2 bg-white rounded-full animate-bounce"
-                        style={{ animationDelay: "0ms" }}
-                      ></div>
-                      <div
-                        className="w-2 h-2 bg-white rounded-full animate-bounce"
-                        style={{ animationDelay: "150ms" }}
-                      ></div>
-                      <div
-                        className="w-2 h-2 bg-white rounded-full animate-bounce"
-                        style={{ animationDelay: "300ms" }}
-                      ></div>
-                    </div>
-                    <span className="animate-pulse">Resetting...</span>
-                  </>
-                ) : (
-                  <>
-                    <Lock className="w-4 h-4" />
-                    <span>Reset Password</span>
-                  </>
-                )}
-              </div>
             </button>
           </form>
-        )}
-
-        {noToken && (
-          <div className="bg-amber-50 border-l-4 border-amber-500 text-amber-700 px-4 py-3 rounded-lg text-sm font-medium shadow-sm">
-            <div className="flex items-center">
-              <svg
-                className="w-5 h-5 mr-2 flex-shrink-0"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              <span>Please use the reset link sent to your email</span>
-            </div>
-          </div>
         )}
       </div>
 
       <style>{`
         @keyframes float {
-          0%,
-          100% {
-            transform: translateY(0px) rotate(0deg);
-          }
-          25% {
-            transform: translateY(-10px) rotate(90deg);
-          }
-          50% {
-            transform: translateY(-20px) rotate(180deg);
-          }
-          75% {
-            transform: translateY(-10px) rotate(270deg);
-          }
+          0%, 100% { transform: translateY(0px) rotate(0deg); }
+          25% { transform: translateY(-10px) rotate(90deg); }
+          50% { transform: translateY(-20px) rotate(180deg); }
+          75% { transform: translateY(-10px) rotate(270deg); }
         }
-
         @keyframes slideIn {
-          from {
-            opacity: 0;
-            transform: translateY(-10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
+          from { opacity: 0; transform: translateY(-10px); }
+          to { opacity: 1; transform: translateY(0); }
         }
-
         @keyframes shake {
-          0%,
-          100% {
-            transform: translateX(0);
-          }
-          25% {
-            transform: translateX(-5px);
-          }
-          75% {
-            transform: translateX(5px);
-          }
-        }
-
-        @keyframes shimmer {
-          0% {
-            background-position: -200% center;
-          }
-          100% {
-            background-position: 200% center;
-          }
-        }
-
-        .animate-slideIn {
-          animation: slideIn 0.4s ease-out;
-        }
-
-        .animate-shake {
-          animation: shake 0.4s ease-in-out;
-        }
-
-        .animate-shimmer {
-          background-size: 200% 100%;
-          animation: shimmer 1.5s infinite;
+          0%, 100% { transform: translateX(0); }
+          25% { transform: translateX(-5px); }
+          75% { transform: translateX(5px); }
         }
       `}</style>
     </div>

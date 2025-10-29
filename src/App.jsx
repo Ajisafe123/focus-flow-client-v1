@@ -8,7 +8,6 @@ import {
   useNavigate,
 } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-
 import Hero from "./Components/Hero";
 import LiveDua from "./Components/LiveDua";
 import LiveChat from "./Components/LiveChat";
@@ -30,12 +29,15 @@ import ZakatCalculator from "./Components/ZakatCalculator";
 import QiblaFinder from "./Components/QiblaFinder";
 import SettingsPage from "./Components/Settings";
 import ProfilePage from "./Components/Profile";
+import AdminDashboard from "./Admin/NibrasAdminDashboard";
+import apiService from "./Services/api";
 
 const pageVariants = {
   initial: { opacity: 0, y: 10 },
   in: { opacity: 1, y: 0 },
   out: { opacity: 0, y: -10 },
 };
+
 const pageTransition = { type: "tween", ease: "easeInOut", duration: 0.3 };
 
 function PageWrapper({ children }) {
@@ -67,18 +69,25 @@ function GuestHome() {
 function AppContent({
   isLoggedIn,
   setIsLoggedIn,
+  role,
+  setRole,
   showLogoutModal,
   setShowLogoutModal,
 }) {
   const location = useLocation();
   const navigate = useNavigate();
-
   const hideFooterPaths = ["/login", "/forgot-password", "/reset-password"];
-  const shouldShowFooter = !hideFooterPaths.includes(location.pathname);
+  const isAdminPage =
+    role === "admin" && location.pathname.startsWith("/admin");
+  const shouldShowFooter =
+    !hideFooterPaths.includes(location.pathname) && !isAdminPage;
+  const showNavigation = !isAdminPage;
+  const showLiveChat = isLoggedIn && !isAdminPage;
 
   const confirmLogout = () => {
-    localStorage.removeItem("token");
+    apiService.logout();
     setIsLoggedIn(false);
+    setRole("user");
     setShowLogoutModal(false);
     window.dispatchEvent(new Event("loginStatusChanged"));
     navigate("/");
@@ -86,10 +95,13 @@ function AppContent({
 
   return (
     <>
-      <Navigation
-        isLoggedIn={isLoggedIn}
-        setShowLogoutModal={setShowLogoutModal}
-      />
+      {showNavigation && (
+        <Navigation
+          isLoggedIn={isLoggedIn}
+          setShowLogoutModal={setShowLogoutModal}
+        />
+      )}
+
       <AnimatePresence mode="wait">
         <Routes location={location} key={location.pathname}>
           <Route
@@ -215,8 +227,20 @@ function AppContent({
                   </PageWrapper>
                 }
               />
+
+              <Route
+                path="/admin/*"
+                element={
+                  localStorage.getItem("role") === "admin" ? (
+                    <AdminDashboard />
+                  ) : (
+                    <Navigate to="/" />
+                  )
+                }
+              />
             </>
           )}
+
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </AnimatePresence>
@@ -230,18 +254,25 @@ function AppContent({
       )}
 
       {shouldShowFooter && <Footer />}
-
-      {isLoggedIn && <LiveChat />}
+      {showLiveChat && <LiveChat />}
     </>
   );
 }
 
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("token"));
+  const [role, setRole] = useState(localStorage.getItem("role") || "user");
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   useEffect(() => {
-    const checkLogin = () => setIsLoggedIn(!!localStorage.getItem("token"));
+    const checkLogin = () => {
+      setIsLoggedIn(!!localStorage.getItem("token"));
+      setRole(localStorage.getItem("role") || "user");
+      const currentRole = localStorage.getItem("role");
+      if (currentRole === "admin" && window.location.pathname !== "/admin") {
+        window.location.href = "/admin";
+      }
+    };
     checkLogin();
     window.addEventListener("loginStatusChanged", checkLogin);
     return () => window.removeEventListener("loginStatusChanged", checkLogin);
@@ -252,6 +283,8 @@ export default function App() {
       <AppContent
         isLoggedIn={isLoggedIn}
         setIsLoggedIn={setIsLoggedIn}
+        role={role}
+        setRole={setRole}
         showLogoutModal={showLogoutModal}
         setShowLogoutModal={setShowLogoutModal}
       />

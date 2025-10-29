@@ -30,6 +30,7 @@ export default function Navigation({ isLoggedIn, setShowLogoutModal }) {
     useState(false);
   const [isIslamicDropdownOpenMobile, setIsIslamicDropdownOpenMobile] =
     useState(false);
+
   const userMenuRefDesktop = useRef(null);
   const userMenuRefMobile = useRef(null);
   const islamicDropdownRefDesktop = useRef(null);
@@ -57,9 +58,7 @@ export default function Navigation({ isLoggedIn, setShowLogoutModal }) {
     else if (action === "login") navigate("/login");
   };
 
-  const toggleMenu = () => {
-    setIsMenuOpen((prev) => !prev);
-  };
+  const toggleMenu = () => setIsMenuOpen((prev) => !prev);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -110,47 +109,52 @@ export default function Navigation({ isLoggedIn, setShowLogoutModal }) {
     { name: "Prayer Times", href: "/prayer-times", icon: Clock },
   ];
 
-  const Dropdown = ({ position }) => (
-    <div
-      className={`absolute z-50 ${
-        position === "up" ? "bottom-full right-0 mb-2" : "top-full right-0 mt-2"
-      } bg-white w-52 rounded-2xl overflow-hidden transform transition-all duration-200 shadow-xl`}
-    >
-      {isLoggedIn ? (
-        <>
+  const Dropdown = ({ position }) => {
+    const token = localStorage.getItem("token");
+    return (
+      <div
+        className={`absolute z-50 ${
+          position === "up"
+            ? "bottom-full right-0 mb-2"
+            : "top-full right-0 mt-2"
+        } bg-white w-52 rounded-2xl overflow-hidden transform transition-all duration-200 shadow-xl`}
+      >
+        {token ? (
+          <>
+            <button
+              onClick={() => handleDropdownAction("profile")}
+              className="flex items-center w-full px-5 py-3.5 text-emerald-800 font-semibold hover:bg-emerald-50 transition-all duration-200"
+            >
+              <UserCircle className="w-5 h-5 mr-3 text-emerald-600" />
+              <span>Profile</span>
+            </button>
+            <button
+              onClick={() => handleDropdownAction("settings")}
+              className="flex items-center w-full px-5 py-3.5 text-emerald-800 font-semibold hover:bg-emerald-50 transition-all duration-200"
+            >
+              <Settings className="w-5 h-5 mr-3 text-emerald-600" />
+              <span>Settings</span>
+            </button>
+            <button
+              onClick={() => handleDropdownAction("logout")}
+              className="flex items-center w-full px-5 py-3.5 text-red-600 font-semibold hover:bg-red-50 transition-all duration-200"
+            >
+              <LogOut className="w-5 h-5 mr-3" />
+              <span>Logout</span>
+            </button>
+          </>
+        ) : (
           <button
-            onClick={() => handleDropdownAction("profile")}
+            onClick={() => handleDropdownAction("login")}
             className="flex items-center w-full px-5 py-3.5 text-emerald-800 font-semibold hover:bg-emerald-50 transition-all duration-200"
           >
-            <UserCircle className="w-5 h-5 mr-3 text-emerald-600" />
-            <span>Profile</span>
+            <LogIn className="w-5 h-5 mr-3 text-emerald-600" />
+            <span>Login</span>
           </button>
-          <button
-            onClick={() => handleDropdownAction("settings")}
-            className="flex items-center w-full px-5 py-3.5 text-emerald-800 font-semibold hover:bg-emerald-50 transition-all duration-200"
-          >
-            <Settings className="w-5 h-5 mr-3 text-emerald-600" />
-            <span>Settings</span>
-          </button>
-          <button
-            onClick={() => handleDropdownAction("logout")}
-            className="flex items-center w-full px-5 py-3.5 text-red-600 font-semibold hover:bg-red-50 transition-all duration-200"
-          >
-            <LogOut className="w-5 h-5 mr-3" />
-            <span>Logout</span>
-          </button>
-        </>
-      ) : (
-        <button
-          onClick={() => handleDropdownAction("login")}
-          className="flex items-center w-full px-5 py-3.5 text-emerald-800 font-semibold hover:bg-emerald-50 transition-all duration-200"
-        >
-          <LogIn className="w-5 h-5 mr-3 text-emerald-600" />
-          <span>Login</span>
-        </button>
-      )}
-    </div>
-  );
+        )}
+      </div>
+    );
+  };
 
   const IslamicResourcesDropdown = () => (
     <div className="absolute z-50 top-full left-0 mt-2 bg-white w-64 rounded-2xl overflow-hidden shadow-xl transform transition-all duration-200">
@@ -197,6 +201,7 @@ export default function Navigation({ isLoggedIn, setShowLogoutModal }) {
               </span>
             </div>
           </button>
+
           <div className="hidden md:flex space-x-6 items-center">
             {menuItems.map(({ name, href, icon: Icon }, idx) => (
               <button
@@ -208,6 +213,7 @@ export default function Navigation({ isLoggedIn, setShowLogoutModal }) {
                 <span>{name}</span>
               </button>
             ))}
+
             <div className="relative" ref={islamicDropdownRefDesktop}>
               <button
                 onClick={() => setIsIslamicDropdownOpenDesktop((prev) => !prev)}
@@ -227,12 +233,14 @@ export default function Navigation({ isLoggedIn, setShowLogoutModal }) {
               </button>
               {isIslamicDropdownOpenDesktop && <IslamicResourcesDropdown />}
             </div>
+
             <button className="relative p-2.5 rounded-xl hover:bg-white/15 transition-all duration-300 backdrop-blur-sm group">
               <Bell className="w-6 h-6 text-white group-hover:scale-110 transition-transform" />
               <span className="absolute -top-1 -right-1 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs w-5 h-5 flex items-center justify-center font-bold rounded-full shadow-lg animate-pulse">
                 3
               </span>
             </button>
+
             <div className="relative" ref={userMenuRefDesktop}>
               <button
                 onClick={() => setIsUserMenuOpenDesktop((prev) => !prev)}
@@ -245,6 +253,7 @@ export default function Navigation({ isLoggedIn, setShowLogoutModal }) {
               {isUserMenuOpenDesktop && <Dropdown position="down" />}
             </div>
           </div>
+
           <button
             onClick={toggleMenu}
             ref={menuButtonRef}
@@ -258,6 +267,7 @@ export default function Navigation({ isLoggedIn, setShowLogoutModal }) {
           </button>
         </div>
       </div>
+
       <div
         id="mobile-menu-items"
         className={`md:hidden overflow-hidden bg-gradient-to-b from-emerald-700 to-emerald-800 transition-all duration-300 ${
@@ -275,6 +285,8 @@ export default function Navigation({ isLoggedIn, setShowLogoutModal }) {
               <span>{name}</span>
             </button>
           ))}
+
+          {/* Mobile Islamic Resources */}
           <div className="mb-2">
             <div className="bg-white/10 rounded-xl p-3 backdrop-blur-sm">
               <button
@@ -307,20 +319,18 @@ export default function Navigation({ isLoggedIn, setShowLogoutModal }) {
               )}
             </div>
           </div>
+
           <div className="flex justify-between items-center px-2 py-4 mt-2">
             <button className="relative p-2.5 rounded-xl hover:bg-white/15 transition-all duration-300 backdrop-blur-sm">
               <Bell className="w-6 h-6 text-white" />
-              <span className="absolute -top-1 -right-1 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs w-5 h-5 flex items-center justify-center font-bold rounded-full shadow-lg">
+              <span className="absolute -top-1 -right-1 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs w-5 h-5 flex items-center justify-center font-bold rounded-full shadow-lg animate-pulse">
                 3
               </span>
             </button>
-
             <div className="relative" ref={userMenuRefMobile}>
               <button
                 onClick={() => setIsUserMenuOpenMobile((prev) => !prev)}
-                className={`p-2.5 rounded-xl transition-all duration-300 backdrop-blur-sm ${
-                  isUserMenuOpenMobile ? "bg-white/20" : "hover:bg-white/15"
-                }`}
+                className="p-2.5 rounded-xl transition-all duration-300 hover:bg-white/15 backdrop-blur-sm"
               >
                 <User className="w-6 h-6 text-white" />
               </button>

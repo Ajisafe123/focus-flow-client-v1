@@ -23,9 +23,7 @@ export default function AuthForm({ isLogin }) {
     if (error) setError("");
   };
 
-  const handleForgotPassword = () => {
-    navigate("/forgot-password");
-  };
+  const handleForgotPassword = () => navigate("/forgot-password");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -39,60 +37,36 @@ export default function AuthForm({ isLogin }) {
           identifier: formData.identifier,
           password: formData.password,
         });
-
         const token = response.token || response.access_token;
         if (token) {
           localStorage.setItem("token", token);
+          localStorage.setItem("role", response.role || "user"); // save role
           window.dispatchEvent(new Event("loginStatusChanged"));
         }
-
-        const elapsed = Date.now() - startTime;
-        await new Promise((res) =>
-          setTimeout(res, Math.max(0, MIN_LOADING_TIME - elapsed))
-        );
-
-        navigate("/");
       } else {
-        if (formData.password.length < 6) {
-          const elapsed = Date.now() - startTime;
-          await new Promise((res) =>
-            setTimeout(res, Math.max(0, MIN_LOADING_TIME - elapsed))
-          );
-          setError("Password must be at least 6 characters");
-          setLoading(false);
-          return;
-        }
-
-        if (formData.password !== formData.confirmPassword) {
-          const elapsed = Date.now() - startTime;
-          await new Promise((res) =>
-            setTimeout(res, Math.max(0, MIN_LOADING_TIME - elapsed))
-          );
-          setError("Passwords do not match");
-          setLoading(false);
-          return;
-        }
+        if (formData.password.length < 6)
+          throw new Error("Password must be at least 6 characters");
+        if (formData.password !== formData.confirmPassword)
+          throw new Error("Passwords do not match");
 
         await apiService.register({
           username: formData.username,
           email: formData.identifier,
           password: formData.password,
         });
-
-        const elapsed = Date.now() - startTime;
-        await new Promise((res) =>
-          setTimeout(res, Math.max(0, MIN_LOADING_TIME - elapsed))
-        );
-
-        setFormData({
-          username: "",
-          identifier: "",
-          password: "",
-          confirmPassword: "",
-        });
-
-        navigate("/");
       }
+
+      const elapsed = Date.now() - startTime;
+      await new Promise((res) =>
+        setTimeout(res, Math.max(0, MIN_LOADING_TIME - elapsed))
+      );
+      setFormData({
+        username: "",
+        identifier: "",
+        password: "",
+        confirmPassword: "",
+      });
+      navigate("/");
     } catch (err) {
       const elapsed = Date.now() - startTime;
       await new Promise((res) =>
@@ -209,7 +183,7 @@ export default function AuthForm({ isLogin }) {
               onChange={handleInputChange}
               className="w-full pl-10 sm:pl-12 pr-10 sm:pr-14 py-3 sm:py-4 bg-white rounded-2xl focus:outline-none focus:ring-4 focus:ring-emerald-200 shadow-md hover:shadow-lg transition-all duration-300 text-gray-800 placeholder-gray-400 text-sm sm:text-base border border-transparent focus:border-emerald-300"
               placeholder="Confirm your password"
-              required={!isLogin}
+              required
             />
             <button
               type="button"
@@ -254,40 +228,24 @@ export default function AuthForm({ isLogin }) {
             : ""
         }`}
       >
-        {loading && (
-          <div className="absolute inset-0 bg-gradient-to-r from-emerald-700 via-teal-700 to-emerald-700 animate-shimmer"></div>
+        {loading ? (
+          <div className="flex items-center space-x-1 animate-pulse">
+            <div className="w-2 h-2 bg-white rounded-full animate-bounce"></div>
+            <div className="w-2 h-2 bg-white rounded-full animate-bounce"></div>
+            <div className="w-2 h-2 bg-white rounded-full animate-bounce"></div>
+            <span className="ml-2">Processing...</span>
+          </div>
+        ) : isLogin ? (
+          <>
+            <Lock className="w-4 h-4 sm:w-5 sm:h-5" />
+            <span>Sign In</span>
+          </>
+        ) : (
+          <>
+            <User className="w-4 h-4 sm:w-5 sm:h-5" />
+            <span>Create Account</span>
+          </>
         )}
-        <div className="relative flex items-center space-x-2">
-          {loading ? (
-            <>
-              <div className="flex space-x-1">
-                <div
-                  className="w-2 h-2 bg-white rounded-full animate-bounce"
-                  style={{ animationDelay: "0ms" }}
-                ></div>
-                <div
-                  className="w-2 h-2 bg-white rounded-full animate-bounce"
-                  style={{ animationDelay: "150ms" }}
-                ></div>
-                <div
-                  className="w-2 h-2 bg-white rounded-full animate-bounce"
-                  style={{ animationDelay: "300ms" }}
-                ></div>
-              </div>
-              <span className="animate-pulse">Processing...</span>
-            </>
-          ) : isLogin ? (
-            <>
-              <Lock className="w-4 h-4 sm:w-5 sm:h-5" />
-              <span>Sign In</span>
-            </>
-          ) : (
-            <>
-              <User className="w-4 h-4 sm:w-5 sm:h-5" />
-              <span>Create Account</span>
-            </>
-          )}
-        </div>
       </button>
 
       <div className="relative my-6 sm:my-8">
@@ -304,51 +262,12 @@ export default function AuthForm({ isLogin }) {
       <SocialLogin />
 
       <style>{`
-        @keyframes slideDown {
-          from {
-            opacity: 0;
-            transform: translateY(-10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        @keyframes shake {
-          0%,
-          100% {
-            transform: translateX(0);
-          }
-          25% {
-            transform: translateX(-5px);
-          }
-          75% {
-            transform: translateX(5px);
-          }
-        }
-
-        @keyframes shimmer {
-          0% {
-            background-position: -200% center;
-          }
-          100% {
-            background-position: 200% center;
-          }
-        }
-
-        .animate-slideDown {
-          animation: slideDown 0.4s ease-out;
-        }
-
-        .animate-shake {
-          animation: shake 0.4s ease-in-out;
-        }
-
-        .animate-shimmer {
-          background-size: 200% 100%;
-          animation: shimmer 1.5s infinite;
-        }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes shake { 0%,100%{ transform:translateX(0);}25%{transform:translateX(-5px);}75%{transform:translateX(5px);} }
+        @keyframes shimmer {0%{background-position:-200% center;}100%{background-position:200% center;}}
+        .animate-slideDown{animation:slideDown 0.4s ease-out;}
+        .animate-shake{animation:shake 0.4s ease-in-out;}
+        .animate-shimmer{background-size:200% 100%;animation:shimmer 1.5s infinite;}
       `}</style>
     </form>
   );

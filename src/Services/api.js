@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://localhost:8000";
+const API_BASE_URL = "https://focus-flow-server-v1.onrender.com";
 
 class ApiService {
   getToken() {

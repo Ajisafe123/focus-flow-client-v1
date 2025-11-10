@@ -31,7 +31,7 @@ export default function AdkarDuaSection() {
 
   const navigate = useNavigate();
 
-  const API_BASE_URL = "http://localhost:8000/api";
+  const API_BASE_URL = "https://focus-flow-server-v1.onrender.com/api";
 
   useEffect(() => {
     fetchAdkar();

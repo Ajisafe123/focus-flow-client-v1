@@ -125,7 +125,7 @@ export default function DuaApp() {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [localFavorites, setLocalFavorites] = useState(new Set());
 
-  const API_BASE = "http://127.0.0.1:8000/api";
+  const API_BASE = "https://focus-flow-server-v1.onrender.com/api";
   const AUTH_TOKEN = getAuthToken();
   const isAuthenticated = !!AUTH_TOKEN;
 
@@ -138,7 +138,6 @@ export default function DuaApp() {
           headers: AUTH_TOKEN ? { Authorization: `Bearer ${AUTH_TOKEN}` } : {},
         };
 
-        // CORRECTED: Backend route for categories is /dua-categories
         const catRes = await fetch(`${API_BASE}/dua-categories`);
         if (!catRes.ok) throw new Error("Failed to fetch categories.");
         const catData = await catRes.json();
@@ -149,7 +148,6 @@ export default function DuaApp() {
         }, {});
         setCategoriesMap(catMap);
 
-        // CORRECT: Dua list endpoint is /duas/paginated
         const url = q
           ? `${API_BASE}/duas/paginated?q=${encodeURIComponent(q)}&limit=1000`
           : `${API_BASE}/duas/paginated?limit=1000`;
@@ -217,7 +215,6 @@ export default function DuaApp() {
     }
 
     try {
-      // CORRECT: Favorite endpoint is /duas/{id}/toggle-favorite
       const res = await fetch(`${API_BASE}/duas/${duaId}/toggle-favorite`, {
         method: "PATCH",
         headers: {

@@ -134,7 +134,7 @@ export default function HadithViewer() {
   const [page, setPage] = useState(1);
   const limit = 10;
 
-  const API_BASE = "http://127.0.0.1:8000/api";
+  const API_BASE = "https://focus-flow-server-v1.onrender.com/api";
   const AUTH_TOKEN = getAuthToken();
   const isAuthenticated = !!AUTH_TOKEN;
 
@@ -179,7 +179,6 @@ export default function HadithViewer() {
 
         let hadithsResponseObject = await hadithsRes.json();
 
-        // FIX: Extract the actual array from the paginated response object
         const hadithsData = hadithsResponseObject.items || [];
 
         if (!Array.isArray(hadithsData)) {

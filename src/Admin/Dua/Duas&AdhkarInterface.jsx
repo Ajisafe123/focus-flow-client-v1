@@ -15,7 +15,7 @@ import DeleteConfirmModal from "../DeleteConfirmModal";
 import CreateCategoryModal from "../CreateCategoryModal";
 import DuasList from "./DuasList";
 
-const API_BASE = "http://localhost:8000";
+const API_BASE = "https://focus-flow-server-v1.onrender.com";
 
 const formatNumber = (num) => {
   if (num >= 1000000) {

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { LogOut, AlertCircle, Check, Loader2 } from "lucide-react";
-import apiService from "../services/api";
+import apiService from "../Services/api";
 
 const LogoutInterface = () => {
   const [showLogoutModal, setShowLogoutModal] = useState(true);

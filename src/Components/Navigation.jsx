@@ -32,6 +32,8 @@ export default function Navigation({ isLoggedIn, setShowLogoutModal }) {
   const islamicDropdownRefDesktop = useRef(null);
   const navigate = useNavigate();
 
+  const token = localStorage.getItem("token");
+
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
@@ -43,16 +45,16 @@ export default function Navigation({ isLoggedIn, setShowLogoutModal }) {
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
-        profileDropdownRef.current &&
-        !profileDropdownRef.current.contains(event.target)
-      ) {
-        setShowProfileDropdown(false);
-      }
-      if (
         categoriesDropdownRef.current &&
         !categoriesDropdownRef.current.contains(event.target)
       ) {
         setShowCategoriesDropdown(false);
+      }
+      if (
+        searchBarRef.current &&
+        !searchBarRef.current.contains(event.target)
+      ) {
+        setShowSearchBar(false);
       }
       if (
         islamicDropdownRefDesktop.current &&
@@ -72,11 +74,19 @@ export default function Navigation({ isLoggedIn, setShowLogoutModal }) {
   };
 
   const handleDropdownAction = (action) => {
-    setShowProfileDropdown(false);
     if (action === "profile") navigate("/profile");
     else if (action === "settings") navigate("/settings");
     else if (action === "logout") setShowLogoutModal(true);
     else if (action === "login") navigate("/login");
+  };
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
+      setShowSearchBar(false);
+      setSearchQuery("");
+    }
   };
 
   const islamicResources = [
@@ -100,10 +110,8 @@ export default function Navigation({ isLoggedIn, setShowLogoutModal }) {
     { name: "Quran", icon: BookOpen, href: "/quran" },
     { name: "Prayer", icon: Clock, href: "/prayer-times" },
     { name: "Videos", icon: Video, href: "/videos" },
-    { name: "Mine", icon: User, href: "/login" },
+    { name: "Mine", icon: User, href: token ? "/profile" : "/login" },
   ];
-
-  const token = localStorage.getItem("token");
 
   return (
     <>
@@ -220,13 +228,37 @@ export default function Navigation({ isLoggedIn, setShowLogoutModal }) {
             </div>
             <span className="text-lg font-bold text-white">NIBRAS AL-DEEN</span>
           </button>
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={() => navigate("/search")}
-              className="p-2 rounded-full hover:bg-white/15 transition-colors backdrop-blur-sm"
-            >
-              <Search className="w-5 h-5 text-white" />
-            </button>
+          <div className="flex items-center space-x-3">
+            <div className="relative" ref={searchBarRef}>
+              <button
+                onClick={() => setShowSearchBar(!showSearchBar)}
+                className="p-2 rounded-full hover:bg-white/15 transition-colors backdrop-blur-sm"
+              >
+                <Search className="w-5 h-5 text-white" />
+              </button>
+              {showSearchBar && (
+                <div className="absolute right-0 mt-2 w-72 bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden">
+                  <form onSubmit={handleSearch} className="p-3">
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="Search..."
+                        className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
+                        autoFocus
+                      />
+                      <button
+                        type="submit"
+                        className="bg-emerald-600 text-white p-2 rounded-lg hover:bg-emerald-700 transition-colors"
+                      >
+                        <Search className="w-5 h-5" />
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              )}
+            </div>
             <div className="relative" ref={categoriesDropdownRef}>
               <button
                 onClick={() =>
@@ -236,7 +268,6 @@ export default function Navigation({ isLoggedIn, setShowLogoutModal }) {
               >
                 <Grid3x3 className="w-5 h-5 text-white" />
               </button>
-
               {showCategoriesDropdown && (
                 <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden">
                   <div className="bg-gradient-to-r from-emerald-600 to-teal-600 px-4 py-3">
@@ -266,7 +297,7 @@ export default function Navigation({ isLoggedIn, setShowLogoutModal }) {
         </div>
       </div>
 
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 shadow-lg">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-gradient-to-r from-slate-50 to-gray-50 border-t border-gray-200 shadow-2xl">
         <div className="flex items-center justify-around h-16 px-2">
           {mobileNavItems.map((item) => {
             const Icon = item.icon;
@@ -278,20 +309,20 @@ export default function Navigation({ isLoggedIn, setShowLogoutModal }) {
                 className="flex flex-col items-center justify-center flex-1 h-full relative group"
               >
                 <Icon
-                  className={`w-6 h-6 mb-1 transition-colors ${
+                  className={`w-6 h-6 mb-1 transition-all duration-200 ${
                     isActive ? "text-emerald-600" : "text-gray-500"
                   }`}
                   strokeWidth={isActive ? 2.5 : 2}
                 />
                 <span
-                  className={`text-xs font-medium ${
+                  className={`text-xs font-medium transition-all duration-200 ${
                     isActive ? "text-emerald-600" : "text-gray-500"
                   }`}
                 >
                   {item.name}
                 </span>
                 {isActive && (
-                  <div className="absolute top-0 left-0 right-0 h-1 bg-emerald-600 rounded-b-full" />
+                  <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-12 h-1 bg-emerald-600 rounded-b-full" />
                 )}
               </button>
             );

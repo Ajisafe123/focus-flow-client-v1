@@ -31,6 +31,8 @@ export default function AdkarDuaSection() {
 
   const navigate = useNavigate();
 
+  const API_BASE_URL = "http://localhost:8000/api";
+
   useEffect(() => {
     fetchAdkar();
   }, []);
@@ -117,12 +119,10 @@ export default function AdkarDuaSection() {
 
   const fetchAdkar = async () => {
     try {
-      const res = await fetch(
-        "https://focus-flow-server-v1.onrender.com/duas/"
-      );
+      const res = await fetch(`${API_BASE_URL}/duas`);
       const data = await res.json();
-      setMorningAdkar(data.filter((d) => d.category === "morning-dhikr"));
-      setEveningAdkar(data.filter((d) => d.category === "evening-dhikr"));
+      setMorningAdkar(data.filter((d) => d.category_id === 5));
+      setEveningAdkar(data.filter((d) => d.category_id === 6));
     } catch (err) {
       console.error("Could not fetch Adkar", err);
     }

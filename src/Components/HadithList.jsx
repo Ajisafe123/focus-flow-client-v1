@@ -177,7 +177,20 @@ export default function HadithViewer() {
         }
         if (!hadithsRes.ok) throw new Error("Failed to fetch Hadiths.");
 
-        let hadithsData = await hadithsRes.json();
+        let hadithsResponseObject = await hadithsRes.json();
+
+        // FIX: Extract the actual array from the paginated response object
+        const hadithsData = hadithsResponseObject.items || [];
+
+        if (!Array.isArray(hadithsData)) {
+          console.error(
+            "Hadiths data received is not an array:",
+            hadithsResponseObject
+          );
+          throw new Error(
+            "Invalid format for Hadith data received from server."
+          );
+        }
 
         setAllHadiths(hadithsData);
 
@@ -418,7 +431,6 @@ export default function HadithViewer() {
           </button>
         </div>
       </div>
-
     </div>
   );
 }

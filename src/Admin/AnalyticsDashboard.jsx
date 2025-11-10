@@ -10,6 +10,7 @@ import {
   Eye,
   Clock,
   Star,
+  ArrowUpRight,
 } from "lucide-react";
 import {
   LineChart,
@@ -28,7 +29,6 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import StatCard from "./StatCard";
 
 const AnalyticsDashboard = () => {
   const trafficData = [
@@ -66,82 +66,102 @@ const AnalyticsDashboard = () => {
     { title: "Du'a Etiquette", views: 8150, engagement: 88 },
   ];
 
+  const stats = [
+    {
+      title: "Total Users",
+      value: "4,234",
+      icon: Users,
+      trend: "up",
+      trendValue: "+12.5%",
+    },
+    {
+      title: "Total Articles",
+      value: "102",
+      icon: BookOpen,
+      trend: "up",
+      trendValue: "+8.3%",
+    },
+    {
+      title: "Total Duas",
+      value: "290",
+      icon: Heart,
+      trend: "up",
+      trendValue: "+15.2%",
+    },
+    {
+      title: "Engagement Rate",
+      value: "87%",
+      icon: TrendingUp,
+      trend: "up",
+      trendValue: "+4.1%",
+    },
+  ];
+
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">
-            Analytics Overview
-          </h2>
-          <p className="text-gray-600 mt-1">
-            Comprehensive insights into your platform performance
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-3">
-          <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-            <Calendar className="w-4 h-4" />
-            <span className="hidden sm:inline">Last 30 Days</span>
-            <ChevronDown className="w-4 h-4" />
-          </button>
-          <button className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-400 to-teal-400 text-white rounded-lg hover:opacity-90 transition-opacity">
-            <Download className="w-4 h-4" />
-            <span className="hidden sm:inline">Export Report</span>
-          </button>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard
-          title="Total Users"
-          value="4,234"
-          icon={Users}
-          trend="up"
-          trendValue="+12.5%"
-        />
-        <StatCard
-          title="Total Articles"
-          value="102"
-          icon={BookOpen}
-          trend="up"
-          trendValue="+8.3%"
-        />
-        <StatCard
-          title="Total Duas"
-          value="290"
-          icon={Heart}
-          trend="up"
-          trendValue="+15.2%"
-        />
-        <StatCard
-          title="Engagement Rate"
-          value="87%"
-          icon={TrendingUp}
-          trend="up"
-          trendValue="+4.1%"
-        />
-      </div>
-
-      <div className="bg-white rounded-2xl shadow-sm p-6">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
+      <div className="bg-gradient-to-br from-emerald-500 via-emerald-600 to-green-600 rounded-2xl p-6 sm:p-8 text-white shadow-lg relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-48 h-48 sm:w-64 sm:h-64 bg-white/10 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-0 left-0 w-32 h-32 sm:w-48 sm:h-48 bg-white/10 rounded-full blur-3xl"></div>
+        <div className="relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <h3 className="text-lg font-semibold text-gray-900">
-              Growth Trends
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2">
+              Analytics Overview
+            </h1>
+            <p className="text-emerald-50 text-sm sm:text-base md:text-lg">
+              Comprehensive insights into your platform performance
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <button className="flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm text-white rounded-lg hover:bg-white/30 transition-all duration-200">
+              <Calendar className="w-4 h-4" />
+              <span className="text-sm font-semibold">Last 30 Days</span>
+              <ChevronDown className="w-4 h-4" />
+            </button>
+            <button className="flex items-center gap-2 px-4 py-2 bg-white text-emerald-600 rounded-lg hover:shadow-md transition-all duration-200 font-semibold">
+              <Download className="w-4 h-4" />
+              <span className="text-sm">Export</span>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {stats.map((stat, idx) => (
+          <div
+            key={idx}
+            className="bg-white rounded-xl shadow-sm p-5 hover:shadow-md transition-all duration-200 border border-gray-100"
+          >
+            <div className="flex items-center justify-between mb-3">
+              <div className="p-2.5 bg-gradient-to-br from-emerald-500 to-green-600 rounded-lg">
+                <stat.icon className="w-5 h-5 text-white" />
+              </div>
+              {stat.trend && (
+                <div className="flex items-center gap-1 text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">
+                  <TrendingUp className="w-3 h-3" />
+                  <span>{stat.trendValue}</span>
+                </div>
+              )}
+            </div>
+            <h3 className="text-gray-500 text-xs font-semibold mb-1 uppercase tracking-wide">
+              {stat.title}
             </h3>
+            <p className="text-2xl sm:text-3xl font-bold text-gray-900">
+              {stat.value}
+            </p>
+          </div>
+        ))}
+      </div>
+      <div className="bg-white rounded-xl shadow-sm p-5 sm:p-6 border border-gray-100">
+        <div className="flex items-center justify-between mb-5">
+          <div>
+            <h3 className="text-lg font-bold text-gray-900">Growth Trends</h3>
             <p className="text-sm text-gray-600 mt-1">
               User acquisition and content growth over time
             </p>
           </div>
-          <div className="flex gap-2">
-            <button className="px-3 py-1 text-sm bg-emerald-50 text-emerald-700 rounded-lg">
-              Users
-            </button>
-            <button className="px-3 py-1 text-sm hover:bg-gray-50 text-gray-600 rounded-lg">
-              Articles
-            </button>
-            <button className="px-3 py-1 text-sm hover:bg-gray-50 text-gray-600 rounded-lg">
-              Duas
-            </button>
-          </div>
+          <button className="text-sm text-emerald-600 hover:text-emerald-700 font-semibold flex items-center gap-1 transition-colors">
+            View Details
+            <ArrowUpRight className="w-4 h-4" />
+          </button>
         </div>
         <ResponsiveContainer width="100%" height={300}>
           <AreaChart data={trafficData}>
@@ -173,12 +193,13 @@ const AnalyticsDashboard = () => {
           </AreaChart>
         </ResponsiveContainer>
       </div>
-
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-2xl shadow-sm p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-6">
-            Weekly Engagement
-          </h3>
+        <div className="bg-white rounded-xl shadow-sm p-5 sm:p-6 border border-gray-100">
+          <div className="flex items-center justify-between mb-5">
+            <h3 className="text-lg font-bold text-gray-900">
+              Weekly Engagement
+            </h3>
+          </div>
           <ResponsiveContainer width="100%" height={280}>
             <BarChart data={engagementData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -200,30 +221,30 @@ const AnalyticsDashboard = () => {
           </ResponsiveContainer>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-sm p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-6">
-            Content by Category
-          </h3>
-          <div className="flex items-center justify-center">
-            <ResponsiveContainer width="100%" height={280}>
-              <PieChart>
-                <Pie
-                  data={categoryData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={60}
-                  outerRadius={100}
-                  paddingAngle={5}
-                  dataKey="value"
-                >
-                  {categoryData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
+        <div className="bg-white rounded-xl shadow-sm p-5 sm:p-6 border border-gray-100">
+          <div className="flex items-center justify-between mb-5">
+            <h3 className="text-lg font-bold text-gray-900">
+              Content by Category
+            </h3>
           </div>
+          <ResponsiveContainer width="100%" height={280}>
+            <PieChart>
+              <Pie
+                data={categoryData}
+                cx="50%"
+                cy="50%"
+                innerRadius={60}
+                outerRadius={100}
+                paddingAngle={5}
+                dataKey="value"
+              >
+                {categoryData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} />
+                ))}
+              </Pie>
+              <Tooltip />
+            </PieChart>
+          </ResponsiveContainer>
           <div className="grid grid-cols-2 gap-3 mt-4">
             {categoryData.map((cat, idx) => (
               <div key={idx} className="flex items-center gap-2">
@@ -240,45 +261,44 @@ const AnalyticsDashboard = () => {
           </div>
         </div>
       </div>
-
-      <div className="bg-white rounded-2xl shadow-sm p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-semibold text-gray-900">
+      <div className="bg-white rounded-xl shadow-sm p-5 sm:p-6 border border-gray-100">
+        <div className="flex items-center justify-between mb-5">
+          <h3 className="text-lg font-bold text-gray-900">
             Top Performing Content
           </h3>
-          <button className="flex items-center gap-2 text-sm text-emerald-900 hover:text-emerald-700">
+          <button className="text-sm text-emerald-600 hover:text-emerald-700 font-semibold flex items-center gap-1 transition-colors">
             View All
-            <ChevronDown className="w-4 h-4 -rotate-90" />
+            <ArrowUpRight className="w-4 h-4" />
           </button>
         </div>
-        <div className="space-y-4">
+        <div className="space-y-3">
           {topContent.map((content, idx) => (
             <div
               key={idx}
-              className="flex items-center gap-4 p-4 rounded-xl hover:bg-gray-50 transition-colors"
+              className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-all duration-200 group"
             >
-              <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-emerald-900 via-emerald-800 to-teal-900  rounded-lg text-white font-bold">
+              <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-emerald-500 to-green-600 rounded-lg text-white font-bold shadow-sm flex-shrink-0">
                 {idx + 1}
               </div>
               <div className="flex-1 min-w-0">
-                <h4 className="font-medium text-gray-900 truncate">
+                <h4 className="text-sm font-semibold text-gray-900 truncate">
                   {content.title}
                 </h4>
-                <div className="flex items-center gap-4 mt-1 text-sm text-gray-600">
+                <div className="flex items-center gap-4 mt-1 text-xs text-gray-500">
                   <span className="flex items-center gap-1">
-                    <Eye className="w-4 h-4" />
-                    {content.views.toLocaleString()} views
+                    <Eye className="w-3 h-3" />
+                    {content.views.toLocaleString()}
                   </span>
                   <span className="flex items-center gap-1">
-                    <TrendingUp className="w-4 h-4" />
-                    {content.engagement}% engagement
+                    <TrendingUp className="w-3 h-3" />
+                    {content.engagement}%
                   </span>
                 </div>
               </div>
-              <div className="w-24 hidden sm:block">
+              <div className="hidden sm:block w-24">
                 <div className="w-full bg-gray-200 rounded-full h-2">
                   <div
-                    className="bg-gradient-to-br from-emerald-900 via-emerald-800 to-teal-900  h-2 rounded-full"
+                    className="bg-gradient-to-br from-emerald-500 to-green-600 h-2 rounded-full"
                     style={{ width: `${content.engagement}%` }}
                   ></div>
                 </div>
@@ -288,38 +308,50 @@ const AnalyticsDashboard = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white rounded-2xl shadow-sm p-6">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-emerald-50 rounded-lg">
-              <Clock className="w-5 h-5 text-emerald-900" />
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="bg-white rounded-xl shadow-sm p-5 hover:shadow-md transition-all duration-200 border border-gray-100">
+          <div className="flex items-center justify-between mb-3">
+            <div className="p-2.5 bg-gradient-to-br from-emerald-500 to-green-600 rounded-lg">
+              <Clock className="w-5 h-5 text-white" />
             </div>
-            <h4 className="font-semibold text-gray-900">
-              Avg. Session Duration
-            </h4>
           </div>
-          <p className="text-3xl font-bold text-gray-900">8m 42s</p>
-          <p className="text-sm text-gray-600 mt-2">+1m 15s from last month</p>
+          <h3 className="text-gray-500 text-xs font-semibold mb-1 uppercase tracking-wide">
+            Avg. Session Duration
+          </h3>
+          <p className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">
+            8m 42s
+          </p>
+          <p className="text-xs text-gray-600">+1m 15s from last month</p>
         </div>
-        <div className="bg-white rounded-2xl shadow-sm p-6">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-teal-50 rounded-lg">
-              <Users className="w-5 h-5 text-teal-900" />
+
+        <div className="bg-white rounded-xl shadow-sm p-5 hover:shadow-md transition-all duration-200 border border-gray-100">
+          <div className="flex items-center justify-between mb-3">
+            <div className="p-2.5 bg-gradient-to-br from-emerald-500 to-green-600 rounded-lg">
+              <Users className="w-5 h-5 text-white" />
             </div>
-            <h4 className="font-semibold text-gray-900">Active Users Now</h4>
           </div>
-          <p className="text-3xl font-bold text-gray-900">248</p>
-          <p className="text-sm text-gray-600 mt-2">Across 12 countries</p>
+          <h3 className="text-gray-500 text-xs font-semibold mb-1 uppercase tracking-wide">
+            Active Users Now
+          </h3>
+          <p className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">
+            248
+          </p>
+          <p className="text-xs text-gray-600">Across 12 countries</p>
         </div>
-        <div className="bg-white rounded-2xl shadow-sm p-6">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-yellow-50 rounded-lg">
-              <Star className="w-5 h-5 text-yellow-600" />
+
+        <div className="bg-white rounded-xl shadow-sm p-5 hover:shadow-md transition-all duration-200 border border-gray-100">
+          <div className="flex items-center justify-between mb-3">
+            <div className="p-2.5 bg-gradient-to-br from-emerald-500 to-green-600 rounded-lg">
+              <Star className="w-5 h-5 text-white" />
             </div>
-            <h4 className="font-semibold text-gray-900">User Satisfaction</h4>
           </div>
-          <p className="text-3xl font-bold text-gray-900">4.8/5</p>
-          <p className="text-sm text-gray-600 mt-2">Based on 1,234 reviews</p>
+          <h3 className="text-gray-500 text-xs font-semibold mb-1 uppercase tracking-wide">
+            User Satisfaction
+          </h3>
+          <p className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">
+            4.8/5
+          </p>
+          <p className="text-xs text-gray-600">Based on 1,234 reviews</p>
         </div>
       </div>
     </div>

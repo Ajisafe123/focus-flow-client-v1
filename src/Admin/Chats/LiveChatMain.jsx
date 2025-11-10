@@ -38,58 +38,7 @@ const LiveChatMain = ({ setActivePage }) => {
         },
       ],
     },
-    {
-      id: 2,
-      name: "Fatima Ali",
-      email: "fatima@example.com",
-      avatar: "FA",
-      lastMessage: "JazakAllahu khayran for your help",
-      time: "15m ago",
-      unread: 0,
-      status: "waiting",
-      messages: [
-        {
-          id: 1,
-          text: "I have a question about prayer times",
-          sender: "user",
-          time: "9:45 AM",
-          status: "read",
-        },
-        {
-          id: 2,
-          text: "Of course! What would you like to know?",
-          sender: "admin",
-          time: "9:46 AM",
-          status: "read",
-        },
-      ],
-    },
-    {
-      id: 3,
-      name: "Omar Ibrahim",
-      email: "omar@example.com",
-      avatar: "OI",
-      lastMessage: "Thank you, that was very helpful",
-      time: "1h ago",
-      unread: 0,
-      status: "resolved",
-      messages: [
-        {
-          id: 1,
-          text: "Can you explain the ruling on...",
-          sender: "user",
-          time: "8:30 AM",
-          status: "read",
-        },
-        {
-          id: 2,
-          text: "Certainly, let me explain that for you",
-          sender: "admin",
-          time: "8:32 AM",
-          status: "read",
-        },
-      ],
-    },
+    
   ]);
 
   const [selectedChat, setSelectedChat] = useState(chats[0]);
@@ -180,7 +129,7 @@ const LiveChatMain = ({ setActivePage }) => {
   };
 
   return (
-    <div className="flex h-screen bg-gradient-to-br from-gray-50 to-emerald-50/30 overflow-hidden">
+    <div className="flex h-screen bg-gray-50 overflow-hidden">
       <ChatSidebar
         chats={chats}
         selectedChat={selectedChat}

@@ -7,3 +7,10 @@
     font-weight: 500;
     font-style: normal;
 }
+.font-arabic {
+  font-family: 'Amiri', serif;
+  /* Optional: better rendering for certain browsers */
+  font-feature-settings: "liga" 0;
+  -webkit-font-feature-settings: "liga" 0;
+  -moz-font-feature-settings: "liga" 0;
+}   

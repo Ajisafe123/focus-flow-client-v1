@@ -1,0 +1,787 @@
+import React, { useState, useCallback, useEffect } from "react";
+import {
+  BookOpen,
+  Plus,
+  Search,
+  Filter,
+  Edit,
+  Trash2,
+  Eye,
+  ChevronDown,
+  XCircle,
+  Loader2,
+  ArrowUpRight,
+  Tag,
+  ThumbsUp,
+  Award,
+  MoreVertical,
+  Heart,
+} from "lucide-react";
+
+import HadithModal from "./HadithModal";
+import CreateCategoryModal from "./CreateCategoryModal";
+import DeleteConfirmModal from "./DeleteConfirmModal";
+
+const API_BASE = "http://localhost:8000";
+
+const DEFAULT_LIMIT = 10;
+
+const formatNumber = (num) => {
+  if (num === undefined || num === null) return "0";
+  if (num >= 1000000) {
+    return (num / 1000000).toFixed(1) + "M";
+  }
+  if (num >= 1000) {
+    return (num / 1000).toFixed(1) + "k";
+  }
+  return String(num);
+};
+
+const DropdownMenu = ({ children, className }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const triggerRef = React.useRef(null);
+  const menuRef = React.useRef(null);
+
+  const toggleOpen = () => setIsOpen((prev) => !prev);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        triggerRef.current &&
+        !triggerRef.current.contains(event.target) &&
+        menuRef.current &&
+        !menuRef.current.contains(event.target)
+      ) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  return (
+    <div className={`relative ${className}`}>
+      <button
+        ref={triggerRef}
+        onClick={toggleOpen}
+        className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-all"
+        title="More actions"
+      >
+        <MoreVertical className="w-4 h-4" />
+      </button>
+      {isOpen && (
+        <div
+          ref={menuRef}
+          className="absolute right-0 z-20 mt-2 w-40 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+          role="menu"
+          aria-orientation="vertical"
+          aria-labelledby="menu-button"
+          tabIndex="-1"
+        >
+          <div className="py-1" role="none">
+            {React.Children.map(children, (child) =>
+              React.cloneElement(child, {
+                onClick: (e) => {
+                  setIsOpen(false);
+                  if (child.props.onClick) child.props.onClick(e);
+                },
+              })
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const HadithManagement = () => {
+  const [hadiths, setHadiths] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [stats, setStats] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+
+  const [showModal, setShowModal] = useState(false);
+  const [isEdit, setIsEdit] = useState(false);
+  const [currentHadithData, setCurrentHadithData] = useState(null);
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
+
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteTargetId, setDeleteTargetId] = useState(null);
+
+  const fetchHadithStats = useCallback(async (categoryData) => {
+    try {
+      const res = await fetch(`${API_BASE}/api/hadiths/stats`);
+      if (!res.ok) throw new Error("Failed to fetch statistics.");
+      const data = await res.json();
+
+      const totalViewsAndFavorites =
+        (data.total_views || 0) + (data.total_favorites || 0);
+      const totalCategoriesCount = categoryData.filter(
+        (c) => c.id !== "all"
+      ).length;
+
+      const dashboardStats = [
+        {
+          title: "Total Hadiths",
+          value: formatNumber(data.total_hadiths || 0),
+          icon: BookOpen,
+          trend: "up",
+          trendValue: "+15%",
+        },
+        {
+          title: "Views & Favorites",
+          value: formatNumber(totalViewsAndFavorites),
+          icon: ThumbsUp,
+          trend: "up",
+          trendValue: "+23%",
+        },
+        {
+          title: "Featured Hadiths",
+          value: formatNumber(data.total_featured || 0),
+          icon: Award,
+          trend: "up",
+          trendValue: "Top 5",
+        },
+        {
+          title: "Total Categories",
+          value: formatNumber(totalCategoriesCount),
+          icon: Tag,
+          trend: "up",
+          trendValue: "+1",
+        },
+      ];
+      setStats(dashboardStats);
+    } catch (err) {
+      console.error("Stats fetch error:", err.message);
+      setStats([]);
+    }
+  }, []);
+
+  const fetchCategories = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/hadith-categories`);
+      if (!res.ok) throw new Error("Failed to fetch categories.");
+      const data = await res.json();
+
+      const baseCategories = data.map((cat) => ({
+        id: String(cat.id),
+        label: cat.name,
+        description: cat.description,
+        is_active: cat.is_active,
+      }));
+
+      const filterCategories = [
+        { id: "all", label: "All Categories" },
+        ...baseCategories,
+      ];
+      setCategories(filterCategories);
+
+      fetchHadithStats(filterCategories);
+    } catch (err) {
+      console.error("Category fetch error:", err.message);
+    }
+  }, [fetchHadithStats]);
+
+  const fetchHadiths = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    const params = new URLSearchParams({
+      page: currentPage,
+      limit: DEFAULT_LIMIT,
+      q: searchQuery,
+    });
+
+    if (selectedCategory !== "all") {
+      params.append("category_id", selectedCategory);
+    }
+
+    try {
+      const res = await fetch(
+        `${API_BASE}/api/hadiths/paginated?${params.toString()}`
+      );
+      if (!res.ok) throw new Error("Failed to fetch hadiths data.");
+
+      const paginatedData = await res.json();
+      const items = paginatedData.items || [];
+      const actualTotalItems = paginatedData.total_count || 0;
+
+      setTotalItems(actualTotalItems);
+      setTotalPages(Math.ceil(actualTotalItems / DEFAULT_LIMIT));
+
+      setHadiths(items);
+    } catch (err) {
+      console.error("Hadiths fetch error:", err.message);
+      setError(err.message);
+      setHadiths([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [currentPage, searchQuery, selectedCategory]);
+
+  const toggleFeatured = async (hadithId, isFeatured) => {
+    setIsLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/hadiths/${hadithId}/featured`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to toggle featured status.");
+      }
+
+      const updatedHadith = await res.json();
+
+      setHadiths((prevHadiths) =>
+        prevHadiths.map((h) =>
+          h.id === hadithId ? { ...h, featured: updatedHadith.featured } : h
+        )
+      );
+
+      fetchCategories();
+    } catch (err) {
+      console.error("Toggle feature error:", err.message);
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCategories();
+  }, [fetchCategories]);
+
+  useEffect(() => {
+    if (currentPage !== 1) {
+      setCurrentPage(1);
+    } else {
+      fetchHadiths();
+    }
+  }, [searchQuery, selectedCategory]);
+
+  useEffect(() => {
+    fetchHadiths();
+  }, [currentPage]);
+
+  const handleOpenAddModal = () => {
+    setIsEdit(false);
+    setCurrentHadithData(null);
+    setShowModal(true);
+  };
+
+  const handleOpenEditModal = useCallback((hadith) => {
+    setIsEdit(true);
+    setCurrentHadithData({
+      ...hadith,
+      category: String(hadith.category_id),
+    });
+    setShowModal(true);
+  }, []);
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setIsEdit(false);
+    setCurrentHadithData(null);
+  };
+
+  const handleSaveModal = () => {
+    fetchHadiths();
+    fetchCategories();
+    handleCloseModal();
+  };
+
+  const handleCategorySave = () => {
+    fetchCategories();
+  };
+
+  const confirmDeleteHadith = (id) => {
+    setDeleteTargetId(id);
+    setShowDeleteConfirm(true);
+  };
+
+  const executeDeleteHadith = async () => {
+    if (!deleteTargetId) return;
+
+    const id = deleteTargetId;
+    setShowDeleteConfirm(false);
+    setIsLoading(true);
+
+    try {
+      const res = await fetch(`${API_BASE}/api/hadiths/${id}`, {
+        method: "DELETE",
+      });
+
+      if (!res.ok) {
+        let errorMessage = "Failed to delete Hadith.";
+        try {
+          const errorData = await res.json();
+          errorMessage = errorData.message || errorMessage;
+        } catch (e) {}
+        throw new Error(errorMessage);
+      }
+
+      setDeleteTargetId(null);
+      fetchHadiths();
+      fetchCategories();
+    } catch (err) {
+      console.error("Error deleting Hadith:", err.message);
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const categoryOptions = categories.filter((c) => c.id !== "all");
+  const selectedCategoryName =
+    categories.find((c) => c.id === selectedCategory)?.label ||
+    "All Categories";
+
+  const totalCategories = categoryOptions.length;
+
+  const renderContent = () => {
+    if (isLoading) {
+      return (
+        <div className="p-12 text-center flex flex-col items-center justify-center">
+          <Loader2 className="w-8 h-8 text-emerald-500 animate-spin mb-4" />
+          <p className="text-gray-600">Loading Hadiths...</p>
+        </div>
+      );
+    }
+
+    if (error) {
+      return (
+        <div className="p-12 text-center">
+          <XCircle className="w-12 h-12 text-red-400 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            Error Loading Data
+          </h3>
+          <p className="text-gray-600">{error}. Please check the API status.</p>
+        </div>
+      );
+    }
+
+    if (hadiths.length === 0) {
+      return (
+        <div className="p-12 text-center">
+          <BookOpen className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            No hadiths found
+          </h3>
+          <p className="text-gray-600 mb-4">
+            Try adjusting your search or filter criteria
+          </p>
+          <button
+            onClick={() => {
+              setSearchQuery("");
+              setSelectedCategory("all");
+            }}
+            className="px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-all font-semibold"
+          >
+            Clear All Filters
+          </button>
+        </div>
+      );
+    }
+
+    return (
+      <div className="max-w-10xl mx-auto divide-y divide-gray-100 bg-white">
+        {hadiths.map((hadith) => (
+          <div key={hadith.id} className="transition-all duration-200 group">
+            <div className="pt-4 pb-3 px-4 sm:px-6">
+              <div className="flex flex-col sm:flex-row gap-4">
+                <div className="flex-1 min-w-0">
+                  <div className="flex justify-between items-start mb-0">
+                    <div className="flex-1 min-w-0 pr-4">
+                      <div className="p-3">
+                        <p className="text-lg sm:text-xl text-right font-arabic text-gray-900 leading-relaxed">
+                          {hadith.arabic}
+                        </p>
+                      </div>
+                    </div>
+                    <DropdownMenu className="flex-shrink-0 mt-[-8px]">
+                      <button
+                        onClick={() =>
+                          toggleFeatured(hadith.id, hadith.featured)
+                        }
+                        className={`w-full text-left flex items-center gap-2 px-4 py-2 text-sm transition-colors ${
+                          hadith.featured
+                            ? "text-yellow-700 bg-yellow-50"
+                            : "text-gray-700 hover:bg-gray-100"
+                        }`}
+                        role="menuitem"
+                      >
+                        <Heart
+                          className={`w-4 h-4 ${
+                            hadith.featured ? "fill-red-500 text-red-500" : ""
+                          }`}
+                        />
+                        {hadith.featured ? "Unfeature" : "Feature"}
+                      </button>
+                      <button
+                        onClick={() =>
+                          console.log("View details for", hadith.id)
+                        }
+                        className="w-full text-left flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                        role="menuitem"
+                      >
+                        <Eye className="w-4 h-4" />
+                        View Details
+                      </button>
+                      <button
+                        onClick={() => handleOpenEditModal(hadith)}
+                        className="w-full text-left flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                        role="menuitem"
+                      >
+                        <Edit className="w-4 h-4" />
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => confirmDeleteHadith(hadith.id)}
+                        className="w-full text-left flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                        role="menuitem"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                        Delete
+                      </button>
+                    </DropdownMenu>
+                  </div>
+
+                  <div className="mt-3">
+                    <p className="text-sm sm:text-base text-gray-900 font-medium my-3 leading-relaxed">
+                      "{hadith.translation}"
+                    </p>
+
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600">
+                      <span className="flex items-center gap-1">
+                        <BookOpen className="w-3 h-3 sm:w-4 sm:h-4" />
+                        {hadith.source || hadith.book} #
+                        {hadith.reference || hadith.number}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        Narrated by: <strong>{hadith.narrator}</strong>
+                      </span>
+                      <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-semibold">
+                        {categories.find(
+                          (c) => c.id === String(hadith.category_id)
+                        )?.label || "Uncategorized"}
+                      </span>
+                      <span className="flex items-center gap-1 text-emerald-600 font-semibold">
+                        <Eye className="w-3 h-3 sm:w-4 sm:h-4" />
+                        {hadith.view_count?.toLocaleString() || 0}
+                      </span>
+                      <span className="flex items-center gap-1 text-red-600 font-semibold">
+                        <Heart className="w-3 h-3 sm:w-4 sm:h-4 fill-red-400 text-red-400" />
+                        {hadith.favorite_count?.toLocaleString() || 0}
+                      </span>
+                    </div>
+
+                    <div className="mb-0 mt-3">
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1 w-fit ${
+                          hadith.featured
+                            ? "bg-emerald-50 text-emerald-700"
+                            : "bg-yellow-50 text-yellow-700"
+                        }`}
+                      >
+                        <Award className="w-3 h-3" />
+                        {hadith.featured ? "Featured" : "Standard"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="hidden sm:block flex-shrink-0 w-28"></div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  const currentHadithCountStart = (currentPage - 1) * DEFAULT_LIMIT + 1;
+  const currentHadithCountEnd = Math.min(
+    currentPage * DEFAULT_LIMIT,
+    totalItems
+  );
+
+  return (
+    <div className="space-y-6 max-w-10xl mx-auto">
+      <div className="bg-gradient-to-br from-emerald-500 via-emerald-600 to-green-600 rounded-2xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-48 h-48 sm:w-64 sm:h-64 bg-white/10 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-0 left-0 w-32 h-32 sm:w-48 sm:h-48 bg-white/10 rounded-full blur-3xl"></div>
+        <div className="relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2">
+              Hadith Management
+            </h1>
+            <p className="text-emerald-50 text-sm sm:text-base md:text-lg">
+              Manage and organize authentic Prophetic traditions
+            </p>
+          </div>
+          <button
+            onClick={handleOpenAddModal}
+            className="flex items-center justify-center gap-2 px-5 py-2.5 bg-white text-emerald-600 rounded-lg hover:bg-emerald-50 transition-all duration-200 font-semibold shadow-md hover:shadow-lg flex-shrink-0"
+          >
+            <Plus className="w-5 h-5" />
+            Add New Hadith
+          </button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {stats.map((stat, idx) => {
+          const Icon = stat.icon;
+          return (
+            <div
+              key={idx}
+              className="bg-white rounded-xl shadow-sm p-4 sm:p-5 hover:shadow-md transition-all duration-200 border border-gray-100"
+            >
+              <div className="flex items-center justify-between mb-3">
+                <div className="p-2.5 bg-gradient-to-br from-emerald-500 to-green-600 rounded-lg">
+                  <Icon className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                </div>
+              </div>
+              <h3 className="text-gray-500 text-xs font-semibold mb-1 uppercase tracking-wide">
+                {stat.title}
+              </h3>
+              <p className="text-xl sm:text-2xl font-bold text-gray-900">
+                {stat.value}
+              </p>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="bg-white rounded-xl shadow-sm p-5 sm:p-6 border border-gray-100">
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+          <div className="relative flex-1 min-w-0">
+            <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2 pointer-events-none" />
+            <input
+              type="text"
+              placeholder="Search hadiths by text or narrator..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+            />
+          </div>
+          <div className="relative w-full sm:w-auto flex-shrink-0">
+            <button
+              onClick={() => setFilterOpen(!filterOpen)}
+              className="w-full flex items-center justify-between sm:justify-center gap-2 px-4 py-2.5 border border-gray-200 rounded-lg hover:bg-gray-50 transition-all font-semibold text-sm whitespace-nowrap"
+            >
+              <Filter className="w-4 h-4" />
+              <span className="flex-1 text-left sm:text-center">
+                {selectedCategoryName}
+              </span>
+              <ChevronDown
+                className={`w-4 h-4 transition-transform ${
+                  filterOpen ? "rotate-180" : ""
+                }`}
+              />
+            </button>
+            {filterOpen && (
+              <div className="absolute right-0 mt-2 w-full sm:w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-10">
+                {categories.map((category) => (
+                  <button
+                    key={category.id}
+                    onClick={() => {
+                      setSelectedCategory(category.id);
+                      setFilterOpen(false);
+                    }}
+                    className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors ${
+                      selectedCategory === category.id
+                        ? "bg-emerald-50 text-emerald-600 font-semibold"
+                        : "text-gray-700"
+                    }`}
+                  >
+                    {category.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+        {selectedCategory !== "all" && (
+          <div className="mt-3 flex items-center gap-2">
+            <span className="text-sm text-gray-600">Filtering by:</span>
+            <span className="px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full text-xs font-semibold">
+              {selectedCategoryName}
+            </span>
+            <button
+              onClick={() => setSelectedCategory("all")}
+              className="text-xs text-gray-500 hover:text-gray-700 underline"
+            >
+              Clear filter
+            </button>
+          </div>
+        )}
+      </div>
+
+      <div className="bg-transparent rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="p-5 sm:p-6 border-b border-gray-100 bg-white">
+          <h3 className="text-lg font-bold text-gray-900">
+            All Hadiths ({totalItems?.toLocaleString() || "..."})
+          </h3>
+          <p className="text-sm text-gray-600 mt-1">
+            Browse and manage your hadith collection
+          </p>
+        </div>
+
+        {renderContent()}
+      </div>
+
+      {totalPages > 1 && !isLoading && (
+        <div className="bg-white rounded-xl shadow-sm p-4 sm:p-5 border border-gray-100">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <p className="text-sm text-gray-600">
+              Showing **{currentHadithCountStart}-{currentHadithCountEnd}** of
+              **{totalItems.toLocaleString()}** hadiths
+            </p>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="px-3 py-2 border border-gray-200 rounded-lg text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-all disabled:opacity-50"
+              >
+                Previous
+              </button>
+
+              {[...Array(totalPages)].map((_, index) => {
+                const pageNumber = index + 1;
+                if (
+                  pageNumber === 1 ||
+                  pageNumber === totalPages ||
+                  (pageNumber >= currentPage - 1 &&
+                    pageNumber <= currentPage + 1)
+                ) {
+                  return (
+                    <button
+                      key={pageNumber}
+                      onClick={() => setCurrentPage(pageNumber)}
+                      className={`px-3 py-2 rounded-lg text-sm font-semibold ${
+                        pageNumber === currentPage
+                          ? "bg-gradient-to-br from-emerald-500 to-green-600 text-white"
+                          : "border border-gray-200 text-gray-600 hover:bg-gray-50 transition-all"
+                      }`}
+                    >
+                      {pageNumber}
+                    </button>
+                  );
+                }
+                if (
+                  pageNumber === currentPage - 2 ||
+                  pageNumber === currentPage + 2
+                ) {
+                  return (
+                    <span key={pageNumber} className="px-2 text-gray-400">
+                      ...
+                    </span>
+                  );
+                }
+                return null;
+              })}
+
+              <button
+                onClick={() =>
+                  setCurrentPage((p) => Math.min(totalPages, p + 1))
+                }
+                disabled={currentPage === totalPages}
+                className="px-3 py-2 border border-gray-200 rounded-lg text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-all disabled:opacity-50"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="bg-white rounded-xl shadow-sm p-5 sm:p-6 border border-gray-100 h-fit">
+        <h3 className="text-lg font-bold text-gray-900 mb-5">Quick Actions</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <button
+            onClick={handleOpenAddModal}
+            className="w-full flex items-center gap-3 p-3.5 bg-gradient-to-br from-emerald-500 to-green-600 text-white rounded-lg hover:shadow-md transition-all duration-200 group"
+          >
+            <div className="p-1.5 bg-white/20 rounded-md group-hover:bg-white/30 transition-colors">
+              <Plus className="w-4 h-4" />
+            </div>
+            <span className="font-semibold text-sm">Add New Hadith</span>
+            <ArrowUpRight className="w-4 h-4 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
+          </button>
+
+          <button
+            onClick={() => setSelectedCategory("all")}
+            className="w-full flex items-center gap-3 p-3.5 border-2 border-emerald-100 bg-emerald-50 text-emerald-700 rounded-lg hover:border-emerald-200 hover:bg-emerald-100 transition-all duration-200 group"
+          >
+            <div className="p-1.5 bg-emerald-100 rounded-md group-hover:bg-emerald-200 transition-colors">
+              <BookOpen className="w-4 h-4" />
+            </div>
+            <span className="font-semibold text-sm">
+              View All Hadiths ({totalItems})
+            </span>
+            <ArrowUpRight className="w-4 h-4 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
+          </button>
+
+          <button
+            onClick={() => setShowCategoryModal(true)}
+            className="w-full flex items-center gap-3 p-3.5 border-2 border-emerald-100 bg-emerald-50 text-emerald-700 rounded-lg hover:border-emerald-200 hover:bg-emerald-100 transition-all duration-200 group"
+          >
+            <div className="p-1.5 bg-emerald-100 rounded-md group-hover:bg-emerald-200 transition-colors">
+              <Tag className="w-4 h-4" />
+            </div>
+            <span className="font-semibold text-sm">
+              Manage Categories ({totalCategories})
+            </span>
+            <ArrowUpRight className="w-4 h-4 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
+          </button>
+        </div>
+      </div>
+
+      <HadithModal
+        show={showModal}
+        onClose={handleCloseModal}
+        onSave={handleSaveModal}
+        title={isEdit ? "Edit Hadith" : "Add New Hadith"}
+        isEdit={isEdit}
+        categories={categories}
+        formData={currentHadithData}
+        API_BASE={API_BASE}
+        fetchCategories={fetchCategories}
+      />
+      <CreateCategoryModal
+        show={showCategoryModal}
+        onClose={() => setShowCategoryModal(false)}
+        onSave={handleCategorySave}
+        categories={categoryOptions}
+        fetchCategories={fetchCategories}
+        categoryType="hadith"
+      />
+      <DeleteConfirmModal
+        show={showDeleteConfirm}
+        onClose={() => {
+          setShowDeleteConfirm(false);
+          setDeleteTargetId(null);
+        }}
+        onDelete={executeDeleteHadith}
+        itemType={"Hadith"}
+        itemTitle={
+          hadiths.find((h) => h.id === deleteTargetId)?.reference ||
+          "this Hadith"
+        }
+      />
+    </div>
+  );
+};
+
+export default HadithManagement;

@@ -1,22 +1,19 @@
 import React, { useEffect, useState } from "react";
-import { BookOpen} from "lucide-react";
+import { BookOpen } from "lucide-react";
 
 export default function DailyHadith() {
   const [hadith, setHadith] = useState(null);
 
   const fetchHadith = async () => {
     try {
-      const res = await fetch(
-        "https://focus-flow-server-v1.onrender.com/hadiths/day"
-      );
-      if (!res.ok) throw new Error("Failed to fetch hadith");
+      const res = await fetch("http://127.0.0.1:8000/api/day");
+      if (!res.ok) throw new Error(`Failed to fetch hadith: ${res.status}`);
       const data = await res.json();
       setHadith(data);
     } catch (err) {
       console.error(err);
     }
   };
-
   useEffect(() => {
     fetchHadith();
   }, []);
@@ -32,7 +29,6 @@ export default function DailyHadith() {
       </div>
     );
   }
-
   return (
     <div className="bg-gradient-to-b from-teal-50 to-emerald-50 py-12 px-4">
       <div className="max-w-4xl mx-auto">
@@ -49,11 +45,11 @@ export default function DailyHadith() {
           </div>
 
           <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl p-6 mb-4">
-            <p className="text-gray-800 text-lg leading-relaxed mb-4 italic">
+            <p className="text-gray-800 text-lg leading-relaxed mb-4 italic text-right">
               "{hadith.arabic}"
             </p>
             <p className="text-gray-700 text-md leading-relaxed mb-4">
-              "{hadith.english?.translation}"
+              "{hadith.translation}"
             </p>
             {hadith.benefit && (
               <p className="text-green-700 text-sm leading-relaxed mb-4 font-medium">
@@ -66,7 +62,7 @@ export default function DailyHadith() {
                 {hadith.narrator}
               </p>
               <p className="text-sm text-emerald-700 font-semibold">
-                {hadith.source}
+                {hadith.book || hadith.source}
               </p>
             </div>
           </div>

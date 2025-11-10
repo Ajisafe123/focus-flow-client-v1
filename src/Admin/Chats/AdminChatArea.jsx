@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Menu,
   Check,
@@ -11,6 +11,7 @@ import {
   Smile,
   Mic,
   Send,
+  Square,
 } from "lucide-react";
 
 const AdminChatArea = ({
@@ -30,6 +31,10 @@ const AdminChatArea = ({
   showUserPanel,
   setShowUserPanel,
 }) => {
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordingTime, setRecordingTime] = useState(0);
+  const [recordingInterval, setRecordingInterval] = useState(null);
+
   const quickReplies = [
     "Assalamu alaikum wa rahmatullahi wa barakatuh",
     "Wa alaikum assalam",
@@ -52,24 +57,57 @@ const AdminChatArea = ({
     setSelectedChat({ ...selectedChat, status: "resolved" });
   };
 
+  const startRecording = () => {
+    setIsRecording(true);
+    setRecordingTime(0);
+    const interval = setInterval(() => {
+      setRecordingTime((prevTime) => prevTime + 1);
+    }, 1000);
+    setRecordingInterval(interval);
+  };
+
+  const stopRecording = () => {
+    setIsRecording(false);
+    clearInterval(recordingInterval);
+    setRecordingInterval(null);
+    setRecordingTime(0);
+    
+  };
+
+  const toggleRecording = () => {
+    if (isRecording) {
+      stopRecording();
+    } else {
+      startRecording();
+    }
+  };
+
+  const formatTime = (totalSeconds) => {
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes.toString().padStart(2, "0")}:${seconds
+      .toString()
+      .padStart(2, "0")}`;
+  };
+
   return (
-    <div className="flex-1 flex flex-col bg-gradient-to-b from-emerald-50/20 via-white to-teal-50/20">
-      <div className="bg-white border-b border-emerald-100 p-3 sm:p-4 shadow-sm flex-shrink-0">
+    <div className="flex-1 flex flex-col bg-white">
+      <div className="bg-white border-b border-gray-100 p-4 sm:p-5 shadow-sm flex-shrink-0">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0 flex-1">
             <button
               onClick={() => setIsMobileSidebarOpen(true)}
-              className="lg:hidden p-2 hover:bg-emerald-50 rounded-xl transition-all flex-shrink-0"
+              className="lg:hidden p-2 hover:bg-gray-50 rounded-lg transition-all flex-shrink-0"
             >
-              <Menu className="w-5 h-5 text-emerald-600" />
+              <Menu className="w-5 h-5 text-gray-600" />
             </button>
 
-            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-emerald-900 via-emerald-800 to-teal-900 flex items-center justify-center text-white font-bold text-lg shadow-md ring-2 ring-white flex-shrink-0">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center text-white font-bold text-lg shadow-md flex-shrink-0">
               {selectedChat.avatar}
             </div>
 
             <div className="min-w-0 flex-1">
-              <h2 className="font-bold text-gray-800 text-sm sm:text-base truncate">
+              <h2 className="font-bold text-gray-900 text-sm sm:text-base truncate">
                 {selectedChat.name}
               </h2>
               <p className="text-xs text-gray-500 truncate">
@@ -81,29 +119,29 @@ const AdminChatArea = ({
           <div className="flex items-center gap-2 flex-shrink-0">
             <button
               onClick={markAsResolved}
-              className="hidden sm:flex px-3 sm:px-4 py-2 bg-gradient-to-br from-emerald-900 via-emerald-800 to-teal-900 text-white rounded-xl text-xs sm:text-sm font-semibold hover:from-emerald-700 hover:to-teal-700 transition-all shadow-lg items-center gap-2"
+              className="hidden sm:flex px-4 py-2 bg-gradient-to-br from-emerald-500 to-green-600 text-white rounded-lg text-sm font-semibold hover:shadow-md transition-all items-center gap-2"
             >
               <Check className="w-4 h-4" />
-              <span className="hidden sm:inline">Mark Resolved</span>
+              <span>Resolve</span>
             </button>
 
             <button
               onClick={() => setShowUserPanel(!showUserPanel)}
-              className="p-2 hover:bg-emerald-50 rounded-xl transition-all"
+              className="p-2 hover:bg-gray-50 rounded-lg transition-all"
             >
-              <UserCircle className="w-5 h-5 text-emerald-900" />
+              <UserCircle className="w-5 h-5 text-gray-600" />
             </button>
 
-            <button className="p-2 hover:bg-emerald-50 rounded-xl transition-all">
+            <button className="p-2 hover:bg-gray-50 rounded-lg transition-all">
               <MoreVertical className="w-5 h-5 text-gray-600" />
             </button>
           </div>
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
+      <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 bg-gray-50">
         <div className="text-center">
-          <div className="inline-block bg-emerald-100 text-emerald-900 px-4 py-2 rounded-full text-xs font-semibold shadow-sm">
+          <div className="inline-block bg-white text-gray-600 px-4 py-2 rounded-full text-xs font-semibold shadow-sm border border-gray-200">
             Today
           </div>
         </div>
@@ -122,10 +160,10 @@ const AdminChatArea = ({
             >
               {msg.sender === "user" && (
                 <div className="flex items-center gap-2 mb-1.5">
-                  <div className="w-6 h-6 rounded-full bg-gradient-to-br from-emerald-900 via-emerald-800 to-teal-900  flex items-center justify-center text-white text-xs font-bold shadow-md ring-2 ring-white">
+                  <div className="w-6 h-6 rounded-full bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center text-white text-xs font-bold shadow-sm">
                     {selectedChat.avatar}
                   </div>
-                  <span className="text-xs text-gray-500 font-semibold">
+                  <span className="text-xs text-gray-600 font-semibold">
                     {selectedChat.name}
                   </span>
                 </div>
@@ -133,8 +171,8 @@ const AdminChatArea = ({
               <div
                 className={`rounded-2xl px-4 py-3 shadow-sm ${
                   msg.sender === "admin"
-                    ? "bg-gradient-to-br from-emerald-900 via-emerald-800 to-teal-900  text-white rounded-br-sm"
-                    : "bg-white border border-emerald-100 text-gray-800 rounded-bl-sm"
+                    ? "bg-gradient-to-br from-emerald-500 to-green-600 text-white rounded-br-sm"
+                    : "bg-white text-gray-900 rounded-bl-sm border border-gray-200"
                 }`}
               >
                 <p className="text-sm leading-relaxed break-words">
@@ -144,14 +182,14 @@ const AdminChatArea = ({
               <div
                 className={`flex items-center gap-1.5 mt-1.5 text-xs ${
                   msg.sender === "admin"
-                    ? "justify-end text-gray-400"
-                    : "justify-start text-gray-400"
+                    ? "justify-end text-gray-500"
+                    : "justify-start text-gray-500"
                 }`}
               >
                 <span>{msg.time}</span>
                 {msg.sender === "admin" &&
                   (msg.status === "read" ? (
-                    <CheckCheck className="w-3.5 h-3.5 text-emerald-900" />
+                    <CheckCheck className="w-3.5 h-3.5 text-emerald-600" />
                   ) : msg.status === "delivered" ? (
                     <CheckCheck className="w-3.5 h-3.5" />
                   ) : (
@@ -165,18 +203,18 @@ const AdminChatArea = ({
         {isTyping && (
           <div className="flex justify-start animate-fade-in">
             <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-full bg-gradient-to-br from-emerald-900 via-emerald-800 to-teal-900  flex items-center justify-center text-white text-xs font-bold shadow-md ring-2 ring-white">
+              <div className="w-6 h-6 rounded-full bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center text-white text-xs font-bold shadow-sm">
                 {selectedChat.avatar}
               </div>
-              <div className="bg-white border border-emerald-100 rounded-2xl rounded-bl-sm px-4 py-3 shadow-sm">
+              <div className="bg-white border border-gray-200 rounded-2xl rounded-bl-sm px-4 py-3 shadow-sm">
                 <div className="flex gap-1.5">
-                  <span className="w-2 h-2 bg-emerald-800 rounded-full animate-bounce"></span>
+                  <span className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce"></span>
                   <span
-                    className="w-2 h-2 bg-emerald-800 rounded-full animate-bounce"
+                    className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce"
                     style={{ animationDelay: "0.2s" }}
                   ></span>
                   <span
-                    className="w-2 h-2 bg-emerald-800 rounded-full animate-bounce"
+                    className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce"
                     style={{ animationDelay: "0.4s" }}
                   ></span>
                 </div>
@@ -188,17 +226,17 @@ const AdminChatArea = ({
       </div>
 
       {showQuickReplies && (
-        <div className="bg-gradient-to-r from-emerald-50/50 to-teal-50/50 border-t border-emerald-100 p-3 sm:p-4 animate-slide-up">
+        <div className="bg-gray-50 border-t border-gray-200 p-4 animate-slide-up">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-bold text-emerald-700 flex items-center gap-2">
-              <AlertCircle className="w-4 h-4" />
+            <span className="text-xs font-bold text-gray-700 flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 text-emerald-600" />
               Quick Replies
             </span>
             <button
               onClick={() => setShowQuickReplies(false)}
-              className="p-1 hover:bg-white rounded-lg transition-all"
+              className="p-1 hover:bg-gray-200 rounded-lg transition-all"
             >
-              <X className="w-4 h-4 text-gray-400" />
+              <X className="w-4 h-4 text-gray-500" />
             </button>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -209,7 +247,7 @@ const AdminChatArea = ({
                   setMessage(reply);
                   setShowQuickReplies(false);
                 }}
-                className="px-3 py-2 bg-white text-emerald-800 rounded-xl text-xs font-medium hover:bg-emerald-100 transition-all duration-300 shadow-sm hover:shadow-md border border-emerald-200"
+                className="px-3 py-2 bg-white text-gray-700 rounded-lg text-xs font-medium hover:bg-emerald-50 hover:text-emerald-700 transition-all border border-gray-200"
               >
                 {reply}
               </button>
@@ -218,54 +256,84 @@ const AdminChatArea = ({
         </div>
       )}
 
-      <div className="bg-white border-t border-emerald-100 p-3 sm:p-4 flex-shrink-0">
+      <div className="bg-white border-t border-gray-200 p-4 flex-shrink-0">
         <div className="flex items-end gap-2">
           <button
             onClick={() => setShowQuickReplies(!showQuickReplies)}
-            className={`p-2.5 rounded-xl transition-all duration-300 flex-shrink-0 ${
+            className={`p-2.5 rounded-lg transition-all flex-shrink-0 ${
               showQuickReplies
-                ? "bg-emerald-600 text-white"
-                : "hover:bg-emerald-50 text-emerald-700"
+                ? "bg-emerald-500 text-white"
+                : "hover:bg-gray-100 text-gray-600"
             }`}
             title="Quick replies"
           >
             <AlertCircle className="w-5 h-5" />
           </button>
 
-          <button className="p-2.5 hover:bg-emerald-50 rounded-xl transition-all duration-300 flex-shrink-0">
-            <Paperclip className="w-5 h-5 text-emerald-700" />
+          <button className="p-2.5 hover:bg-gray-100 rounded-lg transition-all flex-shrink-0">
+            <Paperclip className="w-5 h-5 text-gray-600" />
           </button>
 
-          <button className="hidden sm:block p-2.5 hover:bg-emerald-50 rounded-xl transition-all duration-300 flex-shrink-0">
-            <Smile className="w-5 h-5 text-emerald-700" />
+          <button className="hidden sm:block p-2.5 hover:bg-gray-100 rounded-lg transition-all flex-shrink-0">
+            <Smile className="w-5 h-5 text-gray-600" />
           </button>
 
-          <textarea
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            onKeyPress={(e) =>
-              e.key === "Enter" &&
-              !e.shiftKey &&
-              (e.preventDefault(), sendMessage())
-            }
-            placeholder="Type your message..."
-            className="flex-1 px-4 py-3 border-2 border-emerald-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent resize-none text-sm min-w-0"
-            rows="1"
-          />
+          {isRecording ? (
+            <div className="flex-1 flex items-center justify-between px-4 py-3 border border-red-500 rounded-lg bg-red-50 min-w-0">
+              <span className="text-red-600 font-semibold text-sm flex items-center gap-2">
+                <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+                Recording
+              </span>
+              <span className="text-red-600 font-mono text-sm">
+                {formatTime(recordingTime)}
+              </span>
+              <button
+                onClick={toggleRecording}
+                className="p-1 text-red-600 hover:text-red-800 transition-colors"
+                title="Stop Recording"
+              >
+                <Square className="w-4 h-4" />
+              </button>
+            </div>
+          ) : (
+            <textarea
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              onKeyPress={(e) =>
+                e.key === "Enter" &&
+                !e.shiftKey &&
+                (e.preventDefault(), sendMessage())
+              }
+              placeholder="Type your message..."
+              className="flex-1 px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent resize-none text-sm min-w-0"
+              rows="1"
+            />
+          )}
 
-          <button className="hidden sm:block p-2.5 hover:bg-emerald-50 rounded-xl transition-all duration-300 flex-shrink-0">
-            <Mic className="w-5 h-5 text-emerald-700" />
+          <button
+            onClick={toggleRecording}
+            className={`hidden sm:flex p-2.5 rounded-lg transition-all flex-shrink-0 ${
+              isRecording
+                ? "bg-red-500 text-white hover:bg-red-600"
+                : "hover:bg-gray-100 text-gray-600"
+            }`}
+          >
+            {isRecording ? (
+              <Square className="w-5 h-5" />
+            ) : (
+              <Mic className="w-5 h-5" />
+            )}
           </button>
 
           <button
             onClick={sendMessage}
-            disabled={!message.trim()}
-            className="p-3 bg-gradient-to-br from-emerald-900 via-emerald-800 to-teal-900  text-white rounded-xl hover:from-emerald-800 hover:to-teal-800 transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+            disabled={!message.trim() || isRecording}
+            className="p-3 bg-gradient-to-br from-emerald-500 to-green-600 text-white rounded-lg hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
           >
             <Send className="w-5 h-5" />
           </button>
         </div>
-        <p className="text-xs text-gray-400 mt-2 text-center">
+        <p className="text-xs text-gray-500 mt-2 text-center">
           Press Enter to send • Shift + Enter for new line
         </p>
       </div>

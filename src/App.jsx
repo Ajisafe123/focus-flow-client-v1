@@ -11,6 +11,8 @@ import { AnimatePresence, motion } from "framer-motion";
 import Hero from "./Components/Hero";
 import LiveDua from "./Components/LiveDua";
 import LiveChat from "./Components/LiveChat";
+import LiveVideo from "./Components/LiveVideo";
+import LiveAudio from "./Components/LiveAudio";
 import DailyHadith from "./Components/DailyHadith";
 import About from "./Components/About";
 import Contact from "./Components/Contact";
@@ -31,6 +33,7 @@ import SettingsPage from "./Components/Settings";
 import ProfilePage from "./Components/Profile";
 import AdminDashboard from "./Admin/NibrasAdminDashboard";
 import apiService from "./Services/api";
+import ArticlesInterface from "./Admin/ArticlesInterface";
 
 const pageVariants = {
   initial: { opacity: 0, y: 10 },
@@ -60,6 +63,8 @@ function GuestHome() {
       <Hero />
       <LiveDua />
       <DailyHadith />
+      <LiveVideo />
+      <LiveAudio/>
       <About />
       <Contact />
     </>
@@ -236,6 +241,15 @@ function AppContent({
                   ) : (
                     <Navigate to="/" />
                   )
+                }
+              />
+
+              <Route
+                path="/admin/articles"
+                element={
+                  <PageWrapper>
+                    <ArticlesInterface />
+                  </PageWrapper>
                 }
               />
             </>

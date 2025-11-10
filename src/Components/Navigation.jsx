@@ -6,6 +6,7 @@ import {
   Calendar,
   Bell,
   User,
+  Settings,
   ChevronDown,
   BookOpen,
   MessageCircle,
@@ -217,24 +218,21 @@ export default function Navigation({ isLoggedIn, setShowLogoutModal }) {
         </div>
       </nav>
 
-      <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-emerald-700 via-emerald-800 to-teal-800 shadow-lg">
+      <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-white/10 backdrop-blur-md shadow-lg rounded-bl-3xl rounded-br-3xl">
         <div className="flex items-center justify-between h-14 px-4">
           <button
             onClick={() => handleNavItemClick("/", "Home")}
-            className="flex items-center space-x-2"
+            className="flex items-center p-2 rounded-full hover:bg-white/15 transition-colors"
           >
-            <div className="w-7 h-7 bg-white/15 rounded-lg flex items-center justify-center backdrop-blur-sm">
-              <Moon className="w-4 h-4 text-amber-200" />
-            </div>
-            <span className="text-lg font-bold text-white">NIBRAS AL-DEEN</span>
+            <Moon className="w-5 h-5 text-emerald-600" />
           </button>
           <div className="flex items-center space-x-3">
             <div className="relative" ref={searchBarRef}>
               <button
                 onClick={() => setShowSearchBar(!showSearchBar)}
-                className="p-2 rounded-full hover:bg-white/15 transition-colors backdrop-blur-sm"
+                className="p-2 rounded-full hover:bg-white/15 transition-colors"
               >
-                <Search className="w-5 h-5 text-white" />
+                <Search className="w-5 h-5 text-emerald-600" />
               </button>
               {showSearchBar && (
                 <div className="absolute right-0 mt-2 w-72 bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden">
@@ -264,9 +262,9 @@ export default function Navigation({ isLoggedIn, setShowLogoutModal }) {
                 onClick={() =>
                   setShowCategoriesDropdown(!showCategoriesDropdown)
                 }
-                className="p-2 rounded-full hover:bg-white/15 transition-colors backdrop-blur-sm"
+                className="p-2 rounded-full hover:bg-white/15 transition-colors"
               >
-                <Grid3x3 className="w-5 h-5 text-white" />
+                <Grid3x3 className="w-5 h-5 text-emerald-600" />
               </button>
               {showCategoriesDropdown && (
                 <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden">
@@ -293,6 +291,12 @@ export default function Navigation({ isLoggedIn, setShowLogoutModal }) {
                 </div>
               )}
             </div>
+            <button
+              onClick={() => handleNavItemClick("/settings", "Settings")}
+              className="p-2 rounded-full hover:bg-white/15 transition-colors"
+            >
+              <Settings className="w-5 h-5 text-emerald-600" />
+            </button>
           </div>
         </div>
       </div>

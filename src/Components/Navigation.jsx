@@ -1,12 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  Moon,
   Clock,
   Calendar,
   Bell,
   User,
-  Settings,
   ChevronDown,
   BookOpen,
   MessageCircle,
@@ -14,9 +12,11 @@ import {
   Compass,
   Star,
   Home,
-  Grid3x3,
   Search,
   Video,
+  Info,
+  Mail,
+  X,
 } from "lucide-react";
 
 export default function Navigation({ isLoggedIn, setShowLogoutModal }) {
@@ -100,10 +100,10 @@ export default function Navigation({ isLoggedIn, setShowLogoutModal }) {
   ];
 
   const desktopMenuItems = [
-    { name: "Home", href: "/" },
-    { name: "About", href: "/about" },
-    { name: "Contact", href: "/contact" },
-    { name: "Prayer Times", href: "/prayer-times" },
+    { name: "Home", href: "/", icon: Home },
+    { name: "About", href: "/about", icon: Info },
+    { name: "Contact", href: "/contact", icon: Mail },
+    { name: "Prayer Times", href: "/prayer-times", icon: Clock },
   ];
 
   const mobileNavItems = [
@@ -127,28 +127,26 @@ export default function Navigation({ isLoggedIn, setShowLogoutModal }) {
           <div className="flex items-center justify-between h-16">
             <button
               onClick={() => handleNavItemClick("/", "Home")}
-              className="flex items-center space-x-3 transition-all duration-300 hover:scale-105 group"
+              className="flex items-center transition-all duration-300 hover:scale-105 group space-x-2"
             >
-              <div className="bg-white/15 p-2 rounded-xl backdrop-blur-sm transition-all duration-300 group-hover:bg-white/25 shadow-lg">
-                <Moon className="w-7 h-7 text-amber-200 group-hover:text-amber-100 transition-colors" />
-              </div>
-              <div>
-                <span className="text-xl font-extrabold block text-white tracking-wider drop-shadow-lg">
-                  NIBRAS AL-DEEN
+              <div className="flex items-center">
+                <span className="text-xl font-extrabold text-white leading-tight logo-nastaliq">
+                  نبراس الدين
                 </span>
               </div>
             </button>
 
             <div className="flex items-center space-x-8">
-              {desktopMenuItems.map(({ name, href }) => (
+              {desktopMenuItems.map(({ name, href, icon: Icon }) => (
                 <button
                   key={name}
                   onClick={() => handleNavItemClick(href, name)}
-                  className={`relative text-white hover:text-amber-200 transition-colors duration-200 font-semibold pb-1 ${
+                  className={`relative text-white hover:text-amber-200 transition-colors duration-200 font-semibold pb-1 flex items-center space-x-2 ${
                     activeLink === name ? "text-amber-200" : ""
                   }`}
                 >
-                  {name}
+                  <Icon className="w-4 h-4" />
+                  <span>{name}</span>
                   {activeLink === name && (
                     <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-amber-200" />
                   )}
@@ -160,38 +158,37 @@ export default function Navigation({ isLoggedIn, setShowLogoutModal }) {
                   onClick={() =>
                     setIsIslamicDropdownOpenDesktop((prev) => !prev)
                   }
-                  className={`flex items-center space-x-2 px-4 py-2 text-white text-sm font-semibold transition-all duration-300 rounded-xl backdrop-blur-sm ${
-                    isIslamicDropdownOpenDesktop
-                      ? "bg-white/20"
-                      : "hover:bg-white/15"
-                  } group`}
+                  className={`relative text-white hover:text-amber-200 transition-colors duration-200 font-semibold pb-1 flex items-center space-x-2 ${
+                    activeLink === "Resources" ? "text-amber-200" : ""
+                  }`}
                 >
-                  <Calendar className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                  <Calendar className="w-4 h-4" />
                   <span>Resources</span>
                   <ChevronDown
                     className={`w-4 h-4 transition-transform duration-300 ${
                       isIslamicDropdownOpenDesktop ? "rotate-180" : ""
                     }`}
                   />
+                  {activeLink === "Resources" && (
+                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-amber-200" />
+                  )}
                 </button>
                 {isIslamicDropdownOpenDesktop && (
-                  <div className="absolute z-50 top-full left-0 mt-2 bg-white w-64 rounded-2xl overflow-hidden shadow-xl transform transition-all duration-200">
-                    <div className="bg-gradient-to-r from-emerald-600 to-teal-600 px-5 py-4">
+                  <div className="absolute z-50 top-full left-0 mt-2 bg-white w-64 rounded-md overflow-hidden shadow-lg transform transition-all duration-200">
+                    <div className="bg-emerald-600 px-5 py-2">
                       <h3 className="text-white font-bold text-sm tracking-wide">
                         ISLAMIC RESOURCES
                       </h3>
                     </div>
-                    <div className="py-2">
+                    <div className="py-1">
                       {islamicResources.map(({ name, href, icon: Icon }) => (
                         <button
                           key={name}
                           onClick={() => handleNavItemClick(href, name)}
-                          className="flex items-center w-full px-5 py-3.5 text-emerald-800 font-medium hover:bg-emerald-50 transition-all duration-200 group"
+                          className="flex items-center w-full px-5 py-2.5 text-gray-700 hover:bg-emerald-50 transition-all duration-200 group text-sm"
                         >
-                          <Icon className="w-5 h-5 mr-3 text-emerald-600 group-hover:text-teal-600 transition-colors" />
-                          <span className="group-hover:translate-x-1 transition-transform duration-200">
-                            {name}
-                          </span>
+                          <Icon className="w-4 h-4 mr-3 text-emerald-600" />
+                          <span>{name}</span>
                         </button>
                       ))}
                     </div>
@@ -201,12 +198,6 @@ export default function Navigation({ isLoggedIn, setShowLogoutModal }) {
             </div>
 
             <div className="flex items-center space-x-3">
-              <button
-                onClick={() => handleNavItemClick("/contact", "Contact")}
-                className="bg-teal-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-teal-700 transition-all duration-200 shadow-lg hover:shadow-xl"
-              >
-                Contact Us
-              </button>
               <button className="relative p-2.5 rounded-xl hover:bg-white/15 transition-all duration-300 backdrop-blur-sm group">
                 <Bell className="w-6 h-6 text-white group-hover:scale-110 transition-transform" />
                 <span className="absolute -top-1 -right-1 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs w-5 h-5 flex items-center justify-center font-bold rounded-full shadow-lg">
@@ -218,90 +209,118 @@ export default function Navigation({ isLoggedIn, setShowLogoutModal }) {
         </div>
       </nav>
 
-      <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-white/10 backdrop-blur-md shadow-lg rounded-bl-3xl rounded-br-3xl">
+      <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-emerald-700 via-emerald-800 to-teal-800 shadow-lg">
         <div className="flex items-center justify-between h-14 px-4">
-          <button
-            onClick={() => handleNavItemClick("/", "Home")}
-            className="flex items-center p-2 rounded-full hover:bg-white/15 transition-colors"
-          >
-            <Moon className="w-5 h-5 text-emerald-600" />
-          </button>
-          <div className="flex items-center space-x-3">
-            <div className="relative" ref={searchBarRef}>
+          {!showSearchBar ? (
+            <>
               <button
-                onClick={() => setShowSearchBar(!showSearchBar)}
-                className="p-2 rounded-full hover:bg-white/15 transition-colors"
+                onClick={() => handleNavItemClick("/", "Home")}
+                className="flex items-center space-x-2"
               >
-                <Search className="w-5 h-5 text-emerald-600" />
+                <div className="logo-nastaliq flex items-center">
+                  <span className="text-base font-bold text-white leading-tight">
+                    Nibras Al-deen
+                  </span>
+                </div>
               </button>
-              {showSearchBar && (
-                <div className="absolute right-0 mt-2 w-72 bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden">
-                  <form onSubmit={handleSearch} className="p-3">
-                    <div className="flex items-center space-x-2">
-                      <input
-                        type="text"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="Search..."
-                        className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
-                        autoFocus
-                      />
-                      <button
-                        type="submit"
-                        className="bg-emerald-600 text-white p-2 rounded-lg hover:bg-emerald-700 transition-colors"
-                      >
-                        <Search className="w-5 h-5" />
-                      </button>
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => setShowSearchBar(true)}
+                  className="p-2 rounded-full hover:bg-white/15 transition-colors backdrop-blur-sm"
+                >
+                  <Search className="w-5 h-5 text-white" />
+                </button>
+                <div className="relative" ref={categoriesDropdownRef}>
+                  <button
+                    onClick={() =>
+                      setShowCategoriesDropdown(!showCategoriesDropdown)
+                    }
+                    className="px-3 py-2 rounded-full hover:bg-white/15 transition-colors backdrop-blur-sm flex items-center space-x-1 text-white text-sm font-semibold"
+                  >
+                    <span>More</span>
+                    <ChevronDown
+                      className={`w-5 h-5 transition-transform duration-300 ${
+                        showCategoriesDropdown ? "rotate-180" : ""
+                      }`}
+                    />
+                  </button>
+                  {showCategoriesDropdown && (
+                    <div className="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg border border-gray-200 overflow-hidden">
+                      <div className="bg-emerald-600 px-4 py-2">
+                        <h3 className="text-white font-bold text-xs tracking-wide">
+                          RESOURCES
+                        </h3>
+                      </div>
+                      <div className="py-1">
+                        {islamicResources.map(({ name, href, icon: Icon }) => (
+                          <button
+                            key={name}
+                            onClick={() => {
+                              handleNavItemClick(href, name);
+                              setShowCategoriesDropdown(false);
+                            }}
+                            className="flex items-center w-full px-4 py-2.5 text-sm text-gray-700 hover:bg-emerald-50 transition-colors"
+                          >
+                            <Icon className="w-4 h-4 mr-3 text-emerald-600" />
+                            <span>{name}</span>
+                          </button>
+                        ))}
+                      </div>
+                      <div className="bg-gray-50 px-4 py-2 border-t border-gray-100">
+                        <button
+                          onClick={() => {
+                            navigate("/resources");
+                            setShowCategoriesDropdown(false);
+                          }}
+                          className="text-emerald-600 font-semibold text-xs hover:text-emerald-700 transition-colors flex items-center"
+                        >
+                          <span>View All</span>
+                          <ChevronDown className="w-3 h-3 ml-1 rotate-[-90deg]" />
+                        </button>
+                      </div>
                     </div>
-                  </form>
+                  )}
                 </div>
-              )}
-            </div>
-            <div className="relative" ref={categoriesDropdownRef}>
-              <button
-                onClick={() =>
-                  setShowCategoriesDropdown(!showCategoriesDropdown)
-                }
-                className="p-2 rounded-full hover:bg-white/15 transition-colors"
+              </div>
+            </>
+          ) : (
+            <div className="flex items-center w-full space-x-2">
+              <form
+                onSubmit={handleSearch}
+                className="flex-1 flex items-center space-x-2"
               >
-                <Grid3x3 className="w-5 h-5 text-emerald-600" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search..."
+                  className="flex-1 px-4 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 text-white placeholder-white/60 text-sm"
+                  autoFocus
+                />
+                <button
+                  type="submit"
+                  className="bg-white/15 text-white p-2 rounded-lg hover:bg-white/25 transition-colors backdrop-blur-sm"
+                >
+                  <Search className="w-5 h-5" />
+                </button>
+              </form>
+              <button
+                onClick={() => {
+                  setShowSearchBar(false);
+                  setSearchQuery("");
+                }}
+                className="text-white font-medium text-sm p-2 rounded-full hover:bg-white/15 transition-colors backdrop-blur-sm"
+              >
+                <X className="w-5 h-5" />
               </button>
-              {showCategoriesDropdown && (
-                <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden">
-                  <div className="bg-gradient-to-r from-emerald-600 to-teal-600 px-4 py-3">
-                    <h3 className="text-white font-bold text-xs tracking-wide">
-                      ISLAMIC RESOURCES
-                    </h3>
-                  </div>
-                  <div className="py-1">
-                    {islamicResources.map(({ name, href, icon: Icon }) => (
-                      <button
-                        key={name}
-                        onClick={() => {
-                          handleNavItemClick(href, name);
-                          setShowCategoriesDropdown(false);
-                        }}
-                        className="flex items-center w-full px-4 py-3 text-sm text-gray-700 hover:bg-emerald-50 transition-colors"
-                      >
-                        <Icon className="w-4 h-4 mr-3 text-emerald-600" />
-                        <span>{name}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
-            <button
-              onClick={() => handleNavItemClick("/settings", "Settings")}
-              className="p-2 rounded-full hover:bg-white/15 transition-colors"
-            >
-              <Settings className="w-5 h-5 text-emerald-600" />
-            </button>
-          </div>
+          )}
         </div>
       </div>
 
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-gradient-to-r from-slate-50 to-gray-50 border-t border-gray-200 shadow-2xl">
+      <div className="md:pt-16 pt-14" />
+
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white shadow-[0_-5px_20px_rgba(0,0,0,0.1)] rounded-tl-xl rounded-tr-xl">
         <div className="flex items-center justify-around h-16 px-2">
           {mobileNavItems.map((item) => {
             const Icon = item.icon;

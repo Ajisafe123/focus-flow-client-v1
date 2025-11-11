@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   Clock,
   Calendar,
@@ -17,28 +17,31 @@ import {
   Info,
   Mail,
   X,
+  Settings,
+  LogOut,
 } from "lucide-react";
 
-export default function Navigation({ isLoggedIn, setShowLogoutModal }) {
+export default function Navigation({ setShowLogoutModal }) {
   const [activeLink, setActiveLink] = useState("Home");
   const [showCategoriesDropdown, setShowCategoriesDropdown] = useState(false);
   const [showSearchBar, setShowSearchBar] = useState(false);
   const [isIslamicDropdownOpenDesktop, setIsIslamicDropdownOpenDesktop] =
     useState(false);
+  const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
   const categoriesDropdownRef = useRef(null);
   const searchBarRef = useRef(null);
   const islamicDropdownRefDesktop = useRef(null);
-  const navigate = useNavigate();
+  const userDropdownRef = useRef(null);
 
+  const navigate = useNavigate();
+  const location = useLocation();
   const token = localStorage.getItem("token");
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
-    };
+    const handleScroll = () => setIsScrolled(window.scrollY > 20);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
@@ -48,37 +51,53 @@ export default function Navigation({ isLoggedIn, setShowLogoutModal }) {
       if (
         categoriesDropdownRef.current &&
         !categoriesDropdownRef.current.contains(event.target)
-      ) {
+      )
         setShowCategoriesDropdown(false);
-      }
-      if (
-        searchBarRef.current &&
-        !searchBarRef.current.contains(event.target)
-      ) {
+      if (searchBarRef.current && !searchBarRef.current.contains(event.target))
         setShowSearchBar(false);
-      }
       if (
         islamicDropdownRefDesktop.current &&
         !islamicDropdownRefDesktop.current.contains(event.target)
-      ) {
+      )
         setIsIslamicDropdownOpenDesktop(false);
-      }
+      if (
+        userDropdownRef.current &&
+        !userDropdownRef.current.contains(event.target)
+      )
+        setIsUserDropdownOpen(false);
     };
-
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleNavItemClick = (href, name) => {
-    setActiveLink(name);
-    navigate(href);
-  };
+  useEffect(() => {
+    const pathToName = {
+      "/": "Home",
+      "/quran": "Quran",
+      "/about": "About",
+      "/contact": "Contact",
+      "/prayer-times": "Prayer Times",
+      "/profile": "Mine",
+      "/login": "Mine",
+      "/videos": "Videos",
+      "/dua": "Dua",
+      "/hadith": "Hadith",
+      "/islamic-calendar": "Islamic Calendar",
+      "/99-names": "99 Names of Allah",
+      "/zakat-calculator": "Zakat Calculator",
+      "/qibla-finder": "Qibla Finder",
+      "/settings": "Settings",
+    };
+    setActiveLink(pathToName[location.pathname] || "");
+  }, [location.pathname]);
 
-  const handleDropdownAction = (action) => {
+  const handleNavItemClick = (href, name) => navigate(href);
+
+  const handleUserAction = (action) => {
     if (action === "profile") navigate("/profile");
     else if (action === "settings") navigate("/settings");
     else if (action === "logout") setShowLogoutModal(true);
-    else if (action === "login") navigate("/login");
+    setIsUserDropdownOpen(false);
   };
 
   const handleSearch = (e) => {
@@ -91,6 +110,7 @@ export default function Navigation({ isLoggedIn, setShowLogoutModal }) {
   };
 
   const islamicResources = [
+    { name: "Quran", href: "/quran", icon: BookOpen },
     { name: "Dua", href: "/dua", icon: BookOpen },
     { name: "Hadith", href: "/hadith", icon: MessageCircle },
     { name: "Islamic Calendar", href: "/islamic-calendar", icon: Calendar },
@@ -101,6 +121,7 @@ export default function Navigation({ isLoggedIn, setShowLogoutModal }) {
 
   const desktopMenuItems = [
     { name: "Home", href: "/", icon: Home },
+    { name: "Quran", href: "/quran", icon: BookOpen },
     { name: "About", href: "/about", icon: Info },
     { name: "Contact", href: "/contact", icon: Mail },
     { name: "Prayer Times", href: "/prayer-times", icon: Clock },
@@ -129,11 +150,9 @@ export default function Navigation({ isLoggedIn, setShowLogoutModal }) {
               onClick={() => handleNavItemClick("/", "Home")}
               className="flex items-center transition-all duration-300 hover:scale-105 group space-x-2"
             >
-              <div className="flex items-center">
-                <span className="text-xl font-extrabold text-white leading-tight logo-nastaliq">
-                  نبراس الدين
-                </span>
-              </div>
+              <span className="text-xl font-extrabold text-white leading-tight logo-nastaliq">
+                Nibras Al-deen
+              </span>
             </button>
 
             <div className="flex items-center space-x-8">
@@ -198,8 +217,59 @@ export default function Navigation({ isLoggedIn, setShowLogoutModal }) {
             </div>
 
             <div className="flex items-center space-x-3">
-              <button className="relative p-2.5 rounded-xl hover:bg-white/15 transition-all duration-300 backdrop-blur-sm group">
-                <Bell className="w-6 h-6 text-white group-hover:scale-110 transition-transform" />
+              <div className="relative" ref={userDropdownRef}>
+                <button
+                  className="relative p-2.5 rounded-full bg-white/20 hover:bg-white/30 transition-all duration-300 shadow-md backdrop-blur-sm group border-2 border-transparent hover:border-amber-200"
+                  onClick={() => setIsUserDropdownOpen((prev) => !prev)}
+                >
+                  <User className="w-5 h-5 text-white group-hover:scale-105 transition-transform" />
+                </button>
+
+                {isUserDropdownOpen && (
+                  <div className="absolute right-0 mt-3 w-48 bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden z-50">
+                    {token ? (
+                      <>
+                        <div className="p-2">
+                          <button
+                            onClick={() => handleUserAction("profile")}
+                            className="flex items-center w-full px-3 py-2 text-sm font-medium text-gray-700 rounded-lg hover:bg-emerald-50 transition-colors"
+                          >
+                            <User className="w-4 h-4 mr-3 text-emerald-600" />
+                            Profile
+                          </button>
+                          <button
+                            onClick={() => handleUserAction("settings")}
+                            className="flex items-center w-full px-3 py-2 text-sm font-medium text-gray-700 rounded-lg hover:bg-emerald-50 transition-colors"
+                          >
+                            <Settings className="w-4 h-4 mr-3 text-emerald-600" />
+                            Settings
+                          </button>
+                        </div>
+                        <div className="border-t border-gray-100">
+                          <button
+                            onClick={() => handleUserAction("logout")}
+                            className="flex items-center w-full px-3 py-2 text-sm font-semibold text-red-600 rounded-lg hover:bg-red-50 transition-colors"
+                          >
+                            <LogOut className="w-4 h-4 mr-3" />
+                            Log Out
+                          </button>
+                        </div>
+                      </>
+                    ) : (
+                      <button
+                        onClick={() => navigate("/login")}
+                        className="flex items-center w-full px-4 py-3 text-sm font-medium text-emerald-700 hover:bg-emerald-50"
+                      >
+                        <LogOut className="w-4 h-4 mr-3" />
+                        Login / Sign Up
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <button className="relative p-2.5 rounded-full bg-white/20 hover:bg-white/30 transition-all duration-300 shadow-md backdrop-blur-sm group">
+                <Bell className="w-5 h-5 text-white group-hover:scale-105 transition-transform" />
                 <span className="absolute -top-1 -right-1 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs w-5 h-5 flex items-center justify-center font-bold rounded-full shadow-lg">
                   3
                 </span>
@@ -217,11 +287,9 @@ export default function Navigation({ isLoggedIn, setShowLogoutModal }) {
                 onClick={() => handleNavItemClick("/", "Home")}
                 className="flex items-center space-x-2"
               >
-                <div className="logo-nastaliq flex items-center">
-                  <span className="text-base font-bold text-white leading-tight">
-                    Nibras Al-deen
-                  </span>
-                </div>
+                <span className="text-base font-bold text-white leading-tight">
+                  Nibras Al-deen
+                </span>
               </button>
               <div className="flex items-center space-x-2">
                 <button

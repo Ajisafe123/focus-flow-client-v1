@@ -37,53 +37,6 @@ export default function AdkarDuaSection() {
     fetchAdkar();
   }, []);
 
-  useEffect(() => {
-    const setupAudio = (audioRef, setProgress, setDuration, setPlaying) => {
-      const audio = audioRef.current;
-      if (!audio) return;
-
-      const onTimeUpdate = () => setProgress(audio.currentTime);
-      const onLoadedMetadata = () => setDuration(audio.duration || 0);
-      const onEnded = () => {
-        if (repeat) {
-          audio.currentTime = 0;
-          audio.play().catch(() => {});
-        } else setPlaying(false);
-      };
-      const onError = () => setAudioError(true);
-
-      audio.addEventListener("timeupdate", onTimeUpdate);
-      audio.addEventListener("loadedmetadata", onLoadedMetadata);
-      audio.addEventListener("ended", onEnded);
-      audio.addEventListener("error", onError);
-
-      return () => {
-        audio.removeEventListener("timeupdate", onTimeUpdate);
-        audio.removeEventListener("loadedmetadata", onLoadedMetadata);
-        audio.removeEventListener("ended", onEnded);
-        audio.removeEventListener("error", onError);
-      };
-    };
-
-    const cleanupMorning = setupAudio(
-      morningAudioRef,
-      setMorningProgress,
-      setMorningDuration,
-      setIsPlayingMorning
-    );
-    const cleanupEvening = setupAudio(
-      eveningAudioRef,
-      setEveningProgress,
-      setEveningDuration,
-      setIsPlayingEvening
-    );
-
-    return () => {
-      cleanupMorning?.();
-      cleanupEvening?.();
-    };
-  }, [repeat]);
-
   const togglePlayPause = (type) => {
     const isMorning = type === "morning";
     const audioRef = isMorning ? morningAudioRef : eveningAudioRef;
@@ -94,19 +47,26 @@ export default function AdkarDuaSection() {
 
     if (playing) {
       audioRef.current.pause();
+      if (isMorning) {
+        setIsPlayingMorning(false);
+      } else {
+        setIsPlayingEvening(false);
+      }
     } else {
-      audioRef.current
-        .play()
-        .catch((err) => console.log("Audio play blocked:", err));
       if (otherRef.current) otherRef.current.pause();
-    }
+      if (isMorning) {
+        setIsPlayingMorning(true);
+        setIsPlayingEvening(false);
+      } else {
+        setIsPlayingEvening(true);
+        setIsPlayingMorning(false);
+      }
 
-    if (isMorning) {
-      setIsPlayingMorning(!playing);
-      setIsPlayingEvening(false);
-    } else {
-      setIsPlayingEvening(!playing);
-      setIsPlayingMorning(false);
+      audioRef.current.play().catch((err) => {
+        console.log("Audio play blocked:", err);
+        if (isMorning) setIsPlayingMorning(false);
+        else setIsPlayingEvening(false);
+      });
     }
   };
 
@@ -136,11 +96,11 @@ export default function AdkarDuaSection() {
       : setCurrentEveningIndex;
     setIndex((i) => (i + 1) % adkar.length);
     if (isMorning) {
-      morningAudioRef.current.pause();
+      morningAudioRef.current?.pause();
       setIsPlayingMorning(false);
       setMorningProgress(0);
     } else {
-      eveningAudioRef.current.pause();
+      eveningAudioRef.current?.pause();
       setIsPlayingEvening(false);
       setEveningProgress(0);
     }
@@ -154,13 +114,25 @@ export default function AdkarDuaSection() {
       : setCurrentEveningIndex;
     setIndex((i) => (i - 1 + adkar.length) % adkar.length);
     if (isMorning) {
-      morningAudioRef.current.pause();
+      morningAudioRef.current?.pause();
       setIsPlayingMorning(false);
       setMorningProgress(0);
     } else {
-      eveningAudioRef.current.pause();
+      eveningAudioRef.current?.pause();
       setIsPlayingEvening(false);
       setEveningProgress(0);
+    }
+  };
+
+  const handleAudioEnded = (isMorning) => {
+    if (repeat) {
+      const audioRef = isMorning ? morningAudioRef : eveningAudioRef;
+      if (audioRef.current) {
+        audioRef.current.currentTime = 0;
+        audioRef.current.play().catch(() => {});
+      }
+    } else {
+      isMorning ? setIsPlayingMorning(false) : setIsPlayingEvening(false);
     }
   };
 
@@ -172,6 +144,15 @@ export default function AdkarDuaSection() {
     const progress = isMorning ? morningProgress : eveningProgress;
     const duration = isMorning ? morningDuration : eveningDuration;
     const audioRef = isMorning ? morningAudioRef : eveningAudioRef;
+
+    let localAudioSource = "";
+    if (isMorning) {
+      localAudioSource =
+        "https://focus-flow-server-v1.onrender.com/static/audio/category_5_Moring_dhikr.mp3";
+    } else {
+      localAudioSource =
+        "https://focus-flow-server-v1.onrender.com/static/audio/category_6_Evening_dhikr.mp3";
+    }
 
     return (
       <div className="bg-white rounded-3xl shadow-md sm:shadow-lg p-6 sm:p-7 hover:shadow-xl transition-all flex flex-col justify-between">
@@ -244,10 +225,7 @@ export default function AdkarDuaSection() {
         ) : (
           <audio
             ref={audioRef}
-            src={
-              current.audio_url ||
-              `https://focus-flow-server-v1.onrender.com/static/audio/${type}_dua.mp3`
-            }
+            src={current.audio_url || localAudioSource}
             preload="metadata"
             onLoadedMetadata={(e) => {
               const audio = e.target;
@@ -261,16 +239,7 @@ export default function AdkarDuaSection() {
                 ? setMorningProgress(audio.currentTime)
                 : setEveningProgress(audio.currentTime);
             }}
-            onEnded={() => {
-              if (repeat) {
-                audioRef.current.currentTime = 0;
-                audioRef.current.play().catch(() => {});
-              } else {
-                isMorning
-                  ? setIsPlayingMorning(false)
-                  : setIsPlayingEvening(false);
-              }
-            }}
+            onEnded={() => handleAudioEnded(isMorning)}
             onError={() => setAudioError(true)}
           />
         )}
@@ -306,7 +275,9 @@ export default function AdkarDuaSection() {
               onClick={() => {
                 if (audioRef.current) {
                   audioRef.current.currentTime = 0;
-                  audioRef.current.play();
+                  audioRef.current.play().catch((err) => {
+                    console.log("Audio replay blocked:", err);
+                  });
                   isMorning
                     ? setIsPlayingMorning(true)
                     : setIsPlayingEvening(true);

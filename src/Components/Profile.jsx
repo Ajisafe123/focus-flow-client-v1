@@ -9,11 +9,17 @@ import {
   Edit2,
   Globe2,
   Building2,
+  Settings,
+  LogOut,
 } from "lucide-react";
+import LogoutModal from "./Authentications/LogoutModal";
 
-export default function ProfilePage() {
+export default function ProfilePage({
+  setShowLogoutModal: propSetShowLogoutModal,
+}) {
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [profileData, setProfileData] = useState({
     username: "",
     email: "",
@@ -179,6 +185,23 @@ export default function ProfilePage() {
     }
   };
 
+  const handleSettings = () => {
+    window.location.href = "/settings";
+  };
+
+  const handleLogout = () => {
+    if (propSetShowLogoutModal) {
+      propSetShowLogoutModal(true);
+    } else {
+      setShowLogoutModal(true);
+    }
+  };
+
+  const handleConfirmedLogout = () => {
+    localStorage.removeItem("token");
+    window.location.href = "/login";
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-teal-50 p-2 sm:p-4 md:p-6">
       <div className="transform scale-[0.85] sm:scale-90 md:scale-95 origin-top mx-auto max-w-6xl">
@@ -188,11 +211,29 @@ export default function ProfilePage() {
           </div>
         )}
 
-        <div className="mb-8 backdrop-blur-sm bg-white/60 rounded-3xl p-6 border border-white/40 shadow-lg">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-emerald-700 via-teal-600 to-emerald-600 bg-clip-text text-transparent mb-2">
-            Profile
-          </h1>
-          <p className="text-slate-600">Manage your account information</p>
+        <div className="mb-8 backdrop-blur-sm bg-white/60 rounded-3xl p-6 border border-white/40 shadow-lg flex items-center justify-between">
+          <div>
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-emerald-700 via-teal-600 to-emerald-600 bg-clip-text text-transparent mb-2">
+              Profile
+            </h1>
+            <p className="text-slate-600">Manage your account information</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleSettings}
+              className="w-12 h-12 bg-white hover:bg-emerald-50 rounded-2xl flex items-center justify-center transition-all shadow-md hover:shadow-lg border border-emerald-100"
+              title="Settings"
+            >
+              <Settings className="w-5 h-5 text-emerald-600" />
+            </button>
+            <button
+              onClick={handleLogout}
+              className="w-12 h-12 bg-white hover:bg-red-50 rounded-2xl flex items-center justify-center transition-all shadow-md hover:shadow-lg border border-red-100"
+              title="Logout"
+            >
+              <LogOut className="w-5 h-5 text-red-600" />
+            </button>
+          </div>
         </div>
 
         {loading ? (
@@ -259,6 +300,7 @@ export default function ProfilePage() {
                 </div>
               </div>
             </div>
+
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
               <div className="backdrop-blur-xl bg-white/80 border border-white/40 rounded-3xl p-6 shadow-xl hover:shadow-2xl transition-all transform hover:-translate-y-1">
                 <div className="flex items-start gap-4">
@@ -286,6 +328,7 @@ export default function ProfilePage() {
                   </div>
                 </div>
               </div>
+
               <div className="backdrop-blur-xl bg-white/80 border border-white/40 rounded-3xl p-6 shadow-xl hover:shadow-2xl transition-all transform hover:-translate-y-1">
                 <div className="flex items-start gap-4">
                   <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center shadow-lg flex-shrink-0">
@@ -301,6 +344,7 @@ export default function ProfilePage() {
                   </div>
                 </div>
               </div>
+
               <div className="backdrop-blur-xl bg-white/80 border border-white/40 rounded-3xl p-6 shadow-xl hover:shadow-2xl transition-all transform hover:-translate-y-1">
                 <div className="space-y-5">
                   <div className="flex items-start gap-4">
@@ -327,6 +371,7 @@ export default function ProfilePage() {
                       )}
                     </div>
                   </div>
+
                   <div className="flex items-start gap-4">
                     <div className="w-12 h-12 bg-gradient-to-br from-rose-500 to-pink-500 rounded-2xl flex items-center justify-center shadow-lg flex-shrink-0">
                       <Building2 className="w-6 h-6 text-white" />
@@ -351,6 +396,7 @@ export default function ProfilePage() {
                       )}
                     </div>
                   </div>
+
                   <div className="flex items-start gap-4">
                     <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-500 rounded-2xl flex items-center justify-center shadow-lg flex-shrink-0">
                       <Globe2 className="w-6 h-6 text-white" />
@@ -380,6 +426,7 @@ export default function ProfilePage() {
                   </div>
                 </div>
               </div>
+
               <div className="backdrop-blur-xl bg-white/80 border border-white/40 rounded-3xl p-6 shadow-xl hover:shadow-2xl transition-all transform hover:-translate-y-1">
                 <div className="flex items-start gap-4">
                   <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-500 rounded-2xl flex items-center justify-center shadow-lg flex-shrink-0">
@@ -396,6 +443,7 @@ export default function ProfilePage() {
                 </div>
               </div>
             </div>
+
             <div className="backdrop-blur-xl bg-white/80 border border-white/40 rounded-3xl p-6 shadow-xl hover:shadow-2xl transition-all">
               <h3 className="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
                 <div className="w-2 h-6 bg-gradient-to-b from-emerald-600 to-teal-600 rounded-full"></div>
@@ -430,6 +478,12 @@ export default function ProfilePage() {
           </>
         )}
       </div>
+
+      <LogoutModal
+        isOpen={propSetShowLogoutModal ? false : showLogoutModal}
+        onClose={() => setShowLogoutModal(false)}
+        onConfirm={handleConfirmedLogout}
+      />
     </div>
   );
 }

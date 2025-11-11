@@ -40,7 +40,7 @@ export default function AuthForm({ isLogin }) {
         const token = response.token || response.access_token;
         if (token) {
           localStorage.setItem("token", token);
-          localStorage.setItem("role", response.role || "user"); // save role
+          localStorage.setItem("role", response.role || "user"); 
           window.dispatchEvent(new Event("loginStatusChanged"));
         }
       } else {

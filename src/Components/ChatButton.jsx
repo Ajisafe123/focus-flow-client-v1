@@ -5,7 +5,7 @@ export const ChatButton = ({ isOpen, setIsOpen, unreadCount }) => {
   if (isOpen) return null;
 
   return (
-    <div className="relative w-max">
+    <div className="relative w-max mb-20 lg:mb-0 lg:mr-8 z-30">
       <button
         onClick={() => setIsOpen(true)}
         className="relative w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-600 rounded-full shadow-2xl hover:shadow-emerald-500/50 transition-all duration-500 hover:scale-110 flex items-center justify-center group"

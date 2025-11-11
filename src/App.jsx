@@ -34,7 +34,7 @@ import ProfilePage from "./Components/Profile";
 import AdminDashboard from "./Admin/NibrasAdminDashboard";
 import apiService from "./Services/api";
 import ArticlesInterface from "./Admin/ArticlesInterface";
-
+import QuranPage from "./Components/Quran";
 const pageVariants = {
   initial: { opacity: 0, y: 10 },
   in: { opacity: 1, y: 0 },
@@ -64,7 +64,7 @@ function GuestHome() {
       <LiveDua />
       <DailyHadith />
       <LiveVideo />
-      <LiveAudio/>
+      <LiveAudio />
       <About />
       <Contact />
     </>
@@ -81,13 +81,12 @@ function AppContent({
 }) {
   const location = useLocation();
   const navigate = useNavigate();
-  const hideFooterPaths = ["/login", "/forgot-password", "/reset-password"];
+  const shouldShowFooter = location.pathname === "/";
+
   const isAdminPage =
     role === "admin" && location.pathname.startsWith("/admin");
-  const shouldShowFooter =
-    !hideFooterPaths.includes(location.pathname) && !isAdminPage;
   const showNavigation = !isAdminPage;
-  const showLiveChat = isLoggedIn && !isAdminPage;
+  const showLiveChat = isLoggedIn && location.pathname === "/";
 
   const confirmLogout = () => {
     apiService.logout();
@@ -114,6 +113,14 @@ function AppContent({
             element={
               <PageWrapper>
                 <GuestHome />
+              </PageWrapper>
+            }
+          />
+          <Route
+            path="/quran"
+            element={
+              <PageWrapper>
+                <QuranPage />
               </PageWrapper>
             }
           />

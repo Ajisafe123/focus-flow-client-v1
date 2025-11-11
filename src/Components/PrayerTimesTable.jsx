@@ -8,26 +8,37 @@ import {
   MapPin,
   User,
   Calendar,
+  Zap,
 } from "lucide-react";
+
+const DEFAULT_LAT = 7.3775;
+const DEFAULT_LON = 3.947;
 
 export default function PrayerTimesTable() {
   const [prayerData, setPrayerData] = useState(null);
   const [countdown, setCountdown] = useState("");
-  const [isMuted, setIsMuted] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
   const [audioUnlocked, setAudioUnlocked] = useState(false);
   const [userLocation, setUserLocation] = useState("Fetching location...");
   const [username, setUsername] = useState("Guest");
-  const [useProfileLocation, setUseProfileLocation] = useState(true);
+  const [useProfileLocation, setUseProfileLocation] = useState(false);
   const timerRef = useRef(null);
   const lastPrayerRef = useRef(null);
   const audioCtxRef = useRef(null);
   const audioBufferRef = useRef(null);
-  const BACKEND_URL = "https://focus-flow-server-v1.onrender.com";
+
+  const LOCAL_BACKEND_URL = "https://focus-flow-server-v1.onrender.com";
+  const BACKEND_URL = LOCAL_BACKEND_URL;
+
   const token = localStorage.getItem("token");
+  const isAuthenticated = !!token;
 
   const loadAudio = useCallback(async () => {
-    if (!token) return;
+    if (!isAuthenticated) {
+      setAudioUnlocked(false);
+      return;
+    }
     if (!audioCtxRef.current)
       audioCtxRef.current = new (window.AudioContext ||
         window.webkitAudioContext)();
@@ -39,11 +50,13 @@ export default function PrayerTimesTable() {
         arrayBuffer
       );
       setAudioUnlocked(true);
-    } catch {}
-  }, [token]);
+    } catch (error) {
+      console.error("Error loading Azan audio:", error);
+    }
+  }, [isAuthenticated, BACKEND_URL]);
 
   const playAzan = useCallback(async () => {
-    if (!token) return;
+    if (!isAuthenticated) return;
     if (isMuted || !audioBufferRef.current || !audioCtxRef.current) return;
     if (audioCtxRef.current.state === "suspended") {
       await audioCtxRef.current.resume();
@@ -54,27 +67,43 @@ export default function PrayerTimesTable() {
     source.start(0);
     setIsPlaying(true);
     source.onended = () => setIsPlaying(false);
-  }, [isMuted, token]);
+  }, [isMuted, isAuthenticated]);
 
   const fetchUserData = useCallback(async () => {
-    if (!token) return;
+    if (!isAuthenticated) {
+      setUsername("Guest");
+      return;
+    }
     try {
       const res = await fetch(`${BACKEND_URL}/prayers/users/me`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (!res.ok) return;
+      if (!res.ok) {
+        setUsername("Guest");
+        return;
+      }
       const data = await res.json();
-      setUsername(data.username || "Guest");
-      if (useProfileLocation) {
+      setUsername(data.username || "User");
+      setIsMuted(data.muted);
+
+      if (data.latitude && data.longitude) {
+        setUseProfileLocation(true);
         const state = data.state || data.city || "Unknown";
         const country = data.country || "";
         setUserLocation(`${state}, ${country}`);
+      } else {
+        setUseProfileLocation(false);
       }
-    } catch {}
-  }, [token, useProfileLocation]);
+    } catch {
+      setUsername("Guest");
+    }
+  }, [isAuthenticated, token, BACKEND_URL]);
 
   const toggleMute = async () => {
-    if (!token) return;
+    if (!isAuthenticated) {
+      setIsMuted((prev) => !prev);
+      return;
+    }
     try {
       const endpoint = isMuted ? "unmute" : "mute";
       const res = await fetch(`${BACKEND_URL}/prayers/users/me/${endpoint}`, {
@@ -84,7 +113,9 @@ export default function PrayerTimesTable() {
       if (!res.ok) return;
       const data = await res.json();
       setIsMuted(data.muted);
-    } catch {}
+    } catch (error) {
+      console.error("Failed to toggle mute:", error);
+    }
   };
 
   const getPosition = () =>
@@ -95,73 +126,39 @@ export default function PrayerTimesTable() {
             latitude: pos.coords.latitude,
             longitude: pos.coords.longitude,
           }),
-        () => resolve({ latitude: 7.3775, longitude: 3.947 }),
+        () =>
+          resolve({
+            latitude: DEFAULT_LAT,
+            longitude: DEFAULT_LON,
+            error: true,
+          }),
         { enableHighAccuracy: false, timeout: 10000 }
       );
     });
 
-  const fetchLocationName = useCallback(async (lat, lon) => {
-    try {
-      const res = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`
-      );
-      const data = await res.json();
-      const state = data.address?.state || data.address?.county || "Unknown";
-      const country = data.address?.country || "";
-      setUserLocation(`${state}, ${country}`);
-    } catch {
-      setUserLocation("Location unavailable");
-    }
-  }, []);
-
-  const fetchPrayerTimes = useCallback(async () => {
-    if (!token) return;
-    try {
-      let lat, lon;
-      if (useProfileLocation && token) {
-        const res = await fetch(`${BACKEND_URL}/prayers/users/me`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (res.ok) {
-          const data = await res.json();
-          lat = data.latitude || 7.3775;
-          lon = data.longitude || 3.947;
-          const state = data.state || data.city || "Unknown";
-          const country = data.country || "";
-          setUserLocation(`${state}, ${country}`);
-        }
-      } else {
-        const pos = await getPosition();
-        lat = pos.latitude;
-        lon = pos.longitude;
-        fetchLocationName(lat, lon);
+  const fetchLocationName = useCallback(
+    async (lat, lon) => {
+      setUserLocation("Fetching location name...");
+      try {
+        const res = await fetch(
+          `${BACKEND_URL}/prayers/reverse-geocode?lat=${lat}&lon=${lon}`
+        );
+        if (!res.ok) throw new Error("Proxy failed");
+        const data = await res.json();
+        const address = data.address || {};
+        const state =
+          address.state ||
+          address.county ||
+          data.display_name?.split(",")[0] ||
+          "Unknown";
+        const country = address.country || "";
+        setUserLocation(`${state}, ${country}`.replace(/,\s*$/, ""));
+      } catch {
+        setUserLocation("Location unavailable");
       }
-
-      if (!lat || !lon) return;
-
-      const res = await fetch(
-        `${BACKEND_URL}/prayers/times?lat=${lat}&lon=${lon}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      if (!res.ok) return;
-      const data = await res.json();
-      setPrayerData(data);
-      startCountdown(data.next_prayer);
-
-      const currentNext = data.next_prayer?.name;
-      if (lastPrayerRef.current !== currentNext && audioUnlocked && !isMuted) {
-        playAzan();
-        lastPrayerRef.current = currentNext;
-      }
-    } catch {}
-  }, [
-    token,
-    useProfileLocation,
-    fetchLocationName,
-    audioUnlocked,
-    isMuted,
-    playAzan,
-  ]);
+    },
+    [BACKEND_URL]
+  );
 
   const startCountdown = (nextPrayer) => {
     if (!nextPrayer?.timestamp) return;
@@ -171,6 +168,15 @@ export default function PrayerTimesTable() {
       const diff = nextPrayer.timestamp * 1000 - now;
       if (diff <= 0) {
         setCountdown("It's time!");
+        if (
+          lastPrayerRef.current !== nextPrayer.name &&
+          audioUnlocked &&
+          !isMuted
+        ) {
+          playAzan();
+          lastPrayerRef.current = nextPrayer.name;
+        }
+        clearInterval(timerRef.current);
         return;
       }
       const h = Math.floor(diff / 3600000);
@@ -182,50 +188,103 @@ export default function PrayerTimesTable() {
     timerRef.current = setInterval(update, 1000);
   };
 
+  const fetchPrayerTimes = useCallback(async () => {
+    let lat = DEFAULT_LAT;
+    let lon = DEFAULT_LON;
+    let locationSet = false;
+
+    try {
+      if (isAuthenticated) {
+        const userRes = await fetch(`${BACKEND_URL}/prayers/users/me`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (userRes.ok) {
+          const userData = await userRes.json();
+          if (useProfileLocation && userData.latitude && userData.longitude) {
+            lat = userData.latitude;
+            lon = userData.longitude;
+            const state = userData.state || userData.city || "Unknown";
+            const country = userData.country || "";
+            setUserLocation(`${state}, ${country}`.replace(/,\s*$/, ""));
+            locationSet = true;
+          }
+        }
+      }
+
+      if (!locationSet && !useProfileLocation) {
+        const pos = await getPosition();
+        lat = pos.latitude;
+        lon = pos.longitude;
+        if (pos.error) {
+          setUserLocation("Ibadan, Nigeria (Geolocation Failed)");
+        } else {
+          await fetchLocationName(lat, lon);
+        }
+        locationSet = true;
+      }
+
+      if (!locationSet && !isAuthenticated) {
+        setUserLocation("Ibadan, Nigeria (Default)");
+        locationSet = true;
+      }
+
+      const headers = isAuthenticated
+        ? { Authorization: `Bearer ${token}` }
+        : {};
+      const res = await fetch(
+        `${BACKEND_URL}/prayers/times?lat=${lat}&lon=${lon}`,
+        { headers: headers }
+      );
+
+      if (!res.ok) throw new Error("Failed to fetch prayer data");
+
+      const data = await res.json();
+      setPrayerData(data);
+      startCountdown(data.next_prayer);
+    } catch (error) {
+      console.error("Error fetching prayer times:", error);
+      if (!prayerData) setPrayerData({ next_prayer: null, prayer_times: {} });
+      setUserLocation("Data Unavailable");
+    }
+  }, [
+    isAuthenticated,
+    token,
+    useProfileLocation,
+    fetchLocationName,
+    BACKEND_URL,
+  ]);
+
   useEffect(() => {
-    if (!token) return;
+    if (timerRef.current) clearInterval(timerRef.current);
+    let interval;
     loadAudio();
     fetchUserData();
     fetchPrayerTimes();
-    const interval = setInterval(fetchPrayerTimes, 60000);
+    interval = setInterval(fetchPrayerTimes, 60000);
     return () => {
       clearInterval(timerRef.current);
       clearInterval(interval);
     };
   }, [
+    isAuthenticated,
     isMuted,
     useProfileLocation,
     fetchPrayerTimes,
     fetchUserData,
     loadAudio,
-    token,
   ]);
 
-  if (!token) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-white px-4">
-        <div className="max-w-md text-center">
-          <p className="text-gray-600 text-base mb-3">
-            Please login to view accurate prayer times for your location.
-          </p>
-          <a
-            href="/login?next=/prayer-times"
-            className="text-emerald-600 hover:text-emerald-700 font-medium underline transition-colors"
-          >
-            Go to Login
-          </a>
-        </div>
-      </div>
-    );
-  }
+  const handleToggleProfileLocation = (e) => {
+    setUseProfileLocation(e.target.checked);
+  };
 
   if (!prayerData) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="flex justify-center items-center">
           <div className="relative">
-            <div className="animate-spin rounded-full h-12 w-12 border-3 border-gray-200"></div>
-            <div className="animate-spin rounded-full h-12 w-12 border-t-3 border-emerald-600 absolute top-0"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-200"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-emerald-600 absolute top-0 left-0"></div>
           </div>
         </div>
       </div>
@@ -234,39 +293,50 @@ export default function PrayerTimesTable() {
 
   const next = prayerData.next_prayer;
   const prayerIcons = {
-    Fajr: <Sun size={18} className="text-amber-500" />,
-    Dhuhr: <Sun size={18} className="text-yellow-500" />,
-    Asr: <Sun size={18} className="text-orange-500" />,
-    Maghrib: <Moon size={18} className="text-purple-500" />,
-    Isha: <Moon size={18} className="text-indigo-500" />,
+    Fajr: <Sun size={16} className="text-yellow-500" />,
+    Sunrise: <Zap size={16} className="text-orange-400" />,
+    Dhuhr: <Sun size={16} className="text-orange-500" />,
+    Asr: <Sun size={16} className="text-amber-600" />,
+    Maghrib: <Moon size={16} className="text-blue-500" />,
+    Isha: <Moon size={16} className="text-indigo-600" />,
   };
 
   return (
     <div className="min-h-screen bg-white py-6 px-4">
       <div className="max-w-4xl mx-auto">
-        <div className="flex items-center justify-between mb-5">
+        {!isAuthenticated && (
+          <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 p-3 rounded-lg flex items-center justify-between mb-5 shadow-sm text-sm">
+            <p>Log in to use your profile location and enable Azan playback.</p>
+            <a
+              href="/login?next=/prayer-times"
+              className="text-emerald-600 hover:text-emerald-700 font-medium underline shrink-0 ml-4"
+            >
+              Login
+            </a>
+          </div>
+        )}
+        <div className="flex items-center justify-between mb-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-800 mb-1">
-              Prayer Times
-            </h1>
-            <div className="flex items-center gap-3 text-gray-500 text-xs">
+            <div className="flex items-center gap-3 text-gray-500 text-sm">
               <div className="flex items-center gap-1">
-                <User className="w-3.5 h-3.5" />
+                <User className="w-4 h-4" />
                 <span>{username}</span>
               </div>
               <div className="flex items-center gap-1">
-                <MapPin className="w-3.5 h-3.5" />
+                <MapPin className="w-4 h-4" />
                 <span>{userLocation}</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <Calendar className="w-3.5 h-3.5" />
-                <span>{prayerData.hijri_date}</span>
               </div>
             </div>
           </div>
           <button
             onClick={toggleMute}
-            className="relative p-2 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200"
+            className={`relative p-2 bg-white hover:bg-emerald-50 rounded-lg transition-colors border ${
+              isAuthenticated
+                ? "border-emerald-300"
+                : "border-gray-200 cursor-not-allowed"
+            }`}
+            disabled={!isAuthenticated}
+            title={!isAuthenticated ? "Login to control Azan playback" : ""}
           >
             {isMuted ? (
               <VolumeX className="w-5 h-5 text-gray-600" />
@@ -281,64 +351,48 @@ export default function PrayerTimesTable() {
             )}
           </button>
         </div>
-
-        <div className="bg-gradient-to-r from-emerald-500 to-teal-500 rounded-xl p-5 mb-5 shadow-sm">
+        <div className="bg-gradient-to-r from-emerald-600 to-teal-600 rounded-lg p-4 mb-4 shadow-md">
           <div className="flex items-center justify-between text-white">
-            <div>
-              <div className="flex items-center gap-1.5 mb-1 opacity-90">
-                <Clock className="w-4 h-4" />
-                <span className="text-xs uppercase tracking-wide font-medium">
-                  Next Prayer
-                </span>
-              </div>
-              <div className="flex items-baseline gap-3">
-                <h2 className="text-3xl font-bold">{next?.name || "—"}</h2>
-                <span className="text-2xl font-light opacity-90">
-                  {next?.time_12h || "--:--"}
-                </span>
-              </div>
+            <div className="flex items-center gap-2">
+              <Clock className="w-4 h-4 opacity-90" />
+              <span className="text-sm font-medium">
+                Next: {next?.name || "—"}
+              </span>
             </div>
-            <div className="bg-white bg-opacity-20 backdrop-blur-sm px-4 py-2.5 rounded-lg">
-              <div className="text-center">
-                <div className="text-xs opacity-80 mb-0.5">Remaining</div>
-                <div className="text-xl font-bold tabular-nums">
-                  {countdown}
-                </div>
-              </div>
+            <div className="text-2xl font-bold tabular-nums">
+              {next?.time_12h || "--:--"}
+            </div>
+          </div>
+          <div className="flex justify-between items-center text-white mt-2 border-t border-emerald-400 pt-2">
+            <div className="flex items-center gap-2 text-sm font-medium">
+              <Calendar className="w-4 h-4 opacity-90" />
+              <span>{prayerData.hijri_date}</span>
+            </div>
+            <div className="text-sm font-medium">
+              <span className="font-bold tabular-nums">{countdown}</span>
             </div>
           </div>
         </div>
-
-        <div className="mb-4 flex items-center gap-2.5">
-          <label className="flex items-center gap-2 cursor-pointer">
-            <div className="relative">
-              <input
-                type="checkbox"
-                checked={useProfileLocation}
-                onChange={() => setUseProfileLocation(!useProfileLocation)}
-                className="sr-only peer"
-              />
-              <div className="w-9 h-5 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
-            </div>
-            <span className="text-xs text-gray-600">Use profile location</span>
-          </label>
-        </div>
-
-        <div className="bg-white rounded-xl overflow-hidden border border-gray-200 shadow-sm">
+        {isAuthenticated && (
+          <div className="mb-4 flex items-center gap-2.5">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <div className="relative">
+                <input
+                  type="checkbox"
+                  checked={useProfileLocation}
+                  onChange={handleToggleProfileLocation}
+                  className="sr-only peer"
+                />
+                <div className="w-9 h-5 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600"></div>
+              </div>
+              <span className="text-sm text-gray-600">
+                Use profile location for calculation
+              </span>
+            </label>
+          </div>
+        )}
+        <div className="bg-white rounded-xl overflow-hidden border border-gray-200 shadow-md">
           <table className="w-full">
-            <thead>
-              <tr className="border-b border-gray-200 bg-gray-50">
-                <th className="text-left py-3 px-4 text-gray-600 font-semibold text-xs uppercase tracking-wide">
-                  Prayer
-                </th>
-                <th className="text-right py-3 px-4 text-gray-600 font-semibold text-xs uppercase tracking-wide">
-                  Time
-                </th>
-                <th className="text-right py-3 px-4 text-gray-600 font-semibold text-xs uppercase tracking-wide">
-                  Status
-                </th>
-              </tr>
-            </thead>
             <tbody className="divide-y divide-gray-100">
               {Object.entries(prayerData.prayer_times).map(([name, info]) => (
                 <tr
@@ -347,7 +401,7 @@ export default function PrayerTimesTable() {
                     name === next?.name ? "bg-emerald-50" : "hover:bg-gray-50"
                   }`}
                 >
-                  <td className="py-3.5 px-4">
+                  <td className="py-3 px-4">
                     <div className="flex items-center gap-3">
                       <div
                         className={`p-1.5 rounded-lg ${
@@ -355,13 +409,13 @@ export default function PrayerTimesTable() {
                         }`}
                       >
                         {prayerIcons[name] || (
-                          <Clock size={18} className="text-gray-500" />
+                          <Clock size={16} className="text-gray-500" />
                         )}
                       </div>
                       <span
                         className={`text-sm font-semibold ${
                           name === next?.name
-                            ? "text-emerald-700"
+                            ? "text-emerald-800"
                             : "text-gray-800"
                         }`}
                       >
@@ -369,40 +423,35 @@ export default function PrayerTimesTable() {
                       </span>
                     </div>
                   </td>
-                  <td className="py-3.5 px-4">
+                  <td className="py-3 px-4">
                     <div
                       className={`text-right text-lg font-bold tabular-nums ${
                         name === next?.name
-                          ? "text-emerald-600"
+                          ? "text-emerald-700"
                           : "text-gray-800"
                       }`}
                     >
                       {info.time_12h || info.time}
                     </div>
                   </td>
-                  <td className="py-3.5 px-4 text-right">
-                    {name === next?.name ? (
-                      <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-100 rounded-full">
-                        <span className="flex h-1.5 w-1.5">
-                          <span className="animate-ping absolute inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500 opacity-75"></span>
-                          <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-600"></span>
-                        </span>
-                        <span className="text-emerald-700 text-xs font-medium">
-                          Active
-                        </span>
-                      </div>
-                    ) : (
-                      <span className="text-gray-400 text-xs">—</span>
-                    )}
+                  <td className="py-3 px-4 text-right">
+                    <div className="flex justify-end">
+                      <input
+                        type="checkbox"
+                        checked={name === next?.name}
+                        readOnly
+                        className={`w-5 h-5 border rounded-md cursor-pointer ${
+                          name === next?.name
+                            ? "bg-emerald-600 border-emerald-600"
+                            : "border-gray-300 bg-white"
+                        }`}
+                      />
+                    </div>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
-        </div>
-
-        <div className="mt-4 text-center text-gray-500 text-xs">
-          <p>{prayerData.gregorian_date}</p>
         </div>
       </div>
     </div>

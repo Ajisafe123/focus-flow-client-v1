@@ -117,7 +117,7 @@ export default function Navigation({ setShowLogoutModal }) {
       "/videos": "Videos",
       "/adhkar": "Read Adhkar",
       "/dhikr-guide": "Dhikr Guide",
-      "/dua-guide": "Du'a Guide",
+      "/dua": "Read Dua",
       "/donation": "Donation",
     };
     setActiveLink(pathToName[location.pathname] || "");
@@ -185,9 +185,9 @@ export default function Navigation({ setShowLogoutModal }) {
 
   const dropdownData = {
     dhikr: [
+      { href: "/dua", name: "Read Dua", icon: BookOpen },
       { href: "/adhkar", name: "Read Adhkar", icon: BookOpen },
       { href: "/dhikr-guide", name: "Dhikr Guide", icon: BookOpen },
-      { href: "/dua-guide", name: "Du'a Guide", icon: BookOpen },
     ],
     teaching: [
       { href: "/lesson-plans", name: "Lesson Plans", icon: BookOpen },

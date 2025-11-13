@@ -8,11 +8,10 @@ import {
   ChevronUp,
   Tag,
   Share2,
-  Bookmark,
   BookOpen,
-  Home,
   Volume2,
-  Info,
+  X,
+  ArrowLeft,
 } from "lucide-react";
 
 const API_BASE = "https://focus-flow-server-v1.onrender.com/api";
@@ -45,14 +44,14 @@ const CategoryCard = ({ category, onClick }) => {
   return (
     <button
       onClick={onClick}
-      className="group cursor-pointer bg-white rounded-xl shadow-md transition-all duration-300 overflow-hidden w-full text-left"
+      className="group cursor-pointer bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden w-full text-left transform hover:-translate-y-1"
     >
-      <div className="relative h-40 bg-gradient-to-br from-emerald-100 to-emerald-50 overflow-hidden">
+      <div className="relative h-48 bg-gradient-to-br from-emerald-100 via-teal-50 to-emerald-50 overflow-hidden">
         {imageUrl ? (
           <img
             src={imageUrl}
             alt={category.name}
-            className="w-full h-full object-cover transition-transform duration-300"
+            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
             onError={(e) => {
               e.target.style.display = "none";
             }}
@@ -62,14 +61,12 @@ const CategoryCard = ({ category, onClick }) => {
             <BookOpenCheck className="w-16 h-16 text-emerald-400" />
           </div>
         )}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
       </div>
-      <div className="p-4">
-        <h3 className="text-lg font-bold text-gray-800 text-center group-hover:text-emerald-600 transition-colors">
+      <div className="p-5">
+        <h3 className="text-lg font-bold text-gray-900 text-center group-hover:text-emerald-600 transition-colors line-clamp-2">
           {category.name}
         </h3>
-        <p className="text-sm text-gray-500 text-center mt-1">
-          {category.duas.length} {category.duas.length === 1 ? "Dua" : "Duas"}
-        </p>
       </div>
     </button>
   );
@@ -120,15 +117,15 @@ const DuaItem = ({
       );
 
     return (
-      <div className="border-b border-gray-200">
+      <div className="border-b border-gray-100 last:border-0">
         <button
           onClick={() => toggleDetail(key)}
-          className="w-full flex justify-between items-center py-3 px-1 text-gray-700 hover:text-emerald-600 transition-colors"
+          className="w-full flex justify-between items-center py-3 px-2 text-gray-700 hover:text-emerald-600 transition-colors hover:bg-emerald-50 rounded-lg"
           aria-expanded={isOpen}
         >
           <div className="flex items-center gap-2">
             {icon}
-            <span className="text-base font-medium">{title}</span>
+            <span className="text-sm font-semibold">{title}</span>
           </div>
           {isOpen ? (
             <ChevronUp className="w-4 h-4 text-emerald-600" />
@@ -137,10 +134,10 @@ const DuaItem = ({
           )}
         </button>
         {isOpen && (
-          <div className="pb-3 pt-1 px-1">
+          <div className="pb-3 pt-1 px-2 animate-fadeIn">
             {key !== "audio" ? (
               <p
-                className={`text-base ${
+                className={`text-sm leading-relaxed ${
                   key === "transliteration"
                     ? "italic text-gray-600"
                     : "text-gray-800"
@@ -158,18 +155,18 @@ const DuaItem = ({
   };
 
   return (
-    <article className="pb-8 px-4">
-      <div className="mb-4 flex justify-between items-center">
-        <div className="flex items-center gap-2">
-          <h3 className="text-xl font-bold text-gray-800">{dua.title}</h3>
-        </div>
+    <article className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 p-6">
+      <div className="mb-4 flex justify-between items-start">
+        <h3 className="text-lg font-bold text-gray-900 flex-1 pr-2">
+          {dua.title}
+        </h3>
         <button
           onClick={handleLikeClick}
-          className="p-2 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-red-400 disabled:opacity-50 disabled:cursor-default"
+          className="p-2 rounded-full hover:bg-red-50 transition-colors focus:outline-none focus:ring-2 focus:ring-red-400"
           aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
         >
           <Heart
-            className={`w-6 h-6 ${
+            className={`w-5 h-5 ${
               isFavorite
                 ? "fill-red-500 text-red-500"
                 : "text-gray-400 hover:text-red-500"
@@ -178,37 +175,36 @@ const DuaItem = ({
         </button>
       </div>
 
-      <div className="space-y-3 border-b border-gray-200 pb-6">
-        <div dir="rtl">
+      <div className="space-y-3 border-b border-gray-100 pb-5 mb-4">
+        <div
+          dir="rtl"
+          className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl p-4"
+        >
           <p
-            className="text-2xl text-right text-gray-900 leading-relaxed py-2"
+            className="text-xl text-right text-gray-900 leading-loose"
             style={{
               fontFamily: "Amiri, 'Times New Roman', serif",
-              lineHeight: "2.0",
+              lineHeight: "2.2",
             }}
           >
             {dua.arabic}
           </p>
         </div>
         {dua.repetition_count > 0 && (
-          <p className="text-sm text-gray-500 text-right pr-2">
+          <p className="text-xs text-gray-500 text-right pr-2 font-semibold">
             ({dua.repetition_count}x)
           </p>
         )}
 
         {dua.notes && (
-          <div className="mt-4 text-gray-700 text-right">
-            <p className="text-base font-medium inline-block pr-2 bg-emerald-50 text-emerald-700 rounded-lg px-2 py-0.5">
-              Note:
-            </p>
-            <p className="text-base inline-block text-gray-700 leading-relaxed max-w-full">
-              {dua.notes}
-            </p>
+          <div className="mt-3 bg-amber-50 border-l-4 border-amber-400 p-3 rounded-r-lg">
+            <p className="text-xs font-bold text-amber-700 mb-1">Note:</p>
+            <p className="text-sm text-gray-700 leading-relaxed">{dua.notes}</p>
           </div>
         )}
       </div>
 
-      <div className="mt-4 border border-gray-200 rounded-lg p-4 bg-white shadow-sm">
+      <div className="space-y-1">
         {renderDetail(
           "translation",
           "Translation",
@@ -248,6 +244,40 @@ const DuaItem = ({
   );
 };
 
+const CategoryDescription = ({ description }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const showToggle =
+    description &&
+    (description.split("\n").length > 3 || description.length > 200);
+
+  return (
+    <div className="mx-auto max-w-3xl leading-relaxed text-center mt-3">
+      <p
+        className={`text-lg text-gray-600 font-light mx-auto whitespace-pre-line transition-all duration-300 ${
+          isExpanded ? "" : "line-clamp-3"
+        }`}
+      >
+        {description}
+      </p>
+      {showToggle && (
+        <div className="flex justify-start max-w-3xl mx-auto">
+          <button
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="text-sm font-semibold text-emerald-600 hover:text-emerald-700 mt-2 flex items-center transition-colors"
+          >
+            {isExpanded ? "See less" : "See more"}
+            {isExpanded ? (
+              <ChevronUp className="w-4 h-4 ml-1" />
+            ) : (
+              <ChevronDown className="w-4 h-4 ml-1" />
+            )}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
+
 const DuaCategoryPage = ({ categoryId }) => {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -256,6 +286,8 @@ const DuaCategoryPage = ({ categoryId }) => {
   const [localFavorites, setLocalFavorites] = useState(new Set());
   const [openDetails, setOpenDetails] = useState({});
   const [view, setView] = useState(categoryId ? "duas" : "categories");
+  const [searchFocused, setSearchFocused] = useState(false);
+  const [searchExecuted, setSearchExecuted] = useState(false);
 
   const AUTH_TOKEN = getAuthToken();
   const isAuthenticated = !!AUTH_TOKEN;
@@ -267,12 +299,14 @@ const DuaCategoryPage = ({ categoryId }) => {
         const fetchOptions = {
           headers: AUTH_TOKEN ? { Authorization: `Bearer ${AUTH_TOKEN}` } : {},
         };
+
         const catRes = await fetch(`${API_BASE}/dua-categories`);
         if (!catRes.ok) throw new Error("Failed to fetch categories.");
         const catData = await catRes.json();
-        const url = q
-          ? `${API_BASE}/duas/paginated?q=${encodeURIComponent(q)}&limit=1000`
-          : `${API_BASE}/duas/paginated?limit=1000`;
+
+        const url = `${API_BASE}/duas/paginated?q=${encodeURIComponent(
+          q
+        )}&limit=1000`;
         const duasRes = await fetch(url, fetchOptions);
         if (duasRes.status === 401 && isAuthenticated) {
           redirectToLogin();
@@ -280,11 +314,32 @@ const DuaCategoryPage = ({ categoryId }) => {
         }
         if (!duasRes.ok) throw new Error("Failed to fetch duas.");
         let duasData = await duasRes.json();
-        const groupedDuas = catData.map((cat) => ({
-          ...cat,
-          duas: duasData.filter((d) => d.category_id === cat.id),
-        }));
-        setCategories(groupedDuas);
+
+        if (q) {
+          const searchCategory = {
+            id: "search",
+            name: `Search Results for "${q}"`,
+            description: `Showing all Duas matching your query.`,
+            image_url: null,
+            duas: duasData,
+          };
+          setCategories([searchCategory]);
+          setSelectedCategoryId("search");
+          setView("duas");
+        } else {
+          const groupedDuas = catData.map((cat) => ({
+            ...cat,
+            duas: duasData.filter((d) => d.category_id === cat.id),
+          }));
+          setCategories(groupedDuas);
+          if (categoryId && !selectedCategoryId) {
+            setSelectedCategoryId(categoryId);
+            setView("duas");
+          } else if (!categoryId) {
+            setView("categories");
+            setSelectedCategoryId(null);
+          }
+        }
       } catch (err) {
         if (
           !isAuthenticated ||
@@ -296,12 +351,29 @@ const DuaCategoryPage = ({ categoryId }) => {
         setLoading(false);
       }
     },
-    [AUTH_TOKEN, isAuthenticated]
+    [AUTH_TOKEN, isAuthenticated, categoryId, selectedCategoryId]
   );
 
+  const executeSearch = useCallback(() => {
+    if (searchTerm.trim()) {
+      setSearchExecuted(true);
+      fetchDuasAndCategories(searchTerm.trim());
+    } else {
+      clearSearch();
+    }
+  }, [fetchDuasAndCategories, searchTerm]);
+
+  const handleKeyPress = (e) => {
+    if (e.key === "Enter") {
+      executeSearch();
+    }
+  };
+
   useEffect(() => {
-    fetchDuasAndCategories();
-  }, [fetchDuasAndCategories]);
+    if (!searchExecuted && view === "categories") {
+      fetchDuasAndCategories("");
+    }
+  }, [fetchDuasAndCategories, view, searchExecuted]);
 
   useEffect(() => {
     if (categoryId) {
@@ -363,10 +435,12 @@ const DuaCategoryPage = ({ categoryId }) => {
     }
   };
 
-  const handleSearch = (e) => {
-    const term = e.target.value;
-    setSearchTerm(term);
-    fetchDuasAndCategories(term);
+  const clearSearch = () => {
+    setSearchTerm("");
+    setSearchExecuted(false);
+    setSelectedCategoryId(null);
+    setView("categories");
+    fetchDuasAndCategories("");
   };
 
   const handleCategoryClick = (catId) => {
@@ -379,13 +453,16 @@ const DuaCategoryPage = ({ categoryId }) => {
     setView("categories");
     setSelectedCategoryId(null);
     setSearchTerm("");
+    setSearchExecuted(false);
     setOpenDetails({});
+    fetchDuasAndCategories("");
   };
 
-  if (loading) {
+  if (loading && !searchExecuted) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-12 h-12 text-emerald-500 animate-spin" />
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-emerald-50 to-teal-50">
+        <Loader2 className="w-16 h-16 text-emerald-500 animate-spin mb-4" />
+        <p className="text-gray-600 font-medium">Loading...</p>
       </div>
     );
   }
@@ -396,77 +473,133 @@ const DuaCategoryPage = ({ categoryId }) => {
       )
     : null;
 
-  const pageTitle = currentCategory?.name || "أدعية وأذكار";
+  const pageTitle = currentCategory?.name || "All Duas & Adhkar";
   const categoryDescription =
-    currentCategory?.description || "Description not available";
+    currentCategory?.description ||
+    "Browse through our curated collection of supplications and remembrances, categorized for ease of access.";
   const categoryImageUrl = currentCategory
     ? getFullImageUrl(currentCategory.image_url)
     : null;
 
+  const showDuas = view === "duas" || (searchExecuted && currentCategory);
+  const showCategories = view === "categories" && !searchExecuted;
+
+  const showNoResults =
+    searchExecuted && currentCategory && currentCategory.duas.length === 0;
+
+  // Determine if the default icon/image should be shown
+  const showHeaderImage =
+    (categoryImageUrl && selectedCategoryId !== "search") ||
+    selectedCategoryId === "search";
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="text-green-800 py-10 border-b border-gray-200 bg-gray-50">
-        <div className="max-w-6xl mx-auto text-center px-4">
-          {categoryImageUrl ? (
-            <img
-              src={categoryImageUrl}
-              alt={`${pageTitle} category`}
-              className="w-20 h-20 object-cover rounded-full mx-auto mb-3 border-4 border-emerald-500"
-              onError={(e) => {
-                e.target.style.display = "none";
-              }}
-            />
-          ) : (
-            <BookOpenCheck className="w-10 h-10 text-green-800 mx-auto mb-2" />
-          )}
-          <h1
-            className="text-4xl font-extrabold tracking-tight"
-            style={{ fontFamily: "Amiri, serif" }}
-          >
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-emerald-50 to-teal-50">
+      <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(-10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+          animation: fadeIn 0.3s ease-out;
+        }
+      `}</style>
+
+      <header className="bg-white text-gray-900 py-12 border-b-4 border-gray-100 shadow-lg">
+        <div className="max-w-7xl mx-auto text-center px-4">
+          {showHeaderImage ? (
+            categoryImageUrl && selectedCategoryId !== "search" ? (
+              <img
+                src={categoryImageUrl}
+                alt={`${pageTitle} category`}
+                className="w-24 h-24 object-cover rounded-full mx-auto mb-4 border-4 border-white shadow-xl"
+                onError={(e) => {
+                  e.target.style.display = "none";
+                }}
+              />
+            ) : (
+              <div className="w-24 h-24 bg-gray-100 rounded-full mx-auto mb-4 flex items-center justify-center border-4 border-white shadow-xl">
+                {selectedCategoryId === "search" ? (
+                  <Search className="w-12 h-12 text-emerald-500" />
+                ) : (
+                  // This block now only runs if there's no image but a category is selected (or search is active)
+                  <BookOpenCheck className="w-12 h-12 text-emerald-500" />
+                )}
+              </div>
+            )
+          ) : null}
+          {/* Default category icon removed when viewing all categories */}
+          <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight mb-3">
             {pageTitle}
           </h1>
+          {/* Short write-up added directly under the title */}
+          <p className="text-xl text-gray-700 font-light mb-4">
+            A beautiful collection of supplications to enrich your daily life.
+          </p>
           {currentCategory && (
-            <div className="mt-4 text-center">
-              <p className="text-lg text-gray-700 font-light mx-auto whitespace-pre-line max-w-3xl">
-                {categoryDescription}
-              </p>
+            <CategoryDescription description={categoryDescription} />
+          )}
+        </div>
+      </header>
+
+      <div className="sticky top-0 z-50 bg-white/95 backdrop-blur-md shadow-lg border-b border-gray-200 w-full">
+        <div className="max-w-7xl mx-auto px-4 py-5">
+          {showCategories ? (
+            <div
+              className={`relative flex items-center transition-all duration-300 ${
+                searchFocused ? "transform scale-105" : ""
+              }`}
+            >
+              <button
+                onClick={executeSearch}
+                className="absolute left-0 top-1/2 -translate-y-1/2 text-emerald-500 hover:text-emerald-600 p-3 transition-colors z-20"
+                aria-label="Execute search"
+              >
+                <Search className="w-6 h-6" />
+              </button>
+
+              <input
+                type="text"
+                placeholder="Search for duas by title, arabic text, or transliteration..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                onKeyDown={handleKeyPress}
+                onFocus={() => setSearchFocused(true)}
+                onBlur={() => setSearchFocused(false)}
+                className="w-full pl-12 pr-12 py-4 rounded-2xl border-2 border-gray-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 text-gray-700 placeholder-gray-400 text-base shadow-sm transition-all duration-300 bg-white"
+              />
+
+              {searchTerm && (
+                <button
+                  onClick={clearSearch}
+                  className="absolute right-0 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors z-10 p-4"
+                  aria-label="Clear search"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              )}
             </div>
+          ) : (
+            <button
+              onClick={handleBackToCategories}
+              className="flex items-center gap-2 text-emerald-600 hover:text-emerald-700 font-semibold transition-colors px-4 py-5 rounded-full"
+            >
+              <ArrowLeft className="w-5 h-5" />
+              Back to Categories
+            </button>
           )}
         </div>
       </div>
 
-      {view === "categories" && (
-        <div className="sticky top-0 z-40 border-b border-gray-200 bg-white">
-          <div className="max-w-6xl mx-auto py-4 px-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <input
-                type="text"
-                placeholder="Search Duas by title or text..."
-                value={searchTerm}
-                onChange={handleSearch}
-                className="w-full pl-10 pr-4 py-3 rounded-full border border-gray-300 focus:ring-2 focus:ring-emerald-400 focus:border-emerald-500 text-gray-700 placeholder-gray-400 text-sm shadow-sm transition"
-              />
-            </div>
+      <div className="max-w-7xl mx-auto py-10 px-4">
+        {loading ? (
+          <div className="text-center py-20">
+            <Loader2 className="w-16 h-16 text-emerald-500 animate-spin mb-4 mx-auto" />
+            <p className="text-gray-600 font-medium">
+              Loading search results...
+            </p>
           </div>
-        </div>
-      )}
-
-      {view === "duas" && !categoryId && (
-        <div className="max-w-6xl mx-auto px-4 py-4">
-          <button
-            onClick={handleBackToCategories}
-            className="flex items-center gap-2 text-emerald-600 hover:text-emerald-700 font-medium transition-colors"
-          >
-            <Home className="w-5 h-5" />
-            Back to Categories
-          </button>
-        </div>
-      )}
-
-      <div className="max-w-6xl mx-auto py-8 px-4 relative z-10">
-        {view === "categories" ? (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+        ) : showCategories ? (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
             {categories.map((cat) => (
               <CategoryCard
                 key={cat.id}
@@ -475,42 +608,47 @@ const DuaCategoryPage = ({ categoryId }) => {
               />
             ))}
           </div>
+        ) : showDuas && currentCategory && currentCategory.duas.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {currentCategory.duas.map((dua) => (
+              <DuaItem
+                key={dua.id}
+                dua={dua}
+                toggleFavorite={toggleFavorite}
+                isAuthenticated={isAuthenticated}
+                isLocallyFavorite={localFavorites.has(dua.id)}
+                handleLocalToggle={handleLocalToggle}
+                openDetails={openDetails}
+                setOpenDetails={setOpenDetails}
+              />
+            ))}
+          </div>
         ) : (
-          currentCategory && (
-            <div className="space-y-12">
-              {currentCategory.duas.map((dua) => (
-                <DuaItem
-                  key={dua.id}
-                  dua={dua}
-                  toggleFavorite={toggleFavorite}
-                  isAuthenticated={isAuthenticated}
-                  isLocallyFavorite={localFavorites.has(dua.id)}
-                  handleLocalToggle={handleLocalToggle}
-                  openDetails={openDetails}
-                  setOpenDetails={setOpenDetails}
-                />
-              ))}
+          (showNoResults || categories.length === 0) && (
+            <div className="text-center py-20">
+              <div className="bg-white rounded-3xl shadow-xl p-12 max-w-md mx-auto">
+                <Search className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                <p className="text-2xl text-gray-600 font-bold mb-2">
+                  Dua Not Available
+                </p>
+                <p className="text-gray-500">
+                  {searchExecuted
+                    ? `No Duas found matching your search term: "${searchTerm}".`
+                    : "No categories found. Please check your data source."}
+                </p>
+              </div>
             </div>
           )
         )}
-
-        {categories.length === 0 && !loading && (
-          <div className="text-center py-16">
-            <Search className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-            <p className="text-xl text-gray-600 font-medium">
-              No categories found
-            </p>
-            <p className="text-gray-500 mt-2">
-              Check your API connection or data source.
-            </p>
-          </div>
-        )}
       </div>
 
-      <footer className="text-green-800 py-6 mt-12 bg-white border-t border-gray-200">
-        <div className="max-w-6xl mx-auto px-4 text-center">
-          <p className="text-emerald-500 text-sm">
-            May Allah accept our prayers and remembrance
+      <footer className="bg-white text-gray-800 py-8 mt-16 shadow-inner border-t border-gray-100">
+        <div className="max-w-7xl mx-auto px-4 text-center">
+          <p className="text-base font-medium">
+            May Allah accept our prayers and acts of remembrance.
+          </p>
+          <p className="text-sm text-gray-500 mt-2">
+            FocusFlow © {new Date().getFullYear()} - All rights reserved.
           </p>
         </div>
       </footer>

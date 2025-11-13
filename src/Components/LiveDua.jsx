@@ -1,10 +1,19 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { Sun, Moon, Play, Pause, Repeat, RotateCcw } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import {
+  Sun,
+  Moon,
+  Play,
+  Pause,
+  Repeat,
+  RotateCcw,
+  BookOpenCheck,
+  ArrowRight,
+} from "lucide-react";
 
 export default function LiveDua() {
   const [morningAdkar, setMorningAdkar] = useState([]);
   const [eveningAdkar, setEveningAdkar] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [isPlayingMorning, setIsPlayingMorning] = useState(false);
   const [isPlayingEvening, setIsPlayingEvening] = useState(false);
   const [morningProgress, setMorningProgress] = useState(0);
@@ -27,7 +36,6 @@ export default function LiveDua() {
   const eveningDuaRefs = useRef([]);
   const morningSegmentRefs = useRef({});
   const eveningSegmentRefs = useRef({});
-  const navigate = useNavigate();
   const API_BASE_URL = "https://focus-flow-server-v1.onrender.com/api";
   const STATIC_BASE_URL = "https://focus-flow-server-v1.onrender.com";
 
@@ -37,6 +45,19 @@ export default function LiveDua() {
       : `${String(Math.floor(t / 60)).padStart(2, "0")}:${String(
           Math.floor(t % 60)
         ).padStart(2, "0")}`;
+
+  const getFullImageUrl = (relativePath) => {
+    if (!relativePath) return null;
+    if (relativePath.startsWith("http")) return relativePath;
+    let path = relativePath.trim();
+    if (!path.startsWith("/static/")) {
+      path = `/static/category_images/${path}`;
+    }
+    if (path.startsWith("//")) {
+      path = path.replace(/^\/+/, "/");
+    }
+    return `${STATIC_BASE_URL}${path}`;
+  };
 
   const fetchSegmentsData = useCallback(
     async (categoryId) => {
@@ -67,9 +88,21 @@ export default function LiveDua() {
     } catch {}
   }, [API_BASE_URL, fetchSegmentsData]);
 
+  const fetchCategories = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/dua-categories`);
+      const data = await res.json();
+      const filtered = data
+        .filter((cat) => cat.id !== 5 && cat.id !== 6)
+        .slice(0, 6);
+      setCategories(filtered);
+    } catch {}
+  }, [API_BASE_URL]);
+
   useEffect(() => {
     fetchAdkar();
-  }, [fetchAdkar]);
+    fetchCategories();
+  }, [fetchAdkar, fetchCategories]);
 
   const resetAudioState = (isMorning) => {
     setAudioError(false);
@@ -209,6 +242,14 @@ export default function LiveDua() {
     );
   };
 
+  const handleCategoryClick = (categoryId) => {
+    window.location.href = `/duas?category=${categoryId}`;
+  };
+
+  const handleViewAllDuasClick = () => {
+    window.location.href = `/duas`;
+  };
+
   const renderAdkarCard = (adkar, type, Icon) => {
     const isMorning = type === "morning";
     const isPlaying = isMorning ? isPlayingMorning : isPlayingEvening;
@@ -242,43 +283,42 @@ export default function LiveDua() {
       if (el) duaRefs.current[index] = el;
     };
     return (
-      <div className="rounded-3xl p-0 transition-all flex flex-col justify-between h-full">
+      <div className="rounded-3xl shadow-xl bg-white transition-all flex flex-col justify-between h-full overflow-hidden border border-gray-100">
         <div>
-          <div className="flex items-center justify-between mb-4 border-b border-gray-100 pb-3 p-6 bg-white rounded-t-3xl shadow-sm">
+          <div className="flex items-center justify-between mb-0 border-b border-gray-100 pb-4 pt-6 px-6 bg-gradient-to-r from-emerald-50 to-teal-50">
             <div className="flex items-center gap-3">
               <div
-                className={`p-3 rounded-full ${
-                  isMorning ? "bg-amber-100" : "bg-indigo-100"
+                className={`p-3 rounded-full shadow-md ${
+                  isMorning ? "bg-amber-500" : "bg-indigo-600"
                 }`}
               >
-                <Icon
-                  className={`w-6 h-6 ${
-                    isMorning ? "text-amber-600" : "text-indigo-600"
-                  }`}
-                />
+                <Icon className={`w-7 h-7 text-white`} />
               </div>
-              <h3 className="text-lg font-bold text-gray-900 capitalize">
-                {type} Adkar List
+              <h3 className="text-xl font-extrabold text-gray-900 capitalize">
+                {type} Adkar
               </h3>
             </div>
           </div>
           <div
             ref={listRef}
-            className="rounded-lg p-0 mb-3 min-h-[300px] max-h-[500px] overflow-y-scroll scroll-smooth"
+            className="rounded-lg p-4 mb-0 min-h-[300px] max-h-[450px] overflow-y-scroll scroll-smooth"
           >
             {adkar.map((dua, index) => (
               <div
                 key={dua.id}
                 ref={(el) => setDuaRef(el, index)}
-                className={`p-4 rounded-lg transition-all duration-300 mb-4 shadow-sm bg-white border border-gray-100 ${
+                className={`p-5 rounded-xl transition-all duration-300 mb-4 shadow-sm border-2 ${
                   index === highlightedDuaIndex
-                    ? "bg-emerald-50 border-emerald-300"
-                    : "hover:bg-gray-50"
+                    ? "bg-gradient-to-br from-emerald-50 to-teal-50 border-emerald-400"
+                    : "bg-white border-gray-100 hover:border-emerald-200"
                 }`}
               >
                 {dua.title && (
-                  <h4 className="text-sm font-semibold text-emerald-700 mb-2">
-                    {index + 1}. {dua.title}
+                  <h4 className="text-sm font-bold text-emerald-700 mb-3 flex items-center gap-2">
+                    <span className="bg-emerald-100 text-emerald-700 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">
+                      {index + 1}
+                    </span>
+                    {dua.title}
                   </h4>
                 )}
                 <div
@@ -292,12 +332,12 @@ export default function LiveDua() {
                   {renderArabicWithHighlight(dua, isMorning)}
                 </div>
                 {dua.transliteration && (
-                  <p className="text-sm text-gray-700 mt-2">
+                  <p className="text-sm text-gray-700 mt-3 italic">
                     {dua.transliteration}
                   </p>
                 )}
                 {dua.translation && (
-                  <p className="text-xs text-gray-600 mt-2">
+                  <p className="text-sm text-gray-600 mt-2 leading-relaxed">
                     {dua.translation}
                   </p>
                 )}
@@ -306,7 +346,7 @@ export default function LiveDua() {
           </div>
         </div>
         {audioError ? (
-          <p className="text-red-500 text-sm mb-2">
+          <p className="text-red-500 text-sm mb-2 px-4">
             Audio failed to load. Check server static files at: {localAudioPath}
           </p>
         ) : (
@@ -327,8 +367,8 @@ export default function LiveDua() {
             onError={() => setAudioError(true)}
           />
         )}
-        <div className="p-4 mt-auto bg-white rounded-xl shadow-sm border border-gray-100">
-          <div className="flex justify-between text-xs text-gray-600 mb-1">
+        <div className="p-5 mt-auto bg-gradient-to-r from-gray-50 to-gray-100 border-t border-gray-200">
+          <div className="flex justify-between text-xs text-gray-600 mb-2 font-semibold">
             <span>{formatTime(progress)}</span>
             <span>{formatTime(duration)}</span>
           </div>
@@ -343,9 +383,9 @@ export default function LiveDua() {
               if (audioRef.current) audioRef.current.currentTime = val;
               isMorning ? setMorningProgress(val) : setEveningProgress(val);
             }}
-            className="w-full accent-emerald-500 cursor-pointer"
+            className="w-full accent-emerald-600 cursor-pointer h-2"
           />
-          <div className="flex justify-center items-center mt-3 gap-4">
+          <div className="flex justify-center items-center mt-4 gap-3">
             <button
               onClick={() => {
                 if (audioRef.current) {
@@ -356,32 +396,34 @@ export default function LiveDua() {
                     : setIsPlayingEvening(true);
                 }
               }}
-              className="p-2 rounded-full bg-gray-200 hover:bg-gray-300"
+              className="p-3 rounded-full bg-gray-300 hover:bg-gray-400 transition shadow-md"
             >
-              <RotateCcw className="w-5 h-5 text-gray-700" />
+              <RotateCcw className="w-5 h-5 text-gray-800" />
             </button>
             <button
               onClick={() => togglePlayPause(type)}
-              className={`p-4 rounded-full shadow-lg transition ${
+              className={`p-5 rounded-full shadow-xl transition-all transform hover:scale-105 ${
                 isPlaying
-                  ? "bg-red-500 hover:bg-red-600"
-                  : "bg-emerald-600 hover:bg-emerald-700"
+                  ? "bg-gradient-to-r from-red-500 to-red-600"
+                  : "bg-gradient-to-r from-emerald-500 to-teal-600"
               } text-white`}
             >
               {isPlaying ? (
-                <Pause className="w-5 h-5" />
+                <Pause className="w-6 h-6" />
               ) : (
-                <Play className="w-5 h-5 fill-current" />
+                <Play className="w-6 h-6 fill-current" />
               )}
             </button>
             <button
               onClick={() => setRepeat((p) => !p)}
-              className={`p-2 rounded-full ${
-                repeat ? "bg-emerald-500" : "bg-gray-200"
-              } hover:bg-gray-300`}
+              className={`p-3 rounded-full transition shadow-md ${
+                repeat
+                  ? "bg-emerald-500 hover:bg-emerald-600"
+                  : "bg-gray-300 hover:bg-gray-400"
+              }`}
             >
               <Repeat
-                className={`w-5 h-5 ${repeat ? "text-white" : "text-gray-700"}`}
+                className={`w-5 h-5 ${repeat ? "text-white" : "text-gray-800"}`}
               />
             </button>
           </div>
@@ -391,25 +433,101 @@ export default function LiveDua() {
   };
 
   return (
-    <div className="bg-white py-10 px-4 min-h-screen">
+    <div className="bg-gradient-to-br from-gray-50 via-emerald-50 to-teal-50 py-12 px-4 min-h-screen">
       <style>{`
         .font-serif-arabic { font-family: "Amiri", "Traditional Arabic", "Scheherazade", serif; }
-        .overflow-y-scroll::-webkit-scrollbar { width: 6px; }
-        .overflow-y-scroll::-webkit-scrollbar-thumb { background-color: #d1d5db; border-radius: 3px; }
-        .overflow-y-scroll::-webkit-scrollbar-thumb:hover { background-color: #9ca3af; }
+        .overflow-y-scroll::-webkit-scrollbar { width: 8px; }
+        .overflow-y-scroll::-webkit-scrollbar-thumb { background-color: #10b981; border-radius: 4px; }
+        .overflow-y-scroll::-webkit-scrollbar-thumb:hover { background-color: #059669; }
+        .overflow-y-scroll::-webkit-scrollbar-track { background-color: #f3f4f6; }
+        /* Custom scrollbar style for the horizontal row */
+        .horizontal-scroll::-webkit-scrollbar { height: 8px; }
+        .horizontal-scroll::-webkit-scrollbar-thumb { background-color: #10b981; border-radius: 4px; }
+        .horizontal-scroll::-webkit-scrollbar-thumb:hover { background-color: #059669; }
+        .horizontal-scroll::-webkit-scrollbar-track { background-color: #f3f4f6; }
       `}</style>
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12">
-          <h2 className="text-3xl font-extrabold text-gray-900 mb-3">
-            Your <span className="text-emerald-600">Daily Remembrance</span>
+          <h2 className="text-4xl font-extrabold text-gray-900 mb-4">
+            Your{" "}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-600">
+              Daily Remembrance
+            </span>
           </h2>
-          <p className="text-gray-600 text-base max-w-xl mx-auto">
-            Begin and end each day with tranquility and spiritual blessings.
+          <p className="text-gray-700 text-lg max-w-2xl mx-auto font-light">
+            Begin and end each day with tranquility and spiritual blessings
+            through guided remembrance.
           </p>
         </div>
-        <div className="grid lg:grid-cols-2 gap-6">
+        <div className="grid lg:grid-cols-2 gap-8 mb-16">
           {renderAdkarCard(morningAdkar, "morning", Sun)}
           {renderAdkarCard(eveningAdkar, "evening", Moon)}
+        </div>
+
+        <div className="mt-16">
+          <div className="text-center mb-10">
+            <h3 className="text-3xl font-extrabold text-gray-900 mb-3">
+              Explore More{" "}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-600">
+                Duas & Adhkar
+              </span>
+            </h3>
+            <p className="text-gray-600 text-base max-w-xl mx-auto">
+              Discover beautiful supplications for every moment of your life
+            </p>
+          </div>
+
+          <div
+            className="flex space-x-6 overflow-x-scroll horizontal-scroll pb-4"
+            style={{ WebkitOverflowScrolling: "touch" }}
+          >
+            {categories.map((category) => {
+              const imageUrl = getFullImageUrl(category.image_url);
+              return (
+                <div
+                  key={category.id}
+                  className="flex-none w-48 group cursor-pointer bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden transform hover:-translate-y-2"
+                  onClick={() => handleCategoryClick(category.id)}
+                >
+                  <div className="relative h-32 bg-gradient-to-br from-emerald-100 to-teal-100 overflow-hidden">
+                    {imageUrl ? (
+                      <img
+                        src={imageUrl}
+                        alt={category.name}
+                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                        onError={(e) => {
+                          e.target.style.display = "none";
+                        }}
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <BookOpenCheck className="w-12 h-12 text-emerald-500" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-4">
+                    <h4 className="text-sm font-bold text-gray-800 text-center group-hover:text-emerald-600 transition-colors mb-3 line-clamp-2">
+                      {category.name}
+                    </h4>
+                    <button className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-xs font-semibold py-2 px-3 rounded-full hover:from-emerald-600 hover:to-teal-700 transition-all flex items-center justify-center gap-1 shadow-md">
+                      View
+                      <ArrowRight className="w-3 h-3" />
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="flex justify-end mt-6">
+            <button
+              onClick={handleViewAllDuasClick}
+              className="inline-flex items-center text-lg font-semibold text-emerald-600 hover:text-emerald-700 transition-colors py-2 px-4 rounded-full border border-emerald-300 hover:bg-emerald-50"
+            >
+              View All Duas
+              <ArrowRight className="ml-2 h-5 w-5" />
+            </button>
+          </div>
         </div>
       </div>
     </div>

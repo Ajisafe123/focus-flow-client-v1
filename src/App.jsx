@@ -34,6 +34,7 @@ import apiService from "./Services/api";
 import ArticlesInterface from "./Admin/ArticlesInterface";
 import QuranPage from "./Components/Quran";
 import DuaCategoryPage from "./Components/DuaList";
+import ArticlesPage from "./Components/ArticlesPage";
 
 const pageVariants = {
   initial: { opacity: 0, y: 10 },
@@ -156,7 +157,7 @@ function AppContent({
             }
           />
           <Route
-            path="/dua"
+            path="/duas"
             element={
               <PageWrapper>
                 <DuaCategoryPage categoryId={null} />
@@ -172,6 +173,15 @@ function AppContent({
             element={
               <PageWrapper>
                 <Hadith />
+              </PageWrapper>
+            }
+          />
+
+          <Route
+            path="/articles"
+            element={
+              <PageWrapper>
+                <ArticlesPage />
               </PageWrapper>
             }
           />

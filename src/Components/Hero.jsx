@@ -1,7 +1,7 @@
 import React from "react";
 import { User, Clock } from "lucide-react";
 import { Link } from "react-router-dom";
-import mosqueImage from "../Assets/mosque.jpg";
+import mosqueImage from "../Assets/greenbg.jpg";
 
 export default function Hero() {
   return (

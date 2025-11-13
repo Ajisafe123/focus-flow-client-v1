@@ -20,7 +20,8 @@ import {
   Phone,
   Heart,
   Building,
-  Menu,
+  ShoppingCart,
+  PackageOpen,
 } from "lucide-react";
 import DhikrDuaCardDropdown from "./DhikrDuaCardDropdown";
 import TeachingResourceDropdown from "./TeachingResourcesCardDropdown";
@@ -34,15 +35,9 @@ export default function Navigation({ setShowLogoutModal }) {
   const [isArticleDropdownOpen, setIsArticleDropdownOpen] = useState(false);
   const [isAboutDropdownOpen, setIsAboutDropdownOpen] = useState(false);
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
+  const [isCartHovered, setIsCartHovered] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [mobileDropdowns, setMobileDropdowns] = useState({
-    dhikr: false,
-    teaching: false,
-    articles: false,
-    about: false,
-  });
 
   const searchBarRef = useRef(null);
   const dhikrDuaDropdownRef = useRef(null);
@@ -50,11 +45,12 @@ export default function Navigation({ setShowLogoutModal }) {
   const articleDropdownRef = useRef(null);
   const aboutDropdownRef = useRef(null);
   const userDropdownRef = useRef(null);
-  const mobileMenuRef = useRef(null);
+  const cartDropdownRef = useRef(null);
 
   const navigate = useNavigate();
   const location = useLocation();
   const token = localStorage.getItem("token");
+  const cartItemCount = 0;
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
@@ -91,15 +87,11 @@ export default function Navigation({ setShowLogoutModal }) {
         !userDropdownRef.current.contains(e.target)
       )
         setIsUserDropdownOpen(false);
-      if (mobileMenuRef.current && !mobileMenuRef.current.contains(e.target)) {
-        setMobileMenuOpen(false);
-        setMobileDropdowns({
-          dhikr: false,
-          teaching: false,
-          articles: false,
-          about: false,
-        });
-      }
+      if (
+        cartDropdownRef.current &&
+        !cartDropdownRef.current.contains(e.target)
+      )
+        setIsCartHovered(false);
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
@@ -110,15 +102,17 @@ export default function Navigation({ setShowLogoutModal }) {
       "/": "Home",
       "/quran": "Quran",
       "/about": "About",
-      "/contact": "Contact",
+      "/contact": "About",
       "/prayer-times": "Prayer Times",
       "/profile": "Mine",
       "/login": "Mine",
       "/videos": "Videos",
-      "/adhkar": "Read Adhkar",
-      "/dhikr-guide": "Dhikr Guide",
-      "/dua": "Read Dua",
-      "/donation": "Donation",
+      "/adhkar": "Dhikr & Du'a",
+      "/dhikr-guide": "Dhikr & Du'a",
+      "/duas": "Dhikr & Du'a",
+      "/donation": "About",
+      "/resources": "Teaching Resources",
+      "/articles": "Articles",
     };
     setActiveLink(pathToName[location.pathname] || "");
   }, [location.pathname]);
@@ -126,13 +120,6 @@ export default function Navigation({ setShowLogoutModal }) {
   const handleNavItemClick = (href, name) => {
     navigate(href);
     setActiveLink(name);
-    setMobileMenuOpen(false);
-    setMobileDropdowns({
-      dhikr: false,
-      teaching: false,
-      articles: false,
-      about: false,
-    });
   };
 
   const handleUserAction = (action) => {
@@ -149,11 +136,6 @@ export default function Navigation({ setShowLogoutModal }) {
       setShowSearchBar(false);
       setSearchQuery("");
     }
-  };
-
-  const toggleMobileDropdown = (key, e) => {
-    e.stopPropagation();
-    setMobileDropdowns((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
   const aboutMenuItems = [
@@ -182,30 +164,6 @@ export default function Navigation({ setShowLogoutModal }) {
     { name: "Videos", icon: Video, href: "/videos" },
     { name: "Mine", icon: User, href: token ? "/profile" : "/login" },
   ];
-
-  const dropdownData = {
-    dhikr: [
-      { href: "/dua", name: "Read Dua", icon: BookOpen },
-      { href: "/adhkar", name: "Read Adhkar", icon: BookOpen },
-      { href: "/dhikr-guide", name: "Dhikr Guide", icon: BookOpen },
-    ],
-    teaching: [
-      { href: "/lesson-plans", name: "Lesson Plans", icon: BookOpen },
-      { href: "/study-guides", name: "Study Guides", icon: BookOpen },
-    ],
-    articles: [
-      { href: "/articles/latest", name: "Latest Articles", icon: Clock },
-      { href: "/articles", name: "All Articles", icon: BookOpen },
-    ],
-    about: aboutMenuItems,
-  };
-
-  const dropdownTitles = {
-    dhikr: "Dhikr & Du'a",
-    teaching: "Teaching Resources",
-    articles: "Articles",
-    about: "About",
-  };
 
   return (
     <>
@@ -288,31 +246,38 @@ export default function Navigation({ setShowLogoutModal }) {
       <nav
         className={`hidden md:block fixed left-0 right-0 z-40 transition-all duration-300 ${
           isScrolled
-            ? "top-12 bg-gradient-to-r from-emerald-800/95 to-teal-800/95 backdrop-blur-md shadow-xl"
-            : "top-12 bg-gradient-to-r from-emerald-700 to-teal-700 shadow-lg"
+            ? "top-12 bg-gradient-to-r from-emerald-900/95 to-teal-900/95 backdrop-blur-md shadow-2xl"
+            : "top-12 bg-gradient-to-r from-emerald-800 to-teal-800 shadow-xl"
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <button
               onClick={() => handleNavItemClick("/", "Home")}
-              className="text-2xl font-bold text-white tracking-tight"
+              className="text-white hover:text-amber-300 transition-colors group p-2 -ml-2"
             >
-              Nibras Al-deen
+              <span className="block text-2xl font-extrabold tracking-tight group-hover:text-amber-300 transition-colors">
+                Nibras Al-deen
+              </span>
+              <span className="block text-xs font-medium -mt-1 text-emerald-300 group-hover:text-amber-100 transition-colors">
+                A Light of Guidance
+              </span>
             </button>
             <div className="flex items-center space-x-6">
               {desktopMenuItems.map(({ name, href }) => (
                 <button
                   key={name}
                   onClick={() => handleNavItemClick(href, name)}
-                  className={`text-white hover:text-amber-300 transition-colors font-medium ${
+                  className={`text-white hover:text-amber-300 transition-colors font-medium relative group ${
                     activeLink === name ? "text-amber-300" : ""
                   }`}
                 >
                   {name}
-                  {activeLink === name && (
-                    <div className="h-0.5 bg-amber-300 mt-1" />
-                  )}
+                  <div
+                    className={`h-0.5 bg-amber-300 absolute inset-x-0 bottom-0 transition-all duration-300 ${
+                      activeLink === name ? "w-full" : "w-0 group-hover:w-full"
+                    }`}
+                  />
                 </button>
               ))}
               <div
@@ -322,8 +287,11 @@ export default function Navigation({ setShowLogoutModal }) {
                 onMouseLeave={() => setIsDhikrDuaDropdownOpen(false)}
               >
                 <button
-                  onClick={() => setIsDhikrDuaDropdownOpen((p) => !p)}
-                  className={`flex items-center space-x-1 text-white hover:text-amber-300 transition-colors font-medium ${
+                  onClick={() => {
+                    handleNavItemClick("/duas", "Dhikr & Du'a");
+                    setIsDhikrDuaDropdownOpen(false);
+                  }}
+                  className={`flex items-center space-x-1 text-white hover:text-amber-300 transition-colors font-medium group relative ${
                     activeLink === "Dhikr & Du'a" ? "text-amber-300" : ""
                   }`}
                 >
@@ -333,9 +301,13 @@ export default function Navigation({ setShowLogoutModal }) {
                       isDhikrDuaDropdownOpen ? "rotate-180" : ""
                     }`}
                   />
-                  {activeLink === "Dhikr & Du'a" && (
-                    <div className="h-0.5 bg-amber-300 mt-1" />
-                  )}
+                  <div
+                    className={`h-0.5 bg-amber-300 absolute inset-x-0 bottom-0 transition-all duration-300 ${
+                      activeLink === "Dhikr & Du'a"
+                        ? "w-full"
+                        : "w-0 group-hover:w-full"
+                    }`}
+                  />
                 </button>
                 {isDhikrDuaDropdownOpen && (
                   <DhikrDuaCardDropdown
@@ -351,8 +323,11 @@ export default function Navigation({ setShowLogoutModal }) {
                 onMouseLeave={() => setIsTeachingDropdownOpen(false)}
               >
                 <button
-                  onClick={() => setIsTeachingDropdownOpen((p) => !p)}
-                  className={`flex items-center space-x-1 text-white hover:text-amber-300 transition-colors font-medium ${
+                  onClick={() => {
+                    handleNavItemClick("/resources", "Teaching Resources");
+                    setIsTeachingDropdownOpen(false);
+                  }}
+                  className={`flex items-center space-x-1 text-white hover:text-amber-300 transition-colors font-medium group relative ${
                     activeLink === "Teaching Resources" ? "text-amber-300" : ""
                   }`}
                 >
@@ -362,9 +337,13 @@ export default function Navigation({ setShowLogoutModal }) {
                       isTeachingDropdownOpen ? "rotate-180" : ""
                     }`}
                   />
-                  {activeLink === "Teaching Resources" && (
-                    <div className="h-0.5 bg-amber-300 mt-1" />
-                  )}
+                  <div
+                    className={`h-0.5 bg-amber-300 absolute inset-x-0 bottom-0 transition-all duration-300 ${
+                      activeLink === "Teaching Resources"
+                        ? "w-full"
+                        : "w-0 group-hover:w-full"
+                    }`}
+                  />
                 </button>
                 {isTeachingDropdownOpen && (
                   <TeachingResourceDropdown
@@ -380,8 +359,11 @@ export default function Navigation({ setShowLogoutModal }) {
                 onMouseLeave={() => setIsArticleDropdownOpen(false)}
               >
                 <button
-                  onClick={() => setIsArticleDropdownOpen((p) => !p)}
-                  className={`flex items-center space-x-1 text-white hover:text-amber-300 transition-colors font-medium ${
+                  onClick={() => {
+                    handleNavItemClick("/articles", "Articles");
+                    setIsArticleDropdownOpen(false);
+                  }}
+                  className={`flex items-center space-x-1 text-white hover:text-amber-300 transition-colors font-medium group relative ${
                     activeLink === "Articles" ? "text-amber-300" : ""
                   }`}
                 >
@@ -391,9 +373,13 @@ export default function Navigation({ setShowLogoutModal }) {
                       isArticleDropdownOpen ? "rotate-180" : ""
                     }`}
                   />
-                  {activeLink === "Articles" && (
-                    <div className="h-0.5 bg-amber-300 mt-1" />
-                  )}
+                  <div
+                    className={`h-0.5 bg-amber-300 absolute inset-x-0 bottom-0 transition-all duration-300 ${
+                      activeLink === "Articles"
+                        ? "w-full"
+                        : "w-0 group-hover:w-full"
+                    }`}
+                  />
                 </button>
                 {isArticleDropdownOpen && (
                   <ArticleDropdown
@@ -402,10 +388,15 @@ export default function Navigation({ setShowLogoutModal }) {
                   />
                 )}
               </div>
-              <div className="relative z-[60]" ref={aboutDropdownRef}>
+              <div
+                className="relative z-[60]"
+                ref={aboutDropdownRef}
+                onMouseEnter={() => setIsAboutDropdownOpen(true)}
+                onMouseLeave={() => setIsAboutDropdownOpen(false)}
+              >
                 <button
                   onClick={() => setIsAboutDropdownOpen((p) => !p)}
-                  className={`flex items-center space-x-1 text-white hover:text-amber-300 transition-colors font-medium ${
+                  className={`flex items-center space-x-1 text-white hover:text-amber-300 transition-colors font-medium group relative ${
                     activeLink === "About" ? "text-amber-300" : ""
                   }`}
                 >
@@ -415,9 +406,13 @@ export default function Navigation({ setShowLogoutModal }) {
                       isAboutDropdownOpen ? "rotate-180" : ""
                     }`}
                   />
-                  {activeLink === "About" && (
-                    <div className="h-0.5 bg-amber-300 mt-1" />
-                  )}
+                  <div
+                    className={`h-0.5 bg-amber-300 absolute inset-x-0 bottom-0 transition-all duration-300 ${
+                      activeLink === "About"
+                        ? "w-full"
+                        : "w-0 group-hover:w-full"
+                    }`}
+                  />
                 </button>
                 {isAboutDropdownOpen && (
                   <div className="absolute top-full right-0 mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-100 z-[60]">
@@ -441,6 +436,42 @@ export default function Navigation({ setShowLogoutModal }) {
               </div>
             </div>
             <div className="flex items-center space-x-3">
+              <div
+                className="relative z-[60]"
+                ref={cartDropdownRef}
+                onMouseEnter={() => setIsCartHovered(true)}
+                onMouseLeave={() => setIsCartHovered(false)}
+              >
+                <button
+                  className="p-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors backdrop-blur-sm relative"
+                  onClick={() => setIsCartHovered((p) => !p)}
+                >
+                  <ShoppingCart className="w-5 h-5 text-white" />
+                  {cartItemCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full font-bold">
+                      {cartItemCount}
+                    </span>
+                  )}
+                </button>
+                {isCartHovered && cartItemCount === 0 && (
+                  <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-xl border border-gray-100 p-4 text-center z-[60]">
+                    <PackageOpen className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                    <p className="text-sm font-semibold text-gray-700">
+                      No product in cart
+                    </p>
+                    <button
+                      onClick={() => {
+                        navigate("/shop");
+                        setIsCartHovered(false);
+                      }}
+                      className="mt-3 w-full py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors text-sm font-medium"
+                    >
+                      Go to Shop
+                    </button>
+                  </div>
+                )}
+              </div>
+
               <div className="relative z-[60]" ref={userDropdownRef}>
                 <button
                   className="p-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors backdrop-blur-sm"
@@ -488,6 +519,7 @@ export default function Navigation({ setShowLogoutModal }) {
                   </div>
                 )}
               </div>
+
               <button className="relative p-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors backdrop-blur-sm">
                 <Bell className="w-5 h-5 text-white" />
                 <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full font-bold">
@@ -500,40 +532,75 @@ export default function Navigation({ setShowLogoutModal }) {
       </nav>
 
       <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-emerald-700 to-teal-700 shadow-lg">
-        <div className="flex items-center justify-between h-14 px-4">
-          {!showSearchBar ? (
-            <>
-              <button
-                onClick={() => handleNavItemClick("/", "Home")}
-                className="text-lg font-bold text-white tracking-tight"
-              >
+        <div className="flex flex-col">
+          <div className="flex items-center justify-between h-16 px-4">
+            <button
+              onClick={() => handleNavItemClick("/", "Home")}
+              className="text-white hover:text-amber-300 transition-colors group p-1 -ml-1"
+            >
+              <span className="block text-xl font-extrabold tracking-tight group-hover:text-amber-300 transition-colors">
                 Nibras Al-deen
+              </span>
+              <span className="block text-xs font-medium -mt-1 text-emerald-300 group-hover:text-amber-100 transition-colors">
+                A Light of Guidance
+              </span>
+            </button>
+
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => setShowSearchBar((p) => !p)}
+                className="p-2 rounded-full hover:bg-white/15 transition-colors"
+              >
+                <Search className="w-5 h-5 text-white" />
               </button>
-              <div className="flex items-center space-x-2">
+
+              <div className="relative z-[60]" ref={cartDropdownRef}>
                 <button
-                  onClick={() => setShowSearchBar(true)}
-                  className="p-2 rounded-full hover:bg-white/15 transition-colors"
+                  className="p-2 rounded-full hover:bg-white/15 transition-colors relative"
+                  onClick={() => setIsCartHovered((p) => !p)}
                 >
-                  <Search className="w-5 h-5 text-white" />
+                  <ShoppingCart className="w-5 h-5 text-white" />
+                  {cartItemCount > 0 && (
+                    <span className="absolute -top-0 -right-0 bg-red-500 text-white text-xs w-4 h-4 flex items-center justify-center rounded-full font-bold">
+                      {cartItemCount}
+                    </span>
+                  )}
                 </button>
-                <button
-                  onClick={() => setMobileMenuOpen(true)}
-                  className="p-2 rounded-full hover:bg-white/15 transition-colors"
-                >
-                  <Menu className="w-6 h-6 text-white" />
-                </button>
+                {isCartHovered && cartItemCount === 0 && (
+                  <div className="absolute right-0 mt-3 w-56 bg-white rounded-lg shadow-xl border border-gray-100 p-3 text-center z-[60] top-12">
+                    <PackageOpen className="w-6 h-6 text-gray-400 mx-auto mb-1" />
+                    <p className="text-xs font-semibold text-gray-700">
+                      No product in cart
+                    </p>
+                    <button
+                      onClick={() => {
+                        navigate("/shop");
+                        setIsCartHovered(false);
+                      }}
+                      className="mt-2 w-full py-1.5 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors text-sm font-medium"
+                    >
+                      Go to Shop
+                    </button>
+                  </div>
+                )}
               </div>
-            </>
-          ) : (
+            </div>
+          </div>
+
+          <div
+            className={`transition-all duration-300 overflow-hidden ${
+              showSearchBar ? "max-h-16 pt-2 pb-4 px-4" : "max-h-0 p-0"
+            }`}
+          >
             <div className="flex items-center w-full space-x-2">
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleSearch(e)}
-                placeholder="Search..."
+                placeholder="Search resources, articles, and more..."
                 className="flex-1 px-4 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 text-white placeholder-white/60 text-sm"
-                autoFocus
+                autoFocus={showSearchBar}
               />
               <button
                 onClick={handleSearch}
@@ -541,89 +608,12 @@ export default function Navigation({ setShowLogoutModal }) {
               >
                 <Search className="w-5 h-5" />
               </button>
-              <button
-                onClick={() => {
-                  setShowSearchBar(false);
-                  setSearchQuery("");
-                }}
-                className="p-2 text-white hover:bg-white/15 rounded-full transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
             </div>
-          )}
-        </div>
-      </div>
-
-      <div
-        ref={mobileMenuRef}
-        className={`md:hidden fixed inset-0 z-[70] bg-white transition-all duration-300 ease-in-out ${
-          mobileMenuOpen
-            ? "translate-x-0 opacity-100"
-            : "-translate-x-full opacity-0 pointer-events-none"
-        }`}
-      >
-        <div className="flex flex-col h-full">
-          <div className="flex items-center justify-between p-4 border-b border-gray-200">
-            <span className="text-lg font-bold text-emerald-700">Menu</span>
-            <button
-              onClick={() => {
-                setMobileMenuOpen(false);
-                setMobileDropdowns({
-                  dhikr: false,
-                  teaching: false,
-                  articles: false,
-                  about: false,
-                });
-              }}
-              className="p-2 rounded-full hover:bg-gray-100 transition-colors"
-            >
-              <X className="w-6 h-6 text-gray-600" />
-            </button>
-          </div>
-          <div className="flex-1 overflow-y-auto p-4 space-y-3">
-            {Object.keys(dropdownData).map((key) => (
-              <div key={key} className="space-y-1">
-                <button
-                  onClick={(e) => toggleMobileDropdown(key, e)}
-                  className="flex items-center justify-between w-full px-4 py-3 bg-emerald-50 rounded-lg hover:bg-emerald-100 transition-all duration-200"
-                >
-                  <span className="font-semibold text-emerald-800">
-                    {dropdownTitles[key]}
-                  </span>
-                  <ChevronDown
-                    className={`w-5 h-5 text-emerald-700 transition-transform duration-300 ${
-                      mobileDropdowns[key] ? "rotate-180" : ""
-                    }`}
-                  />
-                </button>
-                <div
-                  className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                    mobileDropdowns[key]
-                      ? "max-h-48 opacity-100"
-                      : "max-h-0 opacity-0"
-                  }`}
-                >
-                  <div className="pl-6 space-y-1 pt-1">
-                    {dropdownData[key].map(({ href, name, icon: Icon }) => (
-                      <button
-                        key={name}
-                        onClick={() => handleNavItemClick(href, name)}
-                        className="flex items-center w-full px-3 py-2 text-sm text-gray-700 hover:bg-emerald-50 rounded-md transition-colors"
-                      >
-                        <Icon className="w-4 h-4 mr-2 text-emerald-600" />
-                        {name}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            ))}
           </div>
         </div>
       </div>
 
-      <div className="md:pt-28 pt-14" />
+      <div className="md:pt-28 pt-16" />
 
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white shadow-lg border-t border-gray-200">
         <div className="flex items-center justify-around h-16">

@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useRef } from "react";
 import {
   X,
   Tag,
@@ -8,13 +8,34 @@ import {
   Edit,
   Trash2,
   Check,
+  ImageIcon,
 } from "lucide-react";
 
 import DeleteConfirmModal from "./DeleteConfirmModal";
 
 const GRADIENT_CLASS = "bg-gradient-to-r from-emerald-600 to-green-700";
 const HOVER_GRADIENT_CLASS = "hover:from-emerald-700 hover:to-green-800";
-const API_BASE = "http://localhost:8000";
+const API_BASE = "https://focus-flow-server-v1.onrender.com";
+
+const getFullImageUrl = (relativePath) => {
+  if (!relativePath) return null;
+
+  if (relativePath.startsWith("http")) {
+    return relativePath;
+  }
+
+  let path = relativePath.trim();
+
+  if (!path.startsWith("/static/")) {
+    path = `/static/category_images/${path}`;
+  }
+
+  if (path.startsWith("//")) {
+    path = path.replace(/^\/+/, "/");
+  }
+
+  return `${API_BASE}${path}`;
+};
 
 const CreateCategoryModal = ({
   show,
@@ -27,6 +48,7 @@ const CreateCategoryModal = ({
   const INITIAL_FORM_STATE = {
     name: "",
     description: "",
+    image_url: null,
     is_active: true,
     id: null,
   };
@@ -34,6 +56,10 @@ const CreateCategoryModal = ({
   const [formData, setFormData] = useState(INITIAL_FORM_STATE);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const imageInputRef = useRef(null);
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
@@ -61,27 +87,70 @@ const CreateCategoryModal = ({
     setFormData({ ...formData, [field]: value });
   };
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImageFile(file);
+      setImagePreview(URL.createObjectURL(file));
+    } else {
+      setImageFile(null);
+      setImagePreview(null);
+    }
+  };
+
+  const clearImage = () => {
+    setImageFile(null);
+    setImagePreview(getFullImageUrl(formData.image_url));
+    if (imageInputRef.current) {
+      imageInputRef.current.value = "";
+    }
+  };
+
   const handleCreateOrUpdate = async (e) => {
     e.preventDefault();
     setError(null);
     setIsLoading(true);
 
-    const method = isEditing ? "PATCH" : "POST";
-    const url = getApiPath(isEditing ? formData.id : null);
+    let url;
+    let method;
+    let headers;
+    let body;
 
-    const payload = {
+    const categoryData = {
       name: formData.name,
       description: formData.description,
       is_active: formData.is_active,
     };
 
+    if (isEditing && imageFile) {
+      url = `${getApiPath(formData.id)}/image-upload`;
+      method = "POST";
+      headers = {};
+      const formDataPayload = new FormData();
+      formDataPayload.append("image_file", imageFile);
+      body = formDataPayload;
+    } else if (imageFile && !isEditing) {
+      url = getApiPath();
+      method = "POST";
+      headers = {};
+      const formDataPayload = new FormData();
+      formDataPayload.append("name", categoryData.name);
+      formDataPayload.append("description", categoryData.description || "");
+      formDataPayload.append("is_active", categoryData.is_active);
+      formDataPayload.append("image_file", imageFile);
+      body = formDataPayload;
+    } else {
+      url = getApiPath(isEditing ? formData.id : null);
+      method = isEditing ? "PATCH" : "POST";
+      headers = { "Content-Type": "application/json" };
+      body = JSON.stringify(categoryData);
+    }
+
     try {
       const res = await fetch(url, {
         method: method,
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
+        headers: headers,
+        body: body,
       });
 
       if (!res.ok) {
@@ -90,7 +159,7 @@ const CreateCategoryModal = ({
           `Failed to ${isEditing ? "update" : "create"} category.`;
         try {
           const errorData = await res.json();
-          errorMessage = errorData.message || errorMessage;
+          errorMessage = errorData.detail || errorMessage;
         } catch (e) {}
         throw new Error(errorMessage);
       }
@@ -98,6 +167,8 @@ const CreateCategoryModal = ({
       const responseData = await res.json();
 
       setFormData(INITIAL_FORM_STATE);
+      setImageFile(null);
+      setImagePreview(null);
 
       if (typeof fetchCategories === "function") {
         await fetchCategories({
@@ -108,10 +179,6 @@ const CreateCategoryModal = ({
 
       onSave();
     } catch (err) {
-      console.error(
-        `Error ${isEditing ? "updating" : "creating"} Category:`,
-        err.message
-      );
       setError(err.message);
     } finally {
       setIsLoading(false);
@@ -124,8 +191,11 @@ const CreateCategoryModal = ({
       id: category.id,
       name: category.label || category.name,
       description: category.description || "",
+      image_url: category.image_url || null,
       is_active: category.is_active ?? true,
     });
+    setImageFile(null);
+    setImagePreview(getFullImageUrl(category.image_url));
   };
 
   const confirmDelete = (category) => {
@@ -152,13 +222,15 @@ const CreateCategoryModal = ({
         let errorMessage = res.statusText || "Failed to delete category.";
         try {
           const errorData = await res.json();
-          errorMessage = errorData.message || errorMessage;
+          errorMessage = errorData.detail || errorMessage;
         } catch (e) {}
         throw new Error(errorMessage);
       }
 
       if (formData.id === categoryId) {
         setFormData(INITIAL_FORM_STATE);
+        setImageFile(null);
+        setImagePreview(null);
       }
 
       if (typeof fetchCategories === "function") {
@@ -168,15 +240,29 @@ const CreateCategoryModal = ({
       onSave();
       setDeleteTarget(null);
     } catch (err) {
-      console.error("Error deleting category:", err.message);
       setError(err.message);
     } finally {
       setIsLoading(false);
     }
   };
 
+  const currentImageUrl = imagePreview || getFullImageUrl(formData.image_url);
+
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[60] p-4">
+      <DeleteConfirmModal
+        show={showDeleteConfirm}
+        onClose={() => {
+          setShowDeleteConfirm(false);
+          setDeleteTarget(null);
+        }}
+        onDelete={executeDelete}
+        itemType={`${
+          categoryType.charAt(0).toUpperCase() + categoryType.slice(1)
+        } Category`}
+        itemTitle={deleteTarget?.label || "this category"}
+      />
+
       <div className="bg-white rounded-2xl max-w-lg w-full shadow-2xl border border-gray-100 max-h-[90vh] flex flex-col">
         <div
           className={`${GRADIENT_CLASS} p-5 flex items-center justify-between rounded-t-2xl shadow-lg flex-shrink-0`}
@@ -247,6 +333,46 @@ const CreateCategoryModal = ({
                 />
               </div>
 
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                  <ImageIcon className="w-4 h-4 text-emerald-700" /> Category
+                  Image (Optional)
+                </label>
+                <div
+                  className={`border rounded-lg p-3 transition-colors flex items-center gap-4 ${
+                    isEditing
+                      ? "border-amber-400 focus-within:ring-amber-500 bg-amber-50"
+                      : "border-gray-300 focus-within:ring-emerald-500"
+                  }`}
+                >
+                  {currentImageUrl && (
+                    <div className="flex-shrink-0 relative">
+                      <img
+                        src={currentImageUrl}
+                        alt="Category Preview"
+                        className="w-16 h-16 object-cover rounded-md border border-gray-200"
+                        onError={(e) => {}}
+                      />
+                      <button
+                        type="button"
+                        onClick={clearImage}
+                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-0.5 hover:bg-red-600 transition-colors shadow-md"
+                        title="Remove image"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  )}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    ref={imageInputRef}
+                    className="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 cursor-pointer"
+                  />
+                </div>
+              </div>
+
               <div className="flex items-center gap-3 p-3 bg-emerald-50 rounded-lg border border-emerald-200">
                 <input
                   type="checkbox"
@@ -268,7 +394,11 @@ const CreateCategoryModal = ({
               {isEditing && (
                 <button
                   type="button"
-                  onClick={() => setFormData(INITIAL_FORM_STATE)}
+                  onClick={() => {
+                    setFormData(INITIAL_FORM_STATE);
+                    setImageFile(null);
+                    setImagePreview(null);
+                  }}
                   disabled={isLoading}
                   className="flex-1 px-5 py-2 border border-amber-400 rounded-lg bg-amber-50 text-amber-700 hover:bg-amber-100 transition-colors font-medium disabled:opacity-50"
                 >
@@ -312,65 +442,83 @@ const CreateCategoryModal = ({
                   No categories created yet (besides "All Categories").
                 </p>
               ) : (
-                manageableCategories.map((cat) => (
-                  <div
-                    key={cat.id}
-                    className={`p-3 rounded-lg border transition-all flex flex-col ${
-                      formData.id === cat.id
-                        ? "bg-amber-100 border-amber-500 shadow-md ring-2 ring-amber-200"
-                        : "bg-gray-50 border-gray-200 hover:bg-gray-100"
-                    }`}
-                  >
-                    <div className="flex justify-between items-start gap-3">
-                      <div className="min-w-0 flex items-center gap-2">
-                        <Tag
-                          className={`w-4 h-4 flex-shrink-0 mt-1 ${
-                            cat.is_active ? "text-emerald-600" : "text-gray-400"
-                          }`}
-                        />
-                        <p
-                          className={`font-semibold text-base truncate ${
-                            cat.is_active
-                              ? "text-gray-900"
-                              : "text-gray-500 line-through"
-                          }`}
-                        >
-                          {cat.label}{" "}
-                          <span className="font-mono text-xs text-gray-500">
-                            (ID: {cat.id})
-                          </span>
-                        </p>
+                manageableCategories.map((cat) => {
+                  const imageUrl = getFullImageUrl(cat.image_url);
+                  const isImageAvailable = !!imageUrl;
+
+                  return (
+                    <div
+                      key={cat.id}
+                      className={`p-3 rounded-lg border transition-all flex flex-col ${
+                        formData.id === cat.id
+                          ? "bg-amber-100 border-amber-500 shadow-md ring-2 ring-amber-200"
+                          : "bg-gray-50 border-gray-200 hover:bg-gray-100"
+                      }`}
+                    >
+                      <div className="flex justify-between items-start gap-3">
+                        <div className="min-w-0 flex items-center gap-3">
+                          <div
+                            className={`w-6 h-6 rounded-full flex-shrink-0 border flex items-center justify-center overflow-hidden ${
+                              cat.is_active
+                                ? "border-emerald-600"
+                                : "border-gray-400"
+                            } ${isImageAvailable ? "bg-white" : "bg-gray-200"}`}
+                          >
+                            <img
+                              src={imageUrl}
+                              alt={cat.label || "Category image"}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                e.target.style.opacity = "0";
+                              }}
+                            />
+                          </div>
+
+                          <p
+                            className={`font-semibold text-base truncate ${
+                              cat.is_active
+                                ? "text-gray-900"
+                                : "text-gray-500 line-through"
+                            }`}
+                          >
+                            {cat.label}{" "}
+                            <span className="font-mono text-xs text-gray-500">
+                              (ID: {cat.id})
+                            </span>
+                          </p>
+                        </div>
+                        <div className="flex gap-1.5 flex-shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => loadCategoryForEdit(cat)}
+                            className={`p-1.5 rounded-lg transition-colors ${
+                              isEditing && formData.id === cat.id
+                                ? "text-white bg-amber-500"
+                                : "text-emerald-600 hover:bg-emerald-50"
+                            }`}
+                            title="Edit Category"
+                            disabled={isLoading}
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => confirmDelete(cat)}
+                            className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            title="Delete Category"
+                            disabled={isLoading}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
-                      <div className="flex gap-1.5 flex-shrink-0">
-                        <button
-                          type="button"
-                          onClick={() => loadCategoryForEdit(cat)}
-                          className={`p-1.5 rounded-lg transition-colors ${
-                            isEditing && formData.id === cat.id
-                              ? "text-white bg-amber-500"
-                              : "text-emerald-600 hover:bg-emerald-50"
-                          }`}
-                          title="Edit Category"
-                          disabled={isLoading}
-                        >
-                          <Edit className="w-4 h-4" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => confirmDelete(cat)}
-                          className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                          title="Delete Category"
-                          disabled={isLoading}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
+
+                      <p className="text-xs text-gray-600 pl-9 mt-1 truncate">
+                        {cat.description || "— No description —"}
+                      </p>
                     </div>
-                    <p className="text-xs text-gray-600 pl-6 mt-1 truncate">
-                      {cat.description || "— No description —"}
-                    </p>
-                  </div>
-                ))
+                  );
+                })
               )}
             </div>
           </div>
@@ -387,19 +535,6 @@ const CreateCategoryModal = ({
           </button>
         </div>
       </div>
-
-      <DeleteConfirmModal
-        show={showDeleteConfirm}
-        onClose={() => {
-          setShowDeleteConfirm(false);
-          setDeleteTarget(null);
-        }}
-        onDelete={executeDelete}
-        itemType={`${
-          categoryType.charAt(0).toUpperCase() + categoryType.slice(1)
-        } Category`}
-        itemTitle={deleteTarget?.label || "this category"}
-      />
     </div>
   );
 };

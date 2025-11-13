@@ -15,7 +15,7 @@ import {
   Ban,
 } from "lucide-react";
 
-const API_BASE = "http://localhost:8000";
+const API_BASE = "https://focus-flow-server-v1.onrender.com";
 export const DeleteConfirmModal = ({
   show,
   onClose,

@@ -49,7 +49,7 @@ const CategorySelectComponent = ({
         </option>
         {currentCategories.map((cat) => (
           <option key={cat.id} value={cat.id}>
-            {cat.label}
+            {cat.name}
           </option>
         ))}
       </select>
@@ -114,7 +114,6 @@ const ManualEntryTab = ({
             <Clipboard className="w-4 h-4 text-teal-700" /> Transliteration
           </label>
           <textarea
-            required
             rows="1"
             disabled={!hasCategories || isLoading}
             value={formData.transliteration || ""}
@@ -154,6 +153,62 @@ const ManualEntryTab = ({
         </button>
         {showAdditional && (
           <div className="space-y-3 p-3 bg-blue-50/50 rounded-lg border border-blue-100 transition-all duration-300 ease-in-out">
+            <h5 className="text-sm font-bold text-blue-800 border-b border-blue-200 pb-2">
+              Segment Highlighting Data (JSON String)
+            </h5>
+
+            <label className="block">
+              <span className="text-gray-700 font-medium text-sm">
+                Arabic Segments JSON
+              </span>
+              <textarea
+                rows="3"
+                disabled={!hasCategories || isLoading}
+                value={formData.arabic_segments_json || ""}
+                onChange={(e) =>
+                  handleChange("arabic_segments_json", e.target.value)
+                }
+                className="w-full px-3 py-1 border border-gray-300 rounded-lg text-xs font-mono focus:outline-none focus:ring-1 focus:ring-blue-600 disabled:bg-gray-200"
+                placeholder='[{"text": "الْحَمْدُ", "start_time": 0.0, "end_time": 1.5}, ...]'
+              />
+            </label>
+
+            <label className="block">
+              <span className="text-gray-700 font-medium text-sm">
+                Transliteration Segments JSON
+              </span>
+              <textarea
+                rows="3"
+                disabled={!hasCategories || isLoading}
+                value={formData.transliteration_segments_json || ""}
+                onChange={(e) =>
+                  handleChange("transliteration_segments_json", e.target.value)
+                }
+                className="w-full px-3 py-1 border border-gray-300 rounded-lg text-xs font-mono focus:outline-none focus:ring-1 focus:ring-blue-600 disabled:bg-gray-200"
+                placeholder='[{"text": "Alhamdulillah", "start_time": 0.0, "end_time": 1.5}, ...]'
+              />
+            </label>
+
+            <label className="block">
+              <span className="text-gray-700 font-medium text-sm">
+                Translation Segments JSON
+              </span>
+              <textarea
+                rows="3"
+                disabled={!hasCategories || isLoading}
+                value={formData.translation_segments_json || ""}
+                onChange={(e) =>
+                  handleChange("translation_segments_json", e.target.value)
+                }
+                className="w-full px-3 py-1 border border-gray-300 rounded-lg text-xs font-mono focus:outline-none focus:ring-1 focus:ring-blue-600 disabled:bg-gray-200"
+                placeholder='[{"text": "All praise is for Allah", "start_time": 0.0, "end_time": 1.5}, ...]'
+              />
+            </label>
+
+            <h5 className="text-sm font-bold text-blue-800 border-b border-blue-200 pb-2 pt-4">
+              Metadata and Context
+            </h5>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1">

@@ -3,11 +3,33 @@ import {
   BookOpenCheck,
   Loader2,
   Search,
-  Filter,
   Heart,
+  ChevronDown,
+  ChevronUp,
+  Tag,
   Share2,
   Bookmark,
+  BookOpen,
+  Home,
+  Volume2,
+  Info,
 } from "lucide-react";
+
+const API_BASE = "https://focus-flow-server-v1.onrender.com/api";
+const IMAGE_BASE = "https://focus-flow-server-v1.onrender.com";
+
+const getFullImageUrl = (relativePath) => {
+  if (!relativePath) return null;
+  if (relativePath.startsWith("http")) return relativePath;
+  let path = relativePath.trim();
+  if (!path.startsWith("/static/")) {
+    path = `/static/category_images/${path}`;
+  }
+  if (path.startsWith("//")) {
+    path = path.replace(/^\/+/, "/");
+  }
+  return `${IMAGE_BASE}${path}`;
+};
 
 const getAuthToken = () => {
   return localStorage.getItem("token") || localStorage.getItem("access_token");
@@ -18,13 +40,49 @@ const redirectToLogin = () => {
   console.log("Requirement: User must be logged in to save favorites.");
 };
 
+const CategoryCard = ({ category, onClick }) => {
+  const imageUrl = getFullImageUrl(category.image_url);
+  return (
+    <button
+      onClick={onClick}
+      className="group cursor-pointer bg-white rounded-xl shadow-md transition-all duration-300 overflow-hidden w-full text-left"
+    >
+      <div className="relative h-40 bg-gradient-to-br from-emerald-100 to-emerald-50 overflow-hidden">
+        {imageUrl ? (
+          <img
+            src={imageUrl}
+            alt={category.name}
+            className="w-full h-full object-cover transition-transform duration-300"
+            onError={(e) => {
+              e.target.style.display = "none";
+            }}
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            <BookOpenCheck className="w-16 h-16 text-emerald-400" />
+          </div>
+        )}
+      </div>
+      <div className="p-4">
+        <h3 className="text-lg font-bold text-gray-800 text-center group-hover:text-emerald-600 transition-colors">
+          {category.name}
+        </h3>
+        <p className="text-sm text-gray-500 text-center mt-1">
+          {category.duas.length} {category.duas.length === 1 ? "Dua" : "Duas"}
+        </p>
+      </div>
+    </button>
+  );
+};
+
 const DuaItem = ({
   dua,
-  index,
   toggleFavorite,
   isAuthenticated,
   isLocallyFavorite,
   handleLocalToggle,
+  openDetails,
+  setOpenDetails,
 }) => {
   const isFavorite = isAuthenticated
     ? dua.is_favorite || false
@@ -38,16 +96,73 @@ const DuaItem = ({
     }
   };
 
+  const toggleDetail = (key) => {
+    const currentActiveDetail = openDetails[dua.id];
+    const newActiveDetail = currentActiveDetail === key ? null : key;
+    setOpenDetails((prev) => ({
+      ...prev,
+      [dua.id]: newActiveDetail,
+    }));
+  };
+
+  const renderDetail = (key, title, content, icon) => {
+    if (!content && (key !== "audio" || !dua.audio_url)) return null;
+    if (key === "notes") return null;
+    const isOpen = openDetails[dua.id] === key;
+    const displayContent =
+      key === "audio" && dua.audio_url ? (
+        <audio controls className="w-full mt-2">
+          <source src={getFullImageUrl(dua.audio_url)} type="audio/mpeg" />
+          Your browser does not support the audio element.
+        </audio>
+      ) : (
+        content
+      );
+
+    return (
+      <div className="border-b border-gray-200">
+        <button
+          onClick={() => toggleDetail(key)}
+          className="w-full flex justify-between items-center py-3 px-1 text-gray-700 hover:text-emerald-600 transition-colors"
+          aria-expanded={isOpen}
+        >
+          <div className="flex items-center gap-2">
+            {icon}
+            <span className="text-base font-medium">{title}</span>
+          </div>
+          {isOpen ? (
+            <ChevronUp className="w-4 h-4 text-emerald-600" />
+          ) : (
+            <ChevronDown className="w-4 h-4 text-gray-400" />
+          )}
+        </button>
+        {isOpen && (
+          <div className="pb-3 pt-1 px-1">
+            {key !== "audio" ? (
+              <p
+                className={`text-base ${
+                  key === "transliteration"
+                    ? "italic text-gray-600"
+                    : "text-gray-800"
+                }`}
+              >
+                {displayContent}
+              </p>
+            ) : (
+              displayContent
+            )}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
-    <article key={dua.id} className="border-b border-gray-200 pb-8 px-4">
+    <article className="pb-8 px-4">
       <div className="mb-4 flex justify-between items-center">
         <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold text-emerald-600 uppercase">
-            Dua #{index + 1}
-          </span>
           <h3 className="text-xl font-bold text-gray-800">{dua.title}</h3>
         </div>
-
         <button
           onClick={handleLikeClick}
           className="p-2 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-red-400 disabled:opacity-50 disabled:cursor-default"
@@ -63,7 +178,7 @@ const DuaItem = ({
         </button>
       </div>
 
-      <div className="space-y-5">
+      <div className="space-y-3 border-b border-gray-200 pb-6">
         <div dir="rtl">
           <p
             className="text-2xl text-right text-gray-900 leading-relaxed py-2"
@@ -75,123 +190,125 @@ const DuaItem = ({
             {dua.arabic}
           </p>
         </div>
-        <div className="text-base text-gray-600 italic border-l-4 border-gray-300 pl-3">
-          {dua.transliteration}
-        </div>
-        {dua.translation && (
-          <div className="p-3 border-l-4 border-emerald-500">
-            <p className="text-sm font-semibold text-emerald-700 mb-1 uppercase tracking-wide">
-              Meaning
+        {dua.repetition_count > 0 && (
+          <p className="text-sm text-gray-500 text-right pr-2">
+            ({dua.repetition_count}x)
+          </p>
+        )}
+
+        {dua.notes && (
+          <div className="mt-4 text-gray-700 text-right">
+            <p className="text-base font-medium inline-block pr-2 bg-emerald-50 text-emerald-700 rounded-lg px-2 py-0.5">
+              Note:
             </p>
-            <p className="text-base text-gray-800 font-medium">
-              {dua.translation}
+            <p className="text-base inline-block text-gray-700 leading-relaxed max-w-full">
+              {dua.notes}
             </p>
           </div>
         )}
-        {(dua.notes || dua.benefits || dua.source) && (
-          <div className="pt-4 border-t border-dashed border-gray-100 space-y-2 text-sm">
-            {dua.benefits && (
-              <p className="text-gray-700 flex items-center gap-1">
-                <Heart className="w-4 h-4 text-emerald-600" />
-                {dua.benefits}
-              </p>
-            )}
-            {dua.notes && (
-              <p className="text-gray-700 flex items-center gap-1">
-                <Bookmark className="w-4 h-4 text-gray-500" />
-                {dua.notes}
-              </p>
-            )}
-            {dua.source && (
-              <p className="text-xs italic text-gray-500 flex items-center gap-1">
-                <Share2 className="w-3 h-3" />
-                {dua.source}
-              </p>
-            )}
-          </div>
+      </div>
+
+      <div className="mt-4 border border-gray-200 rounded-lg p-4 bg-white shadow-sm">
+        {renderDetail(
+          "translation",
+          "Translation",
+          dua.translation,
+          <BookOpen className="w-4 h-4 text-emerald-600" />
+        )}
+
+        {renderDetail(
+          "transliteration",
+          "Transliteration",
+          dua.transliteration,
+          <Tag className="w-4 h-4 text-emerald-600" />
+        )}
+
+        {renderDetail(
+          "benefits",
+          "Virtue",
+          dua.benefits,
+          <Heart className="w-4 h-4 text-red-500" />
+        )}
+
+        {renderDetail(
+          "source",
+          "Source",
+          dua.source,
+          <Share2 className="w-4 h-4 text-gray-500" />
+        )}
+
+        {renderDetail(
+          "audio",
+          "Audio",
+          null,
+          <Volume2 className="w-4 h-4 text-emerald-600" />
         )}
       </div>
     </article>
   );
 };
 
-export default function DuaApp() {
+const DuaCategoryPage = ({ categoryId }) => {
   const [categories, setCategories] = useState([]);
-  const [allDuas, setAllDuas] = useState([]);
-  const [categoriesMap, setCategoriesMap] = useState({});
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [selectedCategoryId, setSelectedCategoryId] = useState(null);
   const [localFavorites, setLocalFavorites] = useState(new Set());
+  const [openDetails, setOpenDetails] = useState({});
+  const [view, setView] = useState(categoryId ? "duas" : "categories");
 
-  const API_BASE = "https://focus-flow-server-v1.onrender.com/api";
   const AUTH_TOKEN = getAuthToken();
   const isAuthenticated = !!AUTH_TOKEN;
 
   const fetchDuasAndCategories = useCallback(
     async (q = "") => {
       setLoading(true);
-      setError(null);
       try {
         const fetchOptions = {
           headers: AUTH_TOKEN ? { Authorization: `Bearer ${AUTH_TOKEN}` } : {},
         };
-
         const catRes = await fetch(`${API_BASE}/dua-categories`);
         if (!catRes.ok) throw new Error("Failed to fetch categories.");
         const catData = await catRes.json();
-
-        const catMap = catData.reduce((map, cat) => {
-          map[cat.id] = cat.name;
-          return map;
-        }, {});
-        setCategoriesMap(catMap);
-
         const url = q
           ? `${API_BASE}/duas/paginated?q=${encodeURIComponent(q)}&limit=1000`
           : `${API_BASE}/duas/paginated?limit=1000`;
-
         const duasRes = await fetch(url, fetchOptions);
-
         if (duasRes.status === 401 && isAuthenticated) {
           redirectToLogin();
-          throw new Error("Authentication failed. Redirecting to login.");
+          throw new Error("Authentication failed.");
         }
         if (!duasRes.ok) throw new Error("Failed to fetch duas.");
-
         let duasData = await duasRes.json();
-
-        setAllDuas(duasData);
-
-        const groupedDuas = catData
-          .map((cat) => ({
-            name: cat.name,
-            duas: duasData.filter((d) => d.category_id === cat.id),
-          }))
-          .filter((group) => group.duas.length > 0);
-
+        const groupedDuas = catData.map((cat) => ({
+          ...cat,
+          duas: duasData.filter((d) => d.category_id === cat.id),
+        }));
         setCategories(groupedDuas);
       } catch (err) {
-        console.error("Fetch error:", err);
         if (
           !isAuthenticated ||
           !err.message.includes("Authentication failed")
         ) {
-          setError(
-            err.message || "Could not load Duas. Check the backend service."
-          );
+          console.error(err);
         }
       } finally {
         setLoading(false);
       }
     },
-    [API_BASE, AUTH_TOKEN, isAuthenticated]
+    [AUTH_TOKEN, isAuthenticated]
   );
 
   useEffect(() => {
     fetchDuasAndCategories();
   }, [fetchDuasAndCategories]);
+
+  useEffect(() => {
+    if (categoryId) {
+      setSelectedCategoryId(categoryId);
+      setView("duas");
+    }
+  }, [categoryId]);
 
   const handleLocalToggle = (duaId) => {
     setLocalFavorites((prevSet) => {
@@ -200,8 +317,6 @@ export default function DuaApp() {
         newSet.delete(duaId);
       } else {
         newSet.add(duaId);
-      }
-      if (newSet.has(duaId)) {
         redirectToLogin();
       }
       return newSet;
@@ -213,7 +328,6 @@ export default function DuaApp() {
       redirectToLogin();
       return;
     }
-
     try {
       const res = await fetch(`${API_BASE}/duas/${duaId}/toggle-favorite`, {
         method: "PATCH",
@@ -222,31 +336,22 @@ export default function DuaApp() {
           Authorization: `Bearer ${AUTH_TOKEN}`,
         },
       });
-
       if (res.status === 401) {
         redirectToLogin();
         return;
       }
-      if (!res.ok) {
-        throw new Error("Failed to toggle favorite status.");
-      }
-
+      if (!res.ok) throw new Error("Failed to toggle favorite.");
       const { favorites } = await res.json();
-
       const updateDua = (dua) => {
         if (dua.id === duaId) {
-          const newIsFavorite = !dua.is_favorite;
-
           return {
             ...dua,
-            is_favorite: newIsFavorite,
+            is_favorite: !dua.is_favorite,
             favorite_count: favorites,
           };
         }
         return dua;
       };
-
-      setAllDuas((prevDuas) => prevDuas.map(updateDua));
       setCategories((prevGroups) =>
         prevGroups.map((group) => ({
           ...group,
@@ -264,11 +369,18 @@ export default function DuaApp() {
     fetchDuasAndCategories(term);
   };
 
-  const filteredCategories = categories
-    .filter(
-      (cat) => selectedCategory === "All" || cat.name === selectedCategory
-    )
-    .map((cat) => ({ ...cat, duas: cat.duas }));
+  const handleCategoryClick = (catId) => {
+    setSelectedCategoryId(catId);
+    setView("duas");
+    setOpenDetails({});
+  };
+
+  const handleBackToCategories = () => {
+    setView("categories");
+    setSelectedCategoryId(null);
+    setSearchTerm("");
+    setOpenDetails({});
+  };
 
   if (loading) {
     return (
@@ -278,91 +390,125 @@ export default function DuaApp() {
     );
   }
 
-  const allCategoryNames = ["All", ...Object.values(categoriesMap)];
+  const currentCategory = selectedCategoryId
+    ? categories.find(
+        (cat) => cat.id.toString() === selectedCategoryId.toString()
+      )
+    : null;
+
+  const pageTitle = currentCategory?.name || "أدعية وأذكار";
+  const categoryDescription =
+    currentCategory?.description || "Description not available";
+  const categoryImageUrl = currentCategory
+    ? getFullImageUrl(currentCategory.image_url)
+    : null;
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="text-green-800 py-10 border-b border-gray-200 bg-white shadow-sm">
-        <div className="max-w-xl mx-auto text-center">
-          <BookOpenCheck className="w-10 h-10 text-green-800 mx-auto mb-2" />
+      <div className="text-green-800 py-10 border-b border-gray-200 bg-gray-50">
+        <div className="max-w-6xl mx-auto text-center px-4">
+          {categoryImageUrl ? (
+            <img
+              src={categoryImageUrl}
+              alt={`${pageTitle} category`}
+              className="w-20 h-20 object-cover rounded-full mx-auto mb-3 border-4 border-emerald-500"
+              onError={(e) => {
+                e.target.style.display = "none";
+              }}
+            />
+          ) : (
+            <BookOpenCheck className="w-10 h-10 text-green-800 mx-auto mb-2" />
+          )}
           <h1
             className="text-4xl font-extrabold tracking-tight"
             style={{ fontFamily: "Amiri, serif" }}
           >
-            أدعية وأذكار
+            {pageTitle}
           </h1>
-          <p className="text-lg text-green-800 font-light mt-1">
-            Daily Supplications Collection
-          </p>
+          {currentCategory && (
+            <div className="mt-4 text-center">
+              <p className="text-lg text-gray-700 font-light mx-auto whitespace-pre-line max-w-3xl">
+                {categoryDescription}
+              </p>
+            </div>
+          )}
         </div>
       </div>
-      <div className="sticky top-0 z-40 border-b border-gray-200 bg-white">
-        <div className="max-w-xl mx-auto py-4 px-4 flex flex-col sm:flex-row gap-3 items-center">
-          <div className="flex-1 relative w-full">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
-            <input
-              type="text"
-              placeholder="Search Duas by title or text..."
-              value={searchTerm}
-              onChange={handleSearch}
-              className="w-full pl-10 pr-4 py-3 rounded-full border border-gray-300 focus:ring-2 focus:ring-emerald-400 focus:border-emerald-500 text-gray-700 placeholder-gray-400 text-sm shadow-sm transition"
-            />
-          </div>
-          <div className="relative w-full sm:w-auto">
-            <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
-            <select
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              className="w-full pl-10 pr-8 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-emerald-400 focus:border-emerald-500 text-gray-700 appearance-none cursor-pointer font-medium text-sm"
-            >
-              {allCategoryNames.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat}
-                </option>
-              ))}
-            </select>
+
+      {view === "categories" && (
+        <div className="sticky top-0 z-40 border-b border-gray-200 bg-white">
+          <div className="max-w-6xl mx-auto py-4 px-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <input
+                type="text"
+                placeholder="Search Duas by title or text..."
+                value={searchTerm}
+                onChange={handleSearch}
+                className="w-full pl-10 pr-4 py-3 rounded-full border border-gray-300 focus:ring-2 focus:ring-emerald-400 focus:border-emerald-500 text-gray-700 placeholder-gray-400 text-sm shadow-sm transition"
+              />
+            </div>
           </div>
         </div>
-      </div>
-      <div className="max-w-[1000px] mx-auto py-8 space-y-10">
-        {filteredCategories.length === 0 ? (
-          <div className="text-center py-16 px-4">
-            <Search className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-            <p className="text-xl text-gray-600 font-medium">No duas found</p>
-            <p className="text-gray-500 mt-2">
-              Try a different search term or category filter.
-            </p>
+      )}
+
+      {view === "duas" && !categoryId && (
+        <div className="max-w-6xl mx-auto px-4 py-4">
+          <button
+            onClick={handleBackToCategories}
+            className="flex items-center gap-2 text-emerald-600 hover:text-emerald-700 font-medium transition-colors"
+          >
+            <Home className="w-5 h-5" />
+            Back to Categories
+          </button>
+        </div>
+      )}
+
+      <div className="max-w-6xl mx-auto py-8 px-4 relative z-10">
+        {view === "categories" ? (
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+            {categories.map((cat) => (
+              <CategoryCard
+                key={cat.id}
+                category={cat}
+                onClick={() => handleCategoryClick(cat.id)}
+              />
+            ))}
           </div>
         ) : (
-          filteredCategories.map((cat) => (
-            <div key={cat.name} className="bg-white p-4 rounded-lg shadow-md">
-              <div className="mb-8 border-y border-emerald-500 py-2 bg-gray-50 -mx-4 px-4 sm:px-0">
-                <h2 className="text-xl font-extrabold text-gray-800 tracking-tight pl-4">
-                  {cat.name}
-                  <span className="ml-2 text-sm font-normal text-gray-500">
-                    ({cat.duas.length})
-                  </span>
-                </h2>
-              </div>
-              <div className="grid grid-cols-1 gap-12">
-                {cat.duas.map((dua, index) => (
-                  <DuaItem
-                    key={dua.id}
-                    dua={dua}
-                    index={index}
-                    toggleFavorite={toggleFavorite}
-                    isAuthenticated={isAuthenticated}
-                    isLocallyFavorite={localFavorites.has(dua.id)}
-                    handleLocalToggle={handleLocalToggle}
-                  />
-                ))}
-              </div>
+          currentCategory && (
+            <div className="space-y-12">
+              {currentCategory.duas.map((dua) => (
+                <DuaItem
+                  key={dua.id}
+                  dua={dua}
+                  toggleFavorite={toggleFavorite}
+                  isAuthenticated={isAuthenticated}
+                  isLocallyFavorite={localFavorites.has(dua.id)}
+                  handleLocalToggle={handleLocalToggle}
+                  openDetails={openDetails}
+                  setOpenDetails={setOpenDetails}
+                />
+              ))}
             </div>
-          ))
+          )
+        )}
+
+        {categories.length === 0 && !loading && (
+          <div className="text-center py-16">
+            <Search className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+            <p className="text-xl text-gray-600 font-medium">
+              No categories found
+            </p>
+            <p className="text-gray-500 mt-2">
+              Check your API connection or data source.
+            </p>
+          </div>
         )}
       </div>
+
       <footer className="text-green-800 py-6 mt-12 bg-white border-t border-gray-200">
-        <div className="max-w-xl mx-auto px-4 text-center">
+        <div className="max-w-6xl mx-auto px-4 text-center">
           <p className="text-emerald-500 text-sm">
             May Allah accept our prayers and remembrance
           </p>
@@ -370,4 +516,6 @@ export default function DuaApp() {
       </footer>
     </div>
   );
-}
+};
+
+export default DuaCategoryPage;

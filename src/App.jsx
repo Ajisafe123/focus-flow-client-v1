@@ -6,13 +6,12 @@ import {
   Navigate,
   useLocation,
   useNavigate,
+  useParams,
 } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import Hero from "./Components/Hero";
 import LiveDua from "./Components/LiveDua";
 import LiveChat from "./Components/LiveChat";
-import LiveVideo from "./Components/LiveVideo";
-import LiveAudio from "./Components/LiveAudio";
 import DailyHadith from "./Components/DailyHadith";
 import About from "./Components/About";
 import Contact from "./Components/Contact";
@@ -23,7 +22,6 @@ import ResetPassword from "./Components/Authentications/ResetPassword";
 import Navigation from "./Components/Navigation";
 import LogoutModal from "./Components/Authentications/LogoutModal";
 import PrayerTimesTable from "./Components/PrayerTimesTable";
-import Dua from "./Components/DuaList";
 import Hadith from "./Components/HadithList";
 import IslamicCalendar from "./Components/IslamicCalendar";
 import NamesOfAllah from "./Components/NamesOfAllah";
@@ -35,6 +33,8 @@ import AdminDashboard from "./Admin/NibrasAdminDashboard";
 import apiService from "./Services/api";
 import ArticlesInterface from "./Admin/ArticlesInterface";
 import QuranPage from "./Components/Quran";
+import DuaCategoryPage from "./Components/DuaList";
+
 const pageVariants = {
   initial: { opacity: 0, y: 10 },
   in: { opacity: 1, y: 0 },
@@ -63,11 +63,18 @@ function GuestHome() {
       <Hero />
       <LiveDua />
       <DailyHadith />
-      <LiveVideo />
-      <LiveAudio />
       <About />
       <Contact />
     </>
+  );
+}
+
+function DuaRouteElement() {
+  const { categoryId } = useParams();
+  return (
+    <PageWrapper>
+      <DuaCategoryPage categoryId={categoryId} />
+    </PageWrapper>
   );
 }
 
@@ -152,9 +159,13 @@ function AppContent({
             path="/dua"
             element={
               <PageWrapper>
-                <Dua />
+                <DuaCategoryPage categoryId={null} />
               </PageWrapper>
             }
+          />
+          <Route
+            path="/dua-category/:categoryId/:categorySlug"
+            element={<DuaRouteElement />}
           />
           <Route
             path="/hadith"

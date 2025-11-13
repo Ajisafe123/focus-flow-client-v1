@@ -16,19 +16,22 @@ const DuaAdhkarModal = ({
   isEdit = false,
   categories,
   formData: initialFormData,
-  API_BASE = "http://localhost:8000",
+  API_BASE = "https://focus-flow-server-v1.onrender.com",
   fetchCategories,
 }) => {
   const INITIAL_DUA_STATE = {
     title: "",
     arabic: "",
-    translitration: "",
+    transliteration: "",
     translation: "",
     notes: "",
     benefits: "",
     source: "",
     category: "",
     featured: false,
+    arabic_segments_json: "",
+    transliteration_segments_json: "",
+    translation_segments_json: "",
   };
 
   const [formData, setFormData] = useState(INITIAL_DUA_STATE);
@@ -46,17 +49,40 @@ const DuaAdhkarModal = ({
   const currentCategories = categories.filter((c) => c.id !== "all");
   const hasCategories = currentCategories.length > 0;
 
+  const segmentObjectToString = (data) => {
+    if (!data) return "";
+    if (typeof data === "string") return data;
+    if (Array.isArray(data) || typeof data === "object") {
+      try {
+        return JSON.stringify(data, null, 2);
+      } catch {
+        return "";
+      }
+    }
+    return "";
+  };
+
   useEffect(() => {
     if (show) {
       const defaultCategory = currentCategories[0]?.id || "";
       setFormData({
         ...INITIAL_DUA_STATE,
         ...initialFormData,
-        translitration:
-          initialFormData?.translitration || initialFormData?.latin || "",
+        transliteration:
+          initialFormData?.transliteration || initialFormData?.latin || "",
         category:
-          String(initialFormData?.category_id || initialFormData?.category) ||
-          defaultCategory,
+          String(
+            initialFormData?.category_id || initialFormData?.category || ""
+          ) || defaultCategory,
+        arabic_segments_json: segmentObjectToString(
+          initialFormData?.arabic_segments_json
+        ),
+        transliteration_segments_json: segmentObjectToString(
+          initialFormData?.transliteration_segments_json
+        ),
+        translation_segments_json: segmentObjectToString(
+          initialFormData?.translation_segments_json
+        ),
       });
       setAudioCategoryId(defaultCategory);
       setTab(isEdit ? "manual" : "manual");
@@ -69,7 +95,10 @@ const DuaAdhkarModal = ({
           (initialFormData?.notes ||
             initialFormData?.benefits ||
             initialFormData?.source ||
-            initialFormData?.featured)
+            initialFormData?.featured ||
+            initialFormData?.arabic_segments_json ||
+            initialFormData?.transliteration_segments_json ||
+            initialFormData?.translation_segments_json)
       );
     }
   }, [show, isEdit, initialFormData, categories.length, categoryUpdatedKey]);
@@ -82,6 +111,7 @@ const DuaAdhkarModal = ({
 
   const handleCategoryCreated = () => {
     setShowCategoryModal(false);
+    fetchCategories();
     setCategoryUpdatedKey((prev) => prev + 1);
   };
 
@@ -99,9 +129,37 @@ const DuaAdhkarModal = ({
     const duaData = {
       ...formData,
       category_id: parseInt(formData.category) || null,
-      translitration: formData.translitration || "",
+      transliteration: formData.transliteration || "",
       category: undefined,
     };
+
+    const segmentFields = [
+      "arabic_segments_json",
+      "transliteration_segments_json",
+      "translation_segments_json",
+    ];
+    for (const field of segmentFields) {
+      if (duaData[field]) {
+        try {
+          if (
+            typeof duaData[field] === "string" &&
+            duaData[field].trim() !== ""
+          ) {
+            JSON.parse(duaData[field]);
+          } else {
+            duaData[field] = null;
+          }
+        } catch {
+          setError(
+            `Invalid JSON format in ${field
+              .replace("_json", "")
+              .replace("_", " ")} field.`
+          );
+          setIsLoading(false);
+          return;
+        }
+      }
+    }
 
     const method = isEdit ? "PATCH" : "POST";
     const url = isEdit
@@ -117,9 +175,13 @@ const DuaAdhkarModal = ({
 
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
-        throw new Error(
-          errorData.detail || errorData.message || res.statusText
-        );
+        let detail = errorData.detail || res.statusText;
+        if (Array.isArray(detail) && detail.length > 0 && detail[0].loc) {
+          detail = `Validation Error: ${detail[0].loc.join(" -> ")} - ${
+            detail[0].msg
+          }`;
+        }
+        throw new Error(detail);
       }
 
       onSave();
@@ -161,11 +223,11 @@ const DuaAdhkarModal = ({
 
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
-        throw new Error(
+        let errorMessage =
+          errorData.detail?.message ||
           errorData.detail ||
-            errorData.message ||
-            `Bulk upload failed: ${res.statusText}`
-        );
+          `Bulk upload failed: ${res.statusText}`;
+        throw new Error(errorMessage);
       }
 
       const responseData = await res.json();
@@ -220,12 +282,6 @@ const DuaAdhkarModal = ({
           errorData.detail?.message ||
           errorData.detail ||
           `Bulk audio upload failed: ${res.statusText}`;
-        if (typeof errorData.detail === "object" && errorData.detail.errors) {
-          errorMessage =
-            errorData.detail.message +
-            ": " +
-            errorData.detail.errors.join(", ");
-        }
         throw new Error(errorMessage);
       }
 
@@ -263,6 +319,7 @@ const DuaAdhkarModal = ({
               <BookOpen className="w-5 h-5" /> {title}
             </h2>
             <button
+              type="button"
               onClick={onClose}
               className="p-1 w-8 h-8 flex items-center justify-center bg-white/20 hover:bg-white/30 rounded-full transition-colors"
             >
@@ -279,6 +336,7 @@ const DuaAdhkarModal = ({
                 .filter((t) => (isEdit ? t.key === "manual" : true))
                 .map((t) => (
                   <button
+                    type="button"
                     key={t.key}
                     onClick={() => setTab(t.key)}
                     className={`flex-1 py-2 px-3 rounded-lg font-medium transition-colors text-sm ${
@@ -315,6 +373,8 @@ const DuaAdhkarModal = ({
                 setShowCategoryModal={setShowCategoryModal}
                 showAdditional={showAdditional}
                 setShowAdditional={setShowAdditional}
+                // FIX: Pass a Tailwind class to ensure category text color is visible
+                categorySelectClass="text-gray-900"
               />
             )}
             {tab === "file" && !isEdit && (
@@ -327,6 +387,8 @@ const DuaAdhkarModal = ({
                 bulkDataFile={bulkDataFile}
                 setBulkDataFile={setBulkDataFile}
                 setShowCategoryModal={setShowCategoryModal}
+                // FIX: Add text-gray-900 class to category select
+                categorySelectClass="text-gray-900"
               />
             )}
             {tab === "audio" && !isEdit && (
@@ -341,6 +403,8 @@ const DuaAdhkarModal = ({
                 audioMapping={audioMapping}
                 setAudioMapping={setAudioMapping}
                 setShowCategoryModal={setShowCategoryModal}
+                // FIX: Add text-gray-900 class to category select
+                categorySelectClass="text-gray-900"
               />
             )}
             <div className="flex gap-3 pt-4 border-t border-gray-200 mt-4">
@@ -354,9 +418,9 @@ const DuaAdhkarModal = ({
               </button>
               <button
                 type="submit"
-                disabled={isLoading || !hasCategories}
+                disabled={isLoading || (tab !== "audio" && !hasCategories)}
                 className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 text-white rounded-lg font-medium shadow-md ${
-                  !hasCategories || isLoading
+                  (tab !== "audio" && !hasCategories) || isLoading
                     ? "bg-gray-400 cursor-not-allowed"
                     : `${GRADIENT_CLASS} ${HOVER_GRADIENT_CLASS}`
                 }`}

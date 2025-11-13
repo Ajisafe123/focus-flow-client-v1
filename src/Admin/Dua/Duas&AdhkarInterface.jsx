@@ -91,6 +91,7 @@ const DuasAdhkarInterface = () => {
           description: c.description || "",
           is_active: c.is_active ?? true,
           duas: c.duas || [],
+          image_url: c.image_url || null,
         })),
       ];
       if (isMountedRef.current) setCategories(newCategories);

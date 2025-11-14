@@ -24,26 +24,6 @@ export const publishedLectures = [
   },
   {
     id: 2,
-    title: "Understanding the Quran's Structure (Juz & Surah)",
-    category: "Tafsir",
-    speaker: "Ustadh Khalid",
-    status: "published",
-    views: 15500,
-    likes: 1450,
-    dislikes: 18,
-    comments: 98,
-    date: "2024-11-05",
-    duration: "45:30",
-    thumbnail:
-      "https://images.unsplash.com/photo-1577771746200-a5ff9525c38c?q=80&w=800&auto=format&fit=crop",
-    featured: false,
-    videoUrl:
-      "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-    description:
-      "An introductory lecture on the organization of the Quran, explaining the concepts of Juz (part) and Surah (chapter), and how they aid in study and recitation.",
-  },
-  {
-    id: 3,
     title: "The Biography of Prophet Muhammad (PBUH) - Part 1",
     category: "Seerah",
     speaker: "Ustadha Aishah",
@@ -63,27 +43,7 @@ export const publishedLectures = [
       "The first part of a series covering the life of the Prophet Muhammad, from his birth to the beginning of revelation. Essential for understanding Islamic history and his character.",
   },
   {
-    id: 4,
-    title: "Daily Duas and Adhkar for Protection",
-    category: "Adhkar",
-    speaker: "Sheikh Yasin",
-    status: "published",
-    views: 28900,
-    likes: 2700,
-    dislikes: 12,
-    comments: 180,
-    date: "2024-11-10",
-    duration: "30:00",
-    thumbnail:
-      "https://images.unsplash.com/photo-1610476044719-756ef26e7a2b?q=80&w=800&auto=format&fit=crop",
-    featured: false,
-    videoUrl:
-      "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
-    description:
-      "A practical session on reciting the essential morning and evening supplications (Duas and Adhkar) as taught by the Prophet (PBUH) for daily protection and remembrance of Allah.",
-  },
-  {
-    id: 5,
+    id: 3,
     title: "Financial Transactions in Islam (Riba & Halal Earnings)",
     category: "Fiqh",
     speaker: "Dr. Hamza",
@@ -103,7 +63,7 @@ export const publishedLectures = [
       "A clear explanation of the Islamic rules concerning finance, distinguishing between permissible (Halal) and forbidden (Haram) forms of earning and investment, with a focus on avoiding Riba (usury/interest).",
   },
   {
-    id: 6,
+    id: 4,
     title: "Inner Peace: Taming the Nafs (Soul)",
     category: "Tazkiyah",
     speaker: "Sheikh Ahmed",

@@ -80,7 +80,11 @@ const DuaItem = ({
   handleLocalToggle,
   openDetails,
   setOpenDetails,
+  generateShareLink,
 }) => {
+  const [shareUrl, setShareUrl] = useState(null);
+  const [isSharing, setIsSharing] = useState(false);
+
   const isFavorite = isAuthenticated
     ? dua.is_favorite || false
     : isLocallyFavorite;
@@ -90,6 +94,41 @@ const DuaItem = ({
       handleLocalToggle(dua.id);
     } else {
       toggleFavorite(dua.id);
+    }
+  };
+
+  const handleShareClick = async () => {
+    if (isSharing) return;
+
+    setShareUrl(null);
+    setIsSharing(true);
+
+    try {
+      const url = await generateShareLink(dua.id);
+      setShareUrl(url);
+
+      if (navigator.share) {
+        await navigator.share({
+          title: dua.title || "Dua Share",
+          text: `Check out this beautiful Dua: ${dua.title}`,
+          url: url,
+        });
+      } else {
+        await navigator.clipboard.writeText(url);
+        alert(`Share link copied to clipboard: ${url}`);
+      }
+    } catch (error) {
+      if (
+        error.name !== "AbortError" &&
+        error.name !== "NotAllowedError" &&
+        error.name !== "NotShareableException"
+      ) {
+        console.error("Error generating or sharing link:", error);
+        alert("Failed to generate share link. Check the console for details.");
+      }
+    } finally {
+      setIsSharing(false);
+      setTimeout(() => setShareUrl(null), 5000);
     }
   };
 
@@ -160,19 +199,42 @@ const DuaItem = ({
         <h3 className="text-lg font-bold text-gray-900 flex-1 pr-2">
           {dua.title}
         </h3>
-        <button
-          onClick={handleLikeClick}
-          className="p-2 rounded-full hover:bg-red-50 transition-colors focus:outline-none focus:ring-2 focus:ring-red-400"
-          aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
-        >
-          <Heart
-            className={`w-5 h-5 ${
-              isFavorite
-                ? "fill-red-500 text-red-500"
-                : "text-gray-400 hover:text-red-500"
-            }`}
-          />
-        </button>
+        <div className="flex space-x-2">
+          <button
+            onClick={handleShareClick}
+            className="p-2 rounded-full hover:bg-emerald-50 transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-400"
+            aria-label="Share Dua"
+            disabled={isSharing}
+          >
+            {isSharing ? (
+              <Loader2 className="w-5 h-5 text-emerald-500 animate-spin" />
+            ) : (
+              <Share2
+                className={`w-5 h-5 ${
+                  shareUrl
+                    ? "text-emerald-500 fill-emerald-100"
+                    : "text-gray-400 hover:text-emerald-500"
+                }`}
+              />
+            )}
+          </button>
+
+          <button
+            onClick={handleLikeClick}
+            className="p-2 rounded-full hover:bg-red-50 transition-colors focus:outline-none focus:ring-2 focus:ring-red-400"
+            aria-label={
+              isFavorite ? "Remove from favorites" : "Add to favorites"
+            }
+          >
+            <Heart
+              className={`w-5 h-5 ${
+                isFavorite
+                  ? "fill-red-500 text-red-500"
+                  : "text-gray-400 hover:text-red-500"
+              }`}
+            />
+          </button>
+        </div>
       </div>
 
       <div className="space-y-3 border-b border-gray-100 pb-5 mb-4">
@@ -240,6 +302,12 @@ const DuaItem = ({
           <Volume2 className="w-4 h-4 text-emerald-600" />
         )}
       </div>
+
+      {shareUrl && !navigator.share && (
+        <div className="mt-4 p-3 bg-emerald-50 rounded-lg text-sm text-emerald-800 break-all border border-emerald-200">
+          Link (Copied!): <strong className="font-mono">{shareUrl}</strong>
+        </div>
+      )}
     </article>
   );
 };
@@ -264,6 +332,9 @@ const CategoryDescription = ({ description }) => {
           <button
             onClick={() => setIsExpanded(!isExpanded)}
             className="text-sm font-semibold text-emerald-600 hover:text-emerald-700 mt-2 flex items-center transition-colors"
+            aria-label={
+              isExpanded ? "See less description" : "See more description"
+            }
           >
             {isExpanded ? "See less" : "See more"}
             {isExpanded ? (
@@ -291,6 +362,30 @@ const DuaCategoryPage = ({ categoryId }) => {
 
   const AUTH_TOKEN = getAuthToken();
   const isAuthenticated = !!AUTH_TOKEN;
+
+  const generateShareLink = async (duaId) => {
+    try {
+      const res = await fetch(`${API_BASE}/duas/${duaId}/share-link`, {
+        method: "POST",
+        headers: AUTH_TOKEN ? { Authorization: `Bearer ${AUTH_TOKEN}` } : {},
+      });
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error(
+          `Failed to generate share link for Dua ID ${duaId}. Status: ${res.status}. Response: ${errorText}`
+        );
+        throw new Error("Failed to generate share link on server.");
+      }
+
+      const data = await res.json();
+      console.log("Generated Share URL:", data.share_url);
+      return data.share_url;
+    } catch (err) {
+      console.error("Local API Error during share link generation:", err);
+      throw err;
+    }
+  };
 
   const fetchDuasAndCategories = useCallback(
     async (q = "") => {
@@ -487,7 +582,6 @@ const DuaCategoryPage = ({ categoryId }) => {
   const showNoResults =
     searchExecuted && currentCategory && currentCategory.duas.length === 0;
 
-  // Determine if the default icon/image should be shown
   const showHeaderImage =
     (categoryImageUrl && selectedCategoryId !== "search") ||
     selectedCategoryId === "search";
@@ -495,14 +589,14 @@ const DuaCategoryPage = ({ categoryId }) => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-emerald-50 to-teal-50">
       <style>{`
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(-10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fadeIn {
-          animation: fadeIn 0.3s ease-out;
-        }
-      `}</style>
+				@keyframes fadeIn {
+					from { opacity: 0; transform: translateY(-10px); }
+					to { opacity: 1; transform: translateY(0); }
+				}
+				.animate-fadeIn {
+					animation: fadeIn 0.3s ease-out;
+				}
+			`}</style>
 
       <header className="bg-white text-gray-900 py-12 border-b-4 border-gray-100 shadow-lg">
         <div className="max-w-7xl mx-auto text-center px-4">
@@ -521,17 +615,14 @@ const DuaCategoryPage = ({ categoryId }) => {
                 {selectedCategoryId === "search" ? (
                   <Search className="w-12 h-12 text-emerald-500" />
                 ) : (
-                  // This block now only runs if there's no image but a category is selected (or search is active)
                   <BookOpenCheck className="w-12 h-12 text-emerald-500" />
                 )}
               </div>
             )
           ) : null}
-          {/* Default category icon removed when viewing all categories */}
           <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight mb-3">
             {pageTitle}
           </h1>
-          {/* Short write-up added directly under the title */}
           <p className="text-xl text-gray-700 font-light mb-4">
             A beautiful collection of supplications to enrich your daily life.
           </p>
@@ -582,6 +673,7 @@ const DuaCategoryPage = ({ categoryId }) => {
             <button
               onClick={handleBackToCategories}
               className="flex items-center gap-2 text-emerald-600 hover:text-emerald-700 font-semibold transition-colors px-4 py-5 rounded-full"
+              aria-label="Back to all categories"
             >
               <ArrowLeft className="w-5 h-5" />
               Back to Categories
@@ -620,6 +712,7 @@ const DuaCategoryPage = ({ categoryId }) => {
                 handleLocalToggle={handleLocalToggle}
                 openDetails={openDetails}
                 setOpenDetails={setOpenDetails}
+                generateShareLink={generateShareLink}
               />
             ))}
           </div>

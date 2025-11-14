@@ -52,7 +52,7 @@ export default function ArticleCategories() {
   };
 
   return (
-    <div className="bg-gradient-to-br from-gray-50 via-emerald-50 to-teal-50 py-12 px-4 min-h-screen">
+    <div className="bg-gradient-to-br from-gray-50 via-emerald-50 to-teal-50 py-12 px-4">
       <style>{`
         .horizontal-scroll::-webkit-scrollbar { height: 8px; }
         .horizontal-scroll::-webkit-scrollbar-thumb { background-color: #10b981; border-radius: 4px; }

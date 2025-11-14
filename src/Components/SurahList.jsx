@@ -23,7 +23,7 @@ const saveHistory = (surah) => {
     page: surah.pages[0],
   });
 
-  history = history.slice(0, 5);
+  history = history.slice(0, 3);
 
   localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
   return history;
@@ -141,19 +141,21 @@ const SurahList = ({ onSelectSurah }) => {
             <Clock size={20} className="text-green-400" />
             <span className="text-gray-800">Recently Opened</span>
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mb-8">
-            {history.map((surah) => {
-              const fullSurah = surahs.find((s) => s.id === surah.id);
-              if (!fullSurah) return null;
+          <div className="max-w-7xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mb-8">
+              {history.map((surah) => {
+                const fullSurah = surahs.find((s) => s.id === surah.id);
+                if (!fullSurah) return null;
 
-              return (
-                <SurahItem
-                  key={`history-${surah.id}`}
-                  surah={fullSurah}
-                  onClick={handleSelectSurah}
-                />
-              );
-            })}
+                return (
+                  <SurahItem
+                    key={`history-${surah.id}`}
+                    surah={fullSurah}
+                    onClick={handleSelectSurah}
+                  />
+                );
+              })}
+            </div>
           </div>
           <hr className="my-8 border-emerald-700" />
         </>

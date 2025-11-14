@@ -16,6 +16,7 @@ import LiveChat from "./Components/LiveChat";
 import DailyHadith from "./Components/DailyHadith";
 import About from "./Components/About";
 import Contact from "./Components/Contact";
+import IslamicDonationPage from "./Components/IslamicDonationPage";
 import Footer from "./Components/Footer";
 import AuthPages from "./Components/Authentications/AuthPage";
 import ForgotPassword from "./Components/Authentications/ForgotPassword";
@@ -36,7 +37,8 @@ import ArticlesInterface from "./Admin/ArticlesInterface";
 import QuranPage from "./Components/Quran";
 import DuaCategoryPage from "./Components/DuaList";
 import ArticlesPage from "./Components/ArticlesPage";
-
+import LiveVideo from "./Components/LiveVideo";
+import VideoPlayer from "./Components/VideoPlayer"
 const pageVariants = {
   initial: { opacity: 0, y: 10 },
   in: { opacity: 1, y: 0 },
@@ -65,6 +67,7 @@ function GuestHome() {
       <Hero />
       <LiveDua />
       <LiveArticles />
+      <LiveVideo />
       <DailyHadith />
       <About />
       <Contact />
@@ -151,6 +154,14 @@ function AppContent({
             }
           />
           <Route
+            path="/donation"
+            element={
+              <PageWrapper>
+                <IslamicDonationPage />
+              </PageWrapper>
+            }
+          />
+          <Route
             path="/prayer-times"
             element={
               <PageWrapper>
@@ -200,6 +211,14 @@ function AppContent({
             element={
               <PageWrapper>
                 <NamesOfAllah />
+              </PageWrapper>
+            }
+          />
+          <Route
+            path="/videos"
+            element={
+              <PageWrapper>
+                <VideoPlayer />
               </PageWrapper>
             }
           />

@@ -1,31 +1,96 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Loader2 } from "lucide-react";
+import { Clock, ChevronDown, ChevronUp } from "lucide-react";
 
 const API_BASE_URL = "https://focus-flow-server-v1.onrender.com";
+const HISTORY_KEY = "quran_history";
+
+const getHistory = () => {
+  const historyString = localStorage.getItem(HISTORY_KEY);
+  return historyString ? JSON.parse(historyString) : [];
+};
+
+const saveHistory = (surah) => {
+  let history = getHistory();
+  const now = new Date().getTime();
+
+  history = history.filter((item) => item.id !== surah.id);
+
+  history.unshift({
+    id: surah.id,
+    name_simple: surah.name_simple,
+    name_arabic: surah.name_arabic,
+    timestamp: now,
+    page: surah.pages[0],
+  });
+
+  history = history.slice(0, 5);
+
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+  return history;
+};
+
+const SurahItem = ({ surah, onClick }) => {
+  const handleSelect = () => {
+    saveHistory(surah);
+    onClick(surah.pages[0]);
+  };
+
+  return (
+    <button
+      key={surah.id}
+      onClick={handleSelect}
+      className="bg-emerald-900 border border-emerald-800 rounded-lg p-2 hover:bg-emerald-800 hover:border-green-500 transition duration-200 text-left group"
+    >
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-3">
+          <div className="w-7 h-7 sm:w-8 sm:h-8 bg-emerald-800 rounded-lg flex items-center justify-center text-gray-300 font-bold text-xs sm:text-sm border border-emerald-700 group-hover:bg-emerald-700 group-hover:border-green-700 transition flex-shrink-0">
+            {surah.id}
+          </div>
+          <div>
+            <h3 className="text-gray-100 font-semibold text-sm truncate">
+              {surah.name_simple}
+            </h3>
+            <p className="text-gray-300 text-xs truncate">
+              {surah.translated_name?.name || surah.name_complex}
+            </p>
+            <p className="text-gray-400 text-xs mt-0.5">
+              {surah.verses_count} Ayahs | Page {surah.pages[0]}
+            </p>
+          </div>
+        </div>
+        <div
+          className="text-lg text-gray-300 group-hover:text-green-400 transition flex-shrink-0"
+          style={{ fontFamily: "Amiri, serif" }}
+        >
+          {surah.name_arabic}
+        </div>
+      </div>
+    </button>
+  );
+};
 
 const SurahList = ({ onSelectSurah }) => {
   const [surahs, setSurahs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState("surah");
+  const [sortOrder, setSortOrder] = useState("ascending");
+  const [history, setHistory] = useState(getHistory());
 
   const fetchSurahs = useCallback(async () => {
-    setLoading(true);
-    setError(null);
     try {
       const response = await fetch(`${API_BASE_URL}/quran/surahs`);
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(
-          errorData.detail || `HTTP error! Status: ${response.status}`
-        );
-      }
+      if (!response.ok)
+        throw new Error(`HTTP error! Status: ${response.status}`);
 
       const data = await response.json();
       setSurahs(data);
+      setHistory(getHistory());
     } catch (err) {
-      setError(`Failed to load Surah list: ${err.message}. Check your API.`);
+      setError(
+        `Failed to load Surah list: ${err.message}. Check if your backend server is running on ${API_BASE_URL}.`
+      );
     } finally {
       setLoading(false);
     }
@@ -35,144 +100,121 @@ const SurahList = ({ onSelectSurah }) => {
     fetchSurahs();
   }, [fetchSurahs]);
 
-  const getJuzForSurah = (surahId) => {
-    if (surahId === 1) return 1;
-    if (surahId === 2) return 1;
-    if (surahId === 3) return 3;
-    if (surahId === 4) return 4;
-    if (surahId === 5) return 6;
-    if (surahId === 6) return 7;
-    return Math.ceil(surahId / 4);
-  };
+  const sortedSurahs = [...surahs].sort((a, b) => {
+    let compare = a.id - b.id;
 
-  const groupedByJuz = surahs.reduce((acc, surah) => {
-    const juz = getJuzForSurah(surah.id);
-    if (!acc[juz]) acc[juz] = [];
-    acc[juz].push(surah);
-    return acc;
-  }, {});
+    if (activeTab === "revelation") {
+      compare = a.revelation_order - b.revelation_order;
+    }
+
+    return sortOrder === "ascending" ? compare : -compare;
+  });
+
+  const handleSelectSurah = (surahPageNumber) => {
+    onSelectSurah(surahPageNumber);
+  };
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-screen bg-white">
-        <Loader2 className="w-8 h-8 animate-spin text-green-600" />
+      <div className="flex justify-center items-center py-32">
+        <div className="relative">
+          <div className="animate-spin rounded-full h-16 w-16 border-4 border-emerald-700"></div>
+          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-green-500 absolute top-0"></div>
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="p-4 m-4 text-red-600 bg-red-50 border border-red-200 rounded-lg">
+      <div className="text-center p-10 text-lg text-red-400 bg-red-900/20 rounded-lg">
         {error}
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      <style>{`
-        /* Define the custom Arabic font class as requested */
-        .font-serif-arabic {
-          font-family: "Amiri", "Traditional Arabic", "Scheherazade", serif;
-        }
-      `}</style>
+    <div className="p-4 sm:p-6 lg:p-8">
+      {history.length > 0 && (
+        <>
+          <h2 className="text-xl sm:text-2xl font-bold text-black-700 mb-4 flex items-center space-x-2">
+            <Clock size={20} className="text-green-400" />
+            <span className="text-gray-800">Recently Opened</span>
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mb-8">
+            {history.map((surah) => {
+              const fullSurah = surahs.find((s) => s.id === surah.id);
+              if (!fullSurah) return null;
 
-      <div className="sticky top-0 bg-white border-b border-gray-200 z-10">
-        <div className="flex border-b border-gray-200">
+              return (
+                <SurahItem
+                  key={`history-${surah.id}`}
+                  surah={fullSurah}
+                  onClick={handleSelectSurah}
+                />
+              );
+            })}
+          </div>
+          <hr className="my-8 border-emerald-700" />
+        </>
+      )}
+
+      <div className="flex flex-col sm:flex-row sm:justify-between items-left mb-6 space-y-4 sm:space-y-0">
+        <div className="flex space-x-1 bg-emerald-900 p-1 rounded-lg border border-emerald-800 justify-start sm:flex-nowrap">
           <button
             onClick={() => setActiveTab("surah")}
-            className={`header-text flex-1 py-3 text-center font-medium transition ${
+            className={`flex-1 px-3 py-1.5 sm:px-4 rounded-md transition text-xs sm:text-sm ${
               activeTab === "surah"
-                ? "text-green-600 border-b-2 border-green-600"
-                : "text-gray-500"
+                ? "bg-emerald-800 text-green-400"
+                : "text-gray-400 hover:text-green-200"
             }`}
           >
-            Surah
+            Surah Order
           </button>
           <button
             onClick={() => setActiveTab("juz")}
-            className={`header-text flex-1 py-3 text-center font-medium transition ${
+            className={`flex-1 px-3 py-1.5 sm:px-4 rounded-md transition text-xs sm:text-sm ${
               activeTab === "juz"
-                ? "text-green-600 border-b-2 border-green-600"
-                : "text-gray-500"
+                ? "bg-emerald-800 text-green-400"
+                : "text-gray-400 hover:text-green-200"
             }`}
           >
-            Juz
+            Juz Order
           </button>
           <button
-            onClick={() => setActiveTab("favorites")}
-            className={`header-text flex-1 py-3 text-center font-medium transition ${
-              activeTab === "favorites"
-                ? "text-green-600 border-b-2 border-green-600"
-                : "text-gray-500"
+            onClick={() => setActiveTab("revelation")}
+            className={`flex-1 px-3 py-1.5 sm:px-4 rounded-md transition text-xs sm:text-sm ${
+              activeTab === "revelation"
+                ? "bg-emerald-800 text-green-400"
+                : "text-gray-400 hover:text-green-200"
             }`}
           >
-            Favorites
+            Revelation Order
           </button>
         </div>
+
+        <button
+          onClick={() =>
+            setSortOrder(sortOrder === "ascending" ? "descending" : "ascending")
+          }
+          className="text-xs text-gray-800 hover:text-gray-200 transition flex items-center space-x-2"
+        >
+          <span className="text-gray-800 font-extrabold">SORT BY:</span>
+          <span className="text-gray-800 font-semibold uppercase">
+            {sortOrder}
+          </span>
+          {sortOrder === "ascending" ? (
+            <ChevronUp size={12} />
+          ) : (
+            <ChevronDown size={12} />
+          )}
+        </button>
       </div>
 
-      <div className="pb-20">
-        {activeTab === "surah" && (
-          <div>
-            {Object.entries(groupedByJuz)
-              .sort(([a], [b]) => Number(a) - Number(b))
-              .map(([juz, surahsInJuz]) => (
-                <div key={juz}>
-                  <div className="flex justify-between items-center px-4 py-2 bg-gray-50">
-                    <span className="text-sm text-gray-500">Juz {juz}</span>
-                    <span className="text-sm text-gray-400">
-                      {surahsInJuz.reduce((sum, s) => sum + s.verses_count, 0)}
-                    </span>
-                  </div>
-
-                  {surahsInJuz.map((surah) => (
-                    <button
-                      key={surah.id}
-                      onClick={() => onSelectSurah(surah.id)}
-                      className="w-full flex items-center justify-between p-4 border-b border-gray-100 hover:bg-gray-50 transition"
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 flex items-center justify-center bg-green-600 text-white rounded text-sm font-medium">
-                          {surah.id}
-                        </div>
-                        <div className="text-left">
-                          <div className="font-semibold text-gray-800 flex items-center gap-2">
-                            {surah.name_simple}
-                            <span className="text-xs text-gray-400">
-                              {surah.revelation_place === "makkah" ? "۞" : ""}
-                            </span>
-                          </div>
-                          <div className="text-xs text-gray-500">
-                            {surah.revelation_place === "makkah"
-                              ? "Meccan"
-                              : "Medinan"}{" "}
-                            - {surah.verses_count} Ayahs
-                          </div>
-                        </div>
-                      </div>
-                      <div
-                        className="text-3xl sm:text-4xl font-extrabold text-green-700 leading-tight"
-                        style={{ fontFamily: "Amiri, serif" }}
-                      >
-                        {surah.name_arabic}
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              ))}
-          </div>
-        )}
-
-        {activeTab === "juz" && (
-          <div className="p-4 text-center text-gray-500">
-            Juz view coming soon
-          </div>
-        )}
-
-        {activeTab === "favorites" && (
-          <div className="p-4 text-center text-gray-500">No favorites yet</div>
-        )}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+        {sortedSurahs.map((surah) => (
+          <SurahItem key={surah.id} surah={surah} onClick={handleSelectSurah} />
+        ))}
       </div>
     </div>
   );

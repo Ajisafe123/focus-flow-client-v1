@@ -16,7 +16,7 @@ import LiveChat from "./Components/LiveChat";
 import DailyHadith from "./Components/DailyHadith";
 import About from "./Components/About";
 import Contact from "./Components/Contact";
-import IslamicDonationPage from "./Components/IslamicDonationPage";
+import DonationPage from "./Components/DonationPage";
 import Footer from "./Components/Footer";
 import AuthPages from "./Components/Authentications/AuthPage";
 import ForgotPassword from "./Components/Authentications/ForgotPassword";
@@ -157,7 +157,7 @@ function AppContent({
             path="/donation"
             element={
               <PageWrapper>
-                <IslamicDonationPage />
+                <DonationPage />
               </PageWrapper>
             }
           />

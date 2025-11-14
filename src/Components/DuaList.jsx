@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { useSearchParams } from "react-router-dom";
 import {
   BookOpenCheck,
   Loader2,
@@ -13,8 +14,8 @@ import {
   X,
   ArrowLeft,
 } from "lucide-react";
-
 const API_BASE = "https://focus-flow-server-v1.onrender.com/api";
+
 const IMAGE_BASE = "https://focus-flow-server-v1.onrender.com";
 
 const getFullImageUrl = (relativePath) => {
@@ -115,7 +116,9 @@ const DuaItem = ({
         });
       } else {
         await navigator.clipboard.writeText(url);
-        alert(`Share link copied to clipboard: ${url}`);
+        alert(
+          `Successfully generated and copied share link to clipboard: ${url}`
+        );
       }
     } catch (error) {
       if (
@@ -360,6 +363,9 @@ const DuaCategoryPage = ({ categoryId }) => {
   const [searchFocused, setSearchFocused] = useState(false);
   const [searchExecuted, setSearchExecuted] = useState(false);
 
+  const [searchParams] = useSearchParams();
+  const deepLinkDuaId = searchParams.get("duaId");
+
   const AUTH_TOKEN = getAuthToken();
   const isAuthenticated = !!AUTH_TOKEN;
 
@@ -379,10 +385,16 @@ const DuaCategoryPage = ({ categoryId }) => {
       }
 
       const data = await res.json();
-      console.log("Generated Share URL:", data.share_url);
+      console.log("----------------------------------------------");
+      console.log(`✅ SUCCESS: Share Link generated for Dua ID: ${duaId}`);
+      console.log(
+        `✅ VERIFY DB: A new short code should be in the 'dua_share_link' table.`
+      );
+      console.log(`Generated Share URL: ${data.share_url}`);
+      console.log("----------------------------------------------");
       return data.share_url;
     } catch (err) {
-      console.error("Local API Error during share link generation:", err);
+      console.error("API Error during share link generation:", err);
       throw err;
     }
   };
@@ -465,17 +477,42 @@ const DuaCategoryPage = ({ categoryId }) => {
   };
 
   useEffect(() => {
-    if (!searchExecuted && view === "categories") {
+    if (!searchExecuted && view === "categories" && !deepLinkDuaId) {
       fetchDuasAndCategories("");
     }
-  }, [fetchDuasAndCategories, view, searchExecuted]);
+  }, [fetchDuasAndCategories, view, searchExecuted, deepLinkDuaId]);
 
   useEffect(() => {
-    if (categoryId) {
+    if (deepLinkDuaId) {
+      if (categories.length === 0) {
+        fetchDuasAndCategories("");
+        return;
+      }
+
+      let duaToFocus = null;
+      let targetCategoryId = null;
+
+      for (const cat of categories) {
+        duaToFocus = cat.duas.find(
+          (d) => d.id.toString() === deepLinkDuaId.toString()
+        );
+        if (duaToFocus) {
+          targetCategoryId = cat.id;
+          break;
+        }
+      }
+
+      if (duaToFocus && targetCategoryId) {
+        setSelectedCategoryId(targetCategoryId);
+        setView("duas");
+        setOpenDetails({ [duaToFocus.id]: "translation" });
+        searchParams.delete("duaId");
+      }
+    } else if (categoryId) {
       setSelectedCategoryId(categoryId);
       setView("duas");
     }
-  }, [categoryId]);
+  }, [deepLinkDuaId, categories, categoryId, fetchDuasAndCategories]);
 
   const handleLocalToggle = (duaId) => {
     setLocalFavorites((prevSet) => {
@@ -589,14 +626,14 @@ const DuaCategoryPage = ({ categoryId }) => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-emerald-50 to-teal-50">
       <style>{`
-				@keyframes fadeIn {
-					from { opacity: 0; transform: translateY(-10px); }
-					to { opacity: 1; transform: translateY(0); }
-				}
-				.animate-fadeIn {
-					animation: fadeIn 0.3s ease-out;
-				}
-			`}</style>
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(-10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+          animation: fadeIn 0.3s ease-out;
+        }
+      `}</style>
 
       <header className="bg-white text-gray-900 py-12 border-b-4 border-gray-100 shadow-lg">
         <div className="max-w-7xl mx-auto text-center px-4">

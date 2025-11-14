@@ -11,6 +11,7 @@ import {
 import { AnimatePresence, motion } from "framer-motion";
 import Hero from "./Components/Hero";
 import LiveDua from "./Components/LiveDua";
+import LiveArticles from "./Components/LiveArticles";
 import LiveChat from "./Components/LiveChat";
 import DailyHadith from "./Components/DailyHadith";
 import About from "./Components/About";
@@ -63,6 +64,7 @@ function GuestHome() {
     <>
       <Hero />
       <LiveDua />
+      <LiveArticles />
       <DailyHadith />
       <About />
       <Contact />

@@ -12,7 +12,17 @@ import {
   X,
   Calendar,
   Eye,
+  ArrowLeft,
 } from "lucide-react";
+
+const PRIMARY_COLOR_CLASS = "emerald";
+const PRIMARY_COLOR_SHADE = "600";
+const PRIMARY_COLOR = `text-${PRIMARY_COLOR_CLASS}-${PRIMARY_COLOR_SHADE}`;
+const PRIMARY_BG = `bg-${PRIMARY_COLOR_CLASS}-${PRIMARY_COLOR_SHADE}`;
+const PRIMARY_HOVER_BG = `hover:bg-${PRIMARY_COLOR_CLASS}-${PRIMARY_COLOR_SHADE}`;
+const PRIMARY_GRADIENT = `from-${PRIMARY_COLOR_CLASS}-${PRIMARY_COLOR_SHADE} to-${PRIMARY_COLOR_CLASS}-700`;
+const SECONDARY_BG = `bg-${PRIMARY_COLOR_CLASS}-50`;
+const SECONDARY_TEXT = `text-${PRIMARY_COLOR_CLASS}-600`;
 
 const DEMO_CATEGORIES = [
   {
@@ -293,9 +303,9 @@ const CategoryCard = ({ category, onClick }) => {
   return (
     <button
       onClick={onClick}
-      className="group cursor-pointer bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden w-full text-left transform hover:-translate-y-1"
+      className="group cursor-pointer bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden w-full text-left transform hover:-translate-y-1 border border-gray-100"
     >
-      <div className="relative h-48 bg-gradient-to-br from-blue-100 via-indigo-50 to-blue-50 overflow-hidden">
+      <div className="relative h-48 bg-gradient-to-br from-green-100 via-emerald-50 to-green-50 overflow-hidden">
         <img
           src={category.image_url}
           alt={category.name}
@@ -307,7 +317,9 @@ const CategoryCard = ({ category, onClick }) => {
         <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
       </div>
       <div className="p-5">
-        <h3 className="text-lg font-bold text-gray-900 text-center group-hover:text-blue-600 transition-colors line-clamp-2 mb-2">
+        <h3
+          className={`text-lg font-bold text-gray-900 text-center group-hover:${SECONDARY_TEXT} transition-colors line-clamp-2 mb-2`}
+        >
           {category.name}
         </h3>
         <p className="text-sm text-gray-600 text-center line-clamp-2">
@@ -318,7 +330,7 @@ const CategoryCard = ({ category, onClick }) => {
   );
 };
 
-const ArticleCard = ({
+const ArticleListItem = ({
   article,
   toggleFavorite,
   isAuthenticated,
@@ -339,26 +351,41 @@ const ArticleCard = ({
 
   return (
     <article
-      className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100 cursor-pointer group"
+      className="bg-white/70 backdrop-blur-sm rounded-xl p-5 shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 cursor-pointer group hover:bg-white"
       onClick={() => onReadMore(article)}
     >
-      <div className="p-6">
-        <div className="flex justify-between items-start mb-4">
-          <div className="flex-1">
-            <h3 className="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors line-clamp-2 mb-2">
-              {article.title}
-            </h3>
-            <div className="flex items-center gap-4 text-sm text-gray-500">
-              <div className="flex items-center gap-1">
-                <Clock className="w-4 h-4" />
-                <span>{article.read_time} min read</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <Eye className="w-4 h-4" />
-                <span>{article.views}</span>
-              </div>
+      <div className="flex justify-between items-start gap-4">
+        <div className="flex-1">
+          <h3
+            className={`text-xl font-bold text-gray-900 group-hover:${SECONDARY_TEXT} transition-colors line-clamp-2 mb-2`}
+          >
+            {article.title}
+          </h3>
+
+          <p className="text-gray-700 text-sm leading-relaxed mb-3 line-clamp-2">
+            {article.excerpt}
+          </p>
+
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-gray-500">
+            <div className="flex items-center gap-1">
+              <User className={`w-4 h-4 ${SECONDARY_TEXT}`} />
+              <span className="font-medium text-gray-600">
+                {article.author}
+              </span>
+            </div>
+            <div className="flex items-center gap-1">
+              <Calendar className="w-4 h-4" />
+              <span>
+                {new Date(article.published_date).toLocaleDateString()}
+              </span>
+            </div>
+            <div className="flex items-center gap-1">
+              <Clock className="w-4 h-4" />
+              <span>{article.read_time} min read</span>
             </div>
           </div>
+        </div>
+        <div className="flex flex-col items-end gap-2 shrink-0">
           <button
             onClick={handleLikeClick}
             className="p-2 rounded-full hover:bg-red-50 transition-colors"
@@ -371,39 +398,27 @@ const ArticleCard = ({
               }`}
             />
           </button>
-        </div>
-
-        <p className="text-gray-700 text-sm leading-relaxed mb-4 line-clamp-3">
-          {article.excerpt}
-        </p>
-
-        <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-          <div className="flex items-center gap-2 text-sm text-gray-600">
-            <User className="w-4 h-4" />
-            <span className="font-medium">{article.author}</span>
+          <div className="flex items-center gap-1 text-sm text-gray-500">
+            <Eye className="w-4 h-4" />
+            <span>{article.views}</span>
           </div>
-          <div className="flex items-center gap-2 text-sm text-gray-500">
-            <Calendar className="w-4 h-4" />
-            <span>{new Date(article.published_date).toLocaleDateString()}</span>
+          <div className="flex flex-wrap justify-end gap-2 mt-2">
+            {article.tags.slice(0, 2).map((tag, index) => (
+              <span
+                key={index}
+                className={`px-3 py-1 ${SECONDARY_BG} ${SECONDARY_TEXT} rounded-full text-xs font-semibold`}
+              >
+                {tag}
+              </span>
+            ))}
           </div>
-        </div>
-
-        <div className="flex flex-wrap gap-2 mt-4">
-          {article.tags.slice(0, 3).map((tag, index) => (
-            <span
-              key={index}
-              className="px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-xs font-semibold"
-            >
-              {tag}
-            </span>
-          ))}
         </div>
       </div>
     </article>
   );
 };
 
-const ArticleDetailModal = ({
+const ArticleDetailView = ({
   article,
   onClose,
   toggleFavorite,
@@ -423,74 +438,98 @@ const ArticleDetailModal = ({
     }
   };
 
+  const currentYear = new Date().getFullYear();
+
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-6 rounded-t-3xl flex justify-between items-start z-10">
-          <div className="flex-1 pr-4">
-            <h2 className="text-3xl font-bold mb-3">{article.title}</h2>
-            <div className="flex flex-wrap items-center gap-4 text-sm text-blue-100">
-              <div className="flex items-center gap-2">
-                <User className="w-4 h-4" />
-                <span>{article.author}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Calendar className="w-4 h-4" />
-                <span>
-                  {new Date(article.published_date).toLocaleDateString()}
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4" />
-                <span>{article.read_time} min read</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Eye className="w-4 h-4" />
-                <span>{article.views} views</span>
-              </div>
-            </div>
-          </div>
+    <div
+      className={`min-h-screen bg-gradient-to-br from-gray-50 via-green-50 to-emerald-50`}
+    >
+      <div className="max-w-7xl mx-auto py-12 px-4 md:px-6">
+        <div className="flex justify-between items-center mb-8 bg-white/70 backdrop-blur-md p-4 rounded-xl shadow-lg border border-gray-100">
+          <button
+            onClick={onClose}
+            className={`flex items-center gap-1 text-gray-600 hover:${SECONDARY_TEXT} font-medium transition-colors p-2 rounded-lg`}
+          >
+            <ArrowLeft className={`w-5 h-5 ${SECONDARY_TEXT}`} />
+            <span className="text-lg">Back to Articles</span>
+          </button>
           <div className="flex gap-2">
             <button
               onClick={handleLikeClick}
-              className="p-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors"
+              className="p-3 rounded-full bg-white border border-gray-200 hover:bg-red-50 transition-colors shadow-md"
             >
               <Heart
-                className={`w-6 h-6 ${
-                  isFavorite ? "fill-white text-white" : "text-white"
+                className={`w-5 h-5 ${
+                  isFavorite
+                    ? "fill-red-500 text-red-500"
+                    : "text-gray-400 hover:text-red-500"
                 }`}
               />
             </button>
             <button
-              onClick={onClose}
-              className="p-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors"
+              className="p-3 rounded-full bg-white border border-gray-200 hover:bg-gray-50 transition-colors shadow-md text-gray-600 hover:text-gray-900"
+              onClick={() =>
+                navigator.clipboard.writeText(window.location.href)
+              }
             >
-              <X className="w-6 h-6" />
+              <Share2 className="w-5 h-5" />
             </button>
           </div>
         </div>
 
-        <div className="p-8">
-          <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg mb-6">
-            <p className="text-gray-800 leading-relaxed italic">
+        <div className="max-w-6xl mx-auto">
+          <header className="mb-8 text-center md:text-left border-b pb-4 border-gray-100 p-6 rounded-xl">
+            <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-emerald-900/95 to-teal-900/95 mb-4 leading-snug">
+              {article.title}
+            </h1>
+
+            <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 text-base bg-clip-text text-transparent bg-gradient-to-r from-emerald-900/95 to-teal-900/95">
+              <div className="flex items-center gap-2 text-gray-600">
+                <User className={`w-5 h-5 ${SECONDARY_TEXT}`} />
+                <span>{article.author}</span>
+              </div>
+              <span className="hidden md:inline text-gray-500">•</span>
+              <div className="flex items-center gap-2 text-gray-600">
+                <Calendar className={`w-5 h-5 ${SECONDARY_TEXT}`} />
+                <span>
+                  {new Date(article.published_date).toLocaleDateString()}
+                </span>
+              </div>
+              <span className="hidden md:inline text-gray-500">•</span>
+              <div className="flex items-center gap-2 text-gray-600">
+                <Clock className={`w-5 h-5 ${SECONDARY_TEXT}`} />
+                <span>{article.read_time} min read</span>
+              </div>
+              <span className="hidden md:inline text-gray-500">•</span>
+              <div className="flex items-center gap-2 text-gray-600">
+                <Eye className={`w-5 h-5 ${SECONDARY_TEXT}`} />
+                <span>{article.views} views</span>
+              </div>
+            </div>
+          </header>
+
+          <div
+            className={`border-l-4 border-${PRIMARY_COLOR_CLASS}-${PRIMARY_COLOR_SHADE} p-4 rounded-r-lg mb-8 `}
+          >
+            <p className="text-gray-700 leading-relaxed italic text-lg">
               {article.excerpt}
             </p>
           </div>
 
-          <div className="prose prose-lg max-w-none">
+          <div className="prose max-w-none text-gray-800 leading-relaxed">
             {article.content.split("\n\n").map((paragraph, index) => {
               if (paragraph.startsWith("**") && paragraph.endsWith("**")) {
                 return (
                   <h3
                     key={index}
-                    className="text-2xl font-bold text-gray-900 mt-6 mb-3"
+                    className={`text-2xl font-bold text-gray-900 mt-8 mb-3 ${PRIMARY_COLOR}`}
                   >
                     {paragraph.replace(/\*\*/g, "")}
                   </h3>
                 );
               }
               return (
-                <p key={index} className="text-gray-700 leading-relaxed mb-4">
+                <p key={index} className="mb-4">
                   {paragraph.split("**").map((part, i) =>
                     i % 2 === 0 ? (
                       part
@@ -505,33 +544,40 @@ const ArticleDetailModal = ({
             })}
           </div>
 
-          <div className="mt-8 pt-6 border-t border-gray-200">
-            <h4 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
-              <Tag className="w-5 h-5 text-blue-600" />
-              Tags
+          <div className="mt-8 pt-6 border-t border-gray-200 bg-white/80 backdrop-blur-sm p-6 rounded-xl shadow-lg">
+            <h4
+              className={`text-xl font-bold text-gray-900 mb-3 flex items-center gap-2 ${SECONDARY_TEXT}`}
+            >
+              <Tag className="w-6 h-6" />
+              Topics
             </h4>
             <div className="flex flex-wrap gap-2">
               {article.tags.map((tag, index) => (
                 <span
                   key={index}
-                  className="px-4 py-2 bg-blue-50 text-blue-600 rounded-full text-sm font-semibold hover:bg-blue-100 transition-colors"
+                  className={`px-4 py-2 ${SECONDARY_BG} ${SECONDARY_TEXT} rounded-full text-sm font-semibold hover:bg-green-100 transition-colors`}
                 >
                   {tag}
                 </span>
               ))}
             </div>
           </div>
+        </div>
 
-          <div className="mt-8 flex justify-center">
-            <button
-              onClick={onClose}
-              className="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-full font-semibold hover:from-blue-700 hover:to-indigo-700 transition-all shadow-lg"
-            >
-              Close Article
-            </button>
-          </div>
+        <div className="mt-10 flex justify-center">
+          <button
+            onClick={onClose}
+            className={`px-10 py-4 ${PRIMARY_BG} text-white rounded-full font-bold hover:bg-emerald-700 transition-all shadow-lg shadow-green-500/50 text-lg`}
+          >
+            Close View
+          </button>
         </div>
       </div>
+      <footer className="bg-white text-gray-600 py-8 mt-16 shadow-inner border-t border-gray-100">
+        <div className="max-w-7xl mx-auto px-4 text-center">
+          <p className="text-sm font-light">Nibras © {currentYear}</p>
+        </div>
+      </footer>
     </div>
   );
 };
@@ -546,6 +592,8 @@ const ArticlesPage = ({ categoryId }) => {
   const [searchFocused, setSearchFocused] = useState(false);
   const [selectedArticle, setSelectedArticle] = useState(null);
   const [filteredArticles, setFilteredArticles] = useState([]);
+
+  const currentYear = new Date().getFullYear();
 
   const isAuthenticated = false;
 
@@ -607,6 +655,7 @@ const ArticlesPage = ({ categoryId }) => {
   const handleCategoryClick = (catId) => {
     setSelectedCategoryId(catId);
     setView("articles");
+    setSearchTerm("");
   };
 
   const handleBackToCategories = () => {
@@ -618,18 +667,35 @@ const ArticlesPage = ({ categoryId }) => {
 
   const handleReadMore = (article) => {
     setSelectedArticle(article);
+    setView("article-detail");
   };
 
   const handleCloseArticle = () => {
     setSelectedArticle(null);
+    setView("articles");
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-50">
-        <Loader2 className="w-16 h-16 text-blue-500 animate-spin mb-4" />
+      <div
+        className={`min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-green-50 to-emerald-50`}
+      >
+        <Loader2 className={`w-16 h-16 ${SECONDARY_TEXT} animate-spin mb-4`} />
         <p className="text-gray-600 font-medium">Loading Articles...</p>
       </div>
+    );
+  }
+
+  if (view === "article-detail" && selectedArticle) {
+    return (
+      <ArticleDetailView
+        article={selectedArticle}
+        onClose={handleCloseArticle}
+        toggleFavorite={toggleFavorite}
+        isAuthenticated={isAuthenticated}
+        isLocallyFavorite={localFavorites.has(selectedArticle.id)}
+        handleLocalToggle={handleLocalToggle}
+      />
     );
   }
 
@@ -643,7 +709,9 @@ const ArticlesPage = ({ categoryId }) => {
     "Explore insightful articles on Islamic knowledge and guidance";
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50">
+    <div
+      className={`min-h-screen bg-gradient-to-br from-gray-50 via-green-50 to-emerald-50`}
+    >
       <style>{`
         @keyframes fadeIn {
           from { opacity: 0; transform: translateY(-10px); }
@@ -654,74 +722,73 @@ const ArticlesPage = ({ categoryId }) => {
         }
       `}</style>
 
-      <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-600 text-white py-12 border-b-4 border-blue-700 shadow-2xl">
+      <div className="bg-white text-gray-900 py-12 border-b border-gray-200 shadow-md">
         <div className="max-w-7xl mx-auto text-center px-4">
-          <div className="w-24 h-24 bg-white/20 backdrop-blur-sm rounded-full mx-auto mb-4 flex items-center justify-center border-4 border-white shadow-xl">
-            <BookOpen className="w-12 h-12 text-white" />
-          </div>
-          <h1 className="text-5xl font-extrabold tracking-tight mb-3">
+          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-3">
             {pageTitle}
           </h1>
-          <p className="text-lg text-blue-50 font-light mx-auto max-w-3xl leading-relaxed">
+          <p className="text-lg text-gray-600 font-light mx-auto max-w-3xl leading-relaxed">
             {categoryDescription}
           </p>
         </div>
       </div>
 
-      {view === "categories" && (
+      {(view === "categories" || view === "articles") && (
         <div className="sticky top-0 z-50 bg-white/95 backdrop-blur-md shadow-lg border-b border-gray-200">
           <div className="max-w-7xl mx-auto py-5 px-4">
-            <div
-              className={`relative transition-all duration-300 ${
-                searchFocused ? "transform scale-105" : ""
-              }`}
-            >
-              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-blue-500">
-                <Search className="w-5 h-5" />
-              </div>
-              <input
-                type="text"
-                placeholder="Search for articles by title, content, or tags..."
-                value={searchTerm}
-                onChange={handleSearch}
-                onFocus={() => setSearchFocused(true)}
-                onBlur={() => setSearchFocused(false)}
-                className="w-full pl-12 pr-12 py-4 rounded-2xl border-2 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 text-gray-700 placeholder-gray-400 text-base shadow-sm transition-all duration-300 bg-white"
-              />
-              {searchTerm && (
-                <button
-                  onClick={clearSearch}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+            {view === "categories" && (
+              <div
+                className={`relative transition-all duration-300 ${
+                  searchFocused ? "transform scale-105" : ""
+                }`}
+              >
+                <div
+                  className={`absolute left-4 top-1/2 -translate-y-1/2 ${SECONDARY_TEXT}`}
                 >
-                  <X className="w-5 h-5" />
-                </button>
-              )}
-            </div>
-            {searchTerm && (
+                  <Search className="w-5 h-5" />
+                </div>
+                <input
+                  type="text"
+                  placeholder="Search for articles by title, content, or tags..."
+                  value={searchTerm}
+                  onChange={handleSearch}
+                  onFocus={() => setSearchFocused(true)}
+                  onBlur={() => setSearchFocused(false)}
+                  className={`w-full pl-12 pr-12 py-4 rounded-2xl border-2 border-gray-200 focus:border-green-500 focus:ring-4 focus:ring-green-100 text-gray-700 placeholder-gray-400 text-base shadow-sm transition-all duration-300 bg-white`}
+                />
+                {searchTerm && (
+                  <button
+                    onClick={clearSearch}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                )}
+              </div>
+            )}
+            {searchTerm && view === "categories" && (
               <p className="text-sm text-gray-600 mt-3 text-center">
                 Searching for:{" "}
-                <span className="font-semibold text-blue-600">
+                <span className={`font-semibold ${SECONDARY_TEXT}`}>
                   "{searchTerm}"
                 </span>
               </p>
+            )}
+
+            {view === "articles" && (
+              <button
+                onClick={handleBackToCategories}
+                className={`flex items-center gap-1 text-gray-600 hover:${SECONDARY_TEXT} font-medium transition-colors p-3 rounded-lg bg-white/70 backdrop-blur-md border border-gray-200 shadow-md`}
+              >
+                <ArrowLeft className={`w-5 h-5 ${SECONDARY_TEXT}`} />
+                <span className="text-lg">Back to Categories</span>
+              </button>
             )}
           </div>
         </div>
       )}
 
-      {view === "articles" && !categoryId && (
-        <div className="max-w-7xl mx-auto px-4 py-5 bg-white/80 backdrop-blur-sm sticky top-0 z-50 shadow-md">
-          <button
-            onClick={handleBackToCategories}
-            className="flex items-center gap-2 text-blue-600 hover:text-blue-700 font-semibold transition-colors bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-full"
-          >
-            <Home className="w-5 h-5" />
-            Back to Categories
-          </button>
-        </div>
-      )}
-
-      <div className="max-w-7xl mx-auto py-10 px-4">
+      <div className="max-w-7xl mx-auto py-5 px-4">
         {view === "categories" ? (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
             {categories.map((cat) => (
@@ -734,9 +801,9 @@ const ArticlesPage = ({ categoryId }) => {
           </div>
         ) : (
           currentCategory && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="space-y-4">
               {filteredArticles.map((article) => (
-                <ArticleCard
+                <ArticleListItem
                   key={article.id}
                   article={article}
                   toggleFavorite={toggleFavorite}
@@ -775,23 +842,9 @@ const ArticlesPage = ({ categoryId }) => {
         )}
       </div>
 
-      {selectedArticle && (
-        <ArticleDetailModal
-          article={selectedArticle}
-          onClose={handleCloseArticle}
-          toggleFavorite={toggleFavorite}
-          isAuthenticated={isAuthenticated}
-          isLocallyFavorite={localFavorites.has(selectedArticle.id)}
-          handleLocalToggle={handleLocalToggle}
-        />
-      )}
-
-      <footer className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-8 mt-16 shadow-2xl">
+      <footer className="bg-white text-gray-600 py-8 mt-16 shadow-inner border-t border-gray-100">
         <div className="max-w-7xl mx-auto px-4 text-center">
-          <p className="text-base font-light">
-            Seeking knowledge is an obligation upon every Muslim
-          </p>
-          <p className="text-sm text-blue-100 mt-2">بَارَكَ اللَّهُ فِيكُمْ</p>
+          <p className="text-sm font-light">Nibras © {currentYear}</p>
         </div>
       </footer>
     </div>

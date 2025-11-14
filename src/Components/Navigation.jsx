@@ -21,7 +21,7 @@ import {
   Building,
   ShoppingCart,
   PackageOpen,
-  Anchor, // Added Anchor icon for the new navigation item
+  Anchor,
 } from "lucide-react";
 import DhikrDuaCardDropdown from "./DhikrDuaCardDropdown";
 import TeachingResourceDropdown from "./TeachingResourcesCardDropdown";
@@ -106,14 +106,14 @@ export default function Navigation({ setShowLogoutModal }) {
       "/prayer-times": "Prayer Times",
       "/profile": "Mine",
       "/login": "Mine",
-      // Removed "/videos": "Videos"
       "/adhkar": "Dhikr & Du'a",
       "/dhikr-guide": "Dhikr & Du'a",
       "/duas": "Dhikr & Du'a",
-      "/donation": "Donation", // Added "Donation" as its own active link name
+      "/donation": "Donation",
       "/resources": "Teaching Resources",
       "/articles": "Articles",
-      "/new-link": "New Link", // Added new link
+      "/new-link": "New Link",
+      "/shop": "Shop",
     };
     setActiveLink(pathToName[location.pathname] || "");
   }, [location.pathname]);
@@ -162,8 +162,8 @@ export default function Navigation({ setShowLogoutModal }) {
     { name: "Home", icon: Home, href: "/" },
     { name: "Quran", icon: BookOpen, href: "/quran" },
     { name: "Prayer", icon: Clock, href: "/prayer-times" },
-    { name: "Donation", icon: Heart, href: "/donation" }, // Replaced Videos with Donation
-    { name: "New Link", icon: Anchor, href: "/new-link" }, // Added New Link item
+    { name: "Donation", icon: Heart, href: "/donation" },
+    { name: "New Link", icon: Anchor, href: "/new-link" },
     { name: "Mine", icon: User, href: token ? "/profile" : "/login" },
   ];
 
@@ -401,7 +401,7 @@ export default function Navigation({ setShowLogoutModal }) {
                   className={`flex items-center space-x-1 text-white hover:text-amber-300 transition-colors font-medium group relative ${
                     activeLink === "About" || activeLink === "Donation"
                       ? "text-amber-300"
-                      : "" // Added 'Donation' check
+                      : ""
                   }`}
                 >
                   <span>About</span>
@@ -428,7 +428,7 @@ export default function Navigation({ setShowLogoutModal }) {
                             handleNavItemClick(
                               href,
                               name === "Donation" ? "Donation" : "About"
-                            ); // Set active link name correctly for Donation
+                            );
                             setIsAboutDropdownOpen(false);
                           }}
                           className="flex items-center w-full px-4 py-2 text-gray-700 hover:bg-emerald-50 transition-colors text-sm"

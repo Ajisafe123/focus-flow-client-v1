@@ -39,6 +39,7 @@ import DuaCategoryPage from "./Components/DuaList";
 import ArticlesPage from "./Components/ArticlesPage";
 import LiveVideo from "./Components/LiveVideo";
 import VideoPlayer from "./Components/VideoPlayer"
+import ShopPage from "./Components/ShopPage";
 const pageVariants = {
   initial: { opacity: 0, y: 10 },
   in: { opacity: 1, y: 0 },
@@ -66,9 +67,9 @@ function GuestHome() {
     <>
       <Hero />
       <LiveDua />
+      <DailyHadith />
       <LiveArticles />
       <LiveVideo />
-      <DailyHadith />
       <About />
       <Contact />
     </>
@@ -235,6 +236,14 @@ function AppContent({
             element={
               <PageWrapper>
                 <QiblaFinder />
+              </PageWrapper>
+            }
+          />
+          <Route
+            path="/shop"
+            element={
+              <PageWrapper>
+                <ShopPage />
               </PageWrapper>
             }
           />

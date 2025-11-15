@@ -1,16 +1,36 @@
-import React from "react";
-import { User, Clock } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { User, Clock, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import mosqueImage from "../Assets/greenbg.jpg";
+import Cookies from "js-cookie";
 
 export default function Hero() {
+  const [showCookie, setShowCookie] = useState(true);
+
+  useEffect(() => {
+    const cookieConsent = Cookies.get("cookieConsent");
+    if (cookieConsent) {
+      setShowCookie(false);
+    }
+  }, []);
+
+  const acceptCookies = () => {
+    Cookies.set("cookieConsent", "accepted", { expires: 365 });
+    setShowCookie(false);
+  };
+
+  const declineCookies = () => {
+    Cookies.set("cookieConsent", "declined", { expires: 365 });
+    setShowCookie(false);
+  };
+
   return (
     <section
       id="home"
       className="relative pt-24 sm:pt-28 lg:pt-30 h-screen w-full flex items-center justify-center overflow-hidden"
     >
       <div
-        className="absolute  inset-0 w-full h-full scale-105"
+        className="absolute inset-0 w-full h-full scale-105"
         style={{
           backgroundImage: `url(${mosqueImage})`,
           backgroundSize: "cover",
@@ -23,7 +43,7 @@ export default function Hero() {
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_rgba(20,184,166,0.15)_0%,_transparent_50%)]"></div>
 
       <svg
-        className="absolute  bottom-0 left-0 w-full h-40 sm:h-48 lg:h-56 pointer-events-none"
+        className="absolute bottom-0 left-0 w-full h-40 sm:h-48 lg:h-56 pointer-events-none"
         preserveAspectRatio="none"
         viewBox="0 0 1440 320"
         xmlns="http://www.w3.org/2000/svg"
@@ -55,6 +75,7 @@ export default function Hero() {
           fill="#ffffff"
         />
       </svg>
+
       <div className="relative z-20 text-center text-white max-w-4xl mx-auto px-6 sm:px-8">
         <div className="inline-flex items-center gap-2 mb-4 px-4 py-1.5 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 backdrop-blur-md rounded-full border border-emerald-400/40">
           <p className="text-emerald-200 text-xs sm:text-sm font-medium tracking-wide">
@@ -62,7 +83,7 @@ export default function Hero() {
           </p>
         </div>
 
-        <h1 className=" header-text text-4xl sm:text-5xl lg:text-7xl font-extrabold mb-6 leading-tight">
+        <h1 className="header-text text-4xl sm:text-5xl lg:text-7xl font-extrabold mb-6 leading-tight">
           <span className="block text-white drop-shadow-xl">
             A Light of Guidance
           </span>
@@ -92,10 +113,68 @@ export default function Hero() {
             <span>Prayer Times</span>
           </Link>
         </div>
+
         <div className="mt-12 flex justify-center opacity-30">
           <div className="w-20 h-20 border-2 border-emerald-400 rotate-45 rounded-lg"></div>
         </div>
       </div>
+
+      {showCookie && (
+        <div className="fixed bottom-4 left-4 right-4 md:right-auto md:right-4 md:max-w-sm z-50 bg-white border border-emerald-100 animate-slide-up">
+          <div className="p-4">
+            <div className="flex items-start justify-between mb-3">
+              <div className="flex items-center gap-3">
+                <div className="bg-emerald-100 p-2 rounded-lg">
+                  <svg
+                    className="w-5 h-5 text-emerald-600"
+                    fill="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M21.598 11.064a1.006 1.006 0 0 0-.854-.172A2.938 2.938 0 0 1 20 11c-1.654 0-3-1.346-3.003-2.938.005-.034.016-.134.017-.168a.998.998 0 0 0-1.254-1.006A3.002 3.002 0 0 1 15 7c-1.654 0-3-1.346-3-3 0-.217.031-.444.099-.716a1 1 0 0 0-1.067-1.236A9.956 9.956 0 0 0 2 12c0 5.514 4.486 10 10 10s10-4.486 10-10c0-.049-.003-.097-.007-.16a1.004 1.004 0 0 0-.395-.776zM8.5 6a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3zm-2 8a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm3 4a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm2.5-6.5a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0zm3.5 6.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z" />
+                  </svg>
+                </div>
+                <h3 className="text-base font-bold text-gray-900">
+                  Privacy & Cookies
+                </h3>
+              </div>
+              <button
+                onClick={declineCookies}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+                aria-label="Close"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <p className="text-xs text-gray-600 mb-3 leading-snug">
+              We use cookies to improve your experience. By accepting, you help
+              us serve the ummah better.
+            </p>
+
+            <Link
+              to="/privacy"
+              className="inline-block text-xs text-emerald-600 hover:text-emerald-700 font-semibold mb-3 transition-colors hover:underline"
+            >
+              Read our Policy →
+            </Link>
+
+            <div className="flex gap-2">
+              <button
+                onClick={declineCookies}
+                className="flex-1 px-3 py-2 text-sm font-semibold text-gray-700 border border-gray-300 hover:border-gray-400 rounded-lg transition-all duration-300 hover:bg-gray-50"
+              >
+                Decline
+              </button>
+              <button
+                onClick={acceptCookies}
+                className="flex-1 px-3 py-2 text-sm font-semibold bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-all duration-300 shadow-md shadow-emerald-600/30"
+              >
+                Accept All
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

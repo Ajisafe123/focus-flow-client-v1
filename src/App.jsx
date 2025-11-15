@@ -44,6 +44,7 @@ import TeachingToolsPage from "./Components/TeachingToolsPage";
 import LessonPlansPage from "./Components/LessonPlansPage";
 import AudioResourcesPage from "./Components/AudioResourcesPage";
 import StudyGuidesPage from "./Components/StudyGuidesPage";
+import PrivacyPolicy from "./Components/PrivacyPolicy";
 const pageVariants = {
   initial: { opacity: 0, y: 10 },
   in: { opacity: 1, y: 0 },
@@ -171,6 +172,14 @@ function AppContent({
             element={
               <PageWrapper>
                 <PrayerTimesTable />
+              </PageWrapper>
+            }
+          />
+          <Route
+            path="/privacy"
+            element={
+              <PageWrapper>
+                <PrivacyPolicy />
               </PageWrapper>
             }
           />

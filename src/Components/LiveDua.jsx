@@ -312,15 +312,10 @@ export default function LiveDua() {
       }
       if (!res.ok) throw new Error("Failed to toggle favorite");
 
-      const data = await res.json();
+      await res.json();
 
-      if (isMorning) {
-        setIsMorningLiked((p) => !p);
-        setMorningFavoriteCount(data.favorites);
-      } else {
-        setIsEveningLiked((p) => !p);
-        setEveningFavoriteCount(data.favorites);
-      }
+      // OPTIMIZED: Re-fetch the full adkar list to ensure the is_favorite state is current
+      await fetchAdkar();
     } catch (error) {
       console.error("Error toggling favorite:", error);
     }

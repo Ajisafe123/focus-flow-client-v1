@@ -13,6 +13,10 @@ import {
   MessageSquare,
 } from "lucide-react";
 
+const isUserLoggedIn = () => {
+  return !!localStorage.getItem("token");
+};
+
 export default function LiveDua() {
   const [morningAdkar, setMorningAdkar] = useState([]);
   const [eveningAdkar, setEveningAdkar] = useState([]);
@@ -49,8 +53,6 @@ export default function LiveDua() {
   const STATIC_BASE_URL = "https://focus-flow-server-v1.onrender.com";
   const FRONTEND_BASE_URL = "https://nibrasudeen.vercel.app/";
   const LOGIN_URL = `${FRONTEND_BASE_URL}/login`;
-
-  const USER_IS_LOGGED_IN = true;
 
   const formatTime = (t) =>
     !t || isNaN(t)
@@ -89,8 +91,11 @@ export default function LiveDua() {
   );
 
   const fetchAdkar = useCallback(async () => {
+    const token = localStorage.getItem("token");
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
     try {
-      const res = await fetch(`${API_BASE_URL}/duas`);
+      const res = await fetch(`${API_BASE_URL}/duas`, { headers });
       const data = await res.json();
 
       const morning = data.filter((d) => d.category_id === 5);
@@ -275,7 +280,9 @@ export default function LiveDua() {
   };
 
   const toggleFavorite = async (type) => {
-    if (!USER_IS_LOGGED_IN) {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
       window.location.href = LOGIN_URL;
       return;
     }
@@ -291,10 +298,15 @@ export default function LiveDua() {
         `${API_BASE_URL}/duas/${primaryDuaId}/toggle-favorite`,
         {
           method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
 
       if (res.status === 401) {
+        localStorage.removeItem("token");
         window.location.href = LOGIN_URL;
         return;
       }
@@ -338,6 +350,8 @@ export default function LiveDua() {
   };
 
   const renderAdkarCard = (adkar, type, Icon) => {
+    const userIsLoggedIn = isUserLoggedIn();
+
     const isMorning = type === "morning";
     const isPlaying = isMorning ? isPlayingMorning : isPlayingEvening;
     const progress = isMorning ? morningProgress : eveningProgress;
@@ -421,7 +435,7 @@ export default function LiveDua() {
                     : "text-gray-500 hover:text-red-500 hover:bg-gray-100"
                 }`}
                 title={
-                  USER_IS_LOGGED_IN ? "Toggle Favorite" : "Log in to favorite"
+                  userIsLoggedIn ? "Toggle Favorite" : "Log in to favorite"
                 }
               >
                 <Heart

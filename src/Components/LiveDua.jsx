@@ -47,7 +47,7 @@ export default function LiveDua() {
   const eveningSegmentRefs = useRef({});
   const API_BASE_URL = "https://focus-flow-server-v1.onrender.com/api";
   const STATIC_BASE_URL = "https://focus-flow-server-v1.onrender.com";
-  const FRONTEND_BASE_URL = "https://nibra-al-deen-v1.vercel.app";
+  const FRONTEND_BASE_URL = "https://nibrasudeen.vercel.app/";
   const LOGIN_URL = `${FRONTEND_BASE_URL}/login`;
 
   const USER_IS_LOGGED_IN = true;

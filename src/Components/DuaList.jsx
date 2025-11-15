@@ -15,7 +15,7 @@ import {
   ArrowLeft,
 } from "lucide-react";
 
-const FRONTEND_BASE = "https://nibra-al-deen-v1.vercel.app";
+const FRONTEND_BASE = "https://nibrasudeen.vercel.app";
 const API_BASE = "https://focus-flow-server-v1.onrender.com/api";
 const IMAGE_BASE = "https://focus-flow-server-v1.onrender.com";
 

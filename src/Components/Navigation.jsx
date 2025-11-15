@@ -22,6 +22,9 @@ import {
   ShoppingCart,
   PackageOpen,
   Calendar,
+  Menu,
+  Layers,
+  FileText,
 } from "lucide-react";
 import DhikrDuaCardDropdown from "./DhikrDuaCardDropdown";
 import TeachingResourceDropdown from "./TeachingResourcesCardDropdown";
@@ -36,7 +39,7 @@ export default function Navigation({ setShowLogoutModal }) {
   const [isAboutDropdownOpen, setIsAboutDropdownOpen] = useState(false);
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   const [isCartHovered, setIsCartHovered] = useState(false);
-  const [isMobileCartOpen, setIsMobileCartOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [hasNewNotifications, setHasNewNotifications] = useState(true);
@@ -47,7 +50,7 @@ export default function Navigation({ setShowLogoutModal }) {
   const articleDropdownRef = useRef(null);
   const aboutDropdownRef = useRef(null);
   const userDropdownRef = useRef(null);
-  const mobileCartRef = useRef(null);
+  const mobileMenuRef = useRef(null);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -64,6 +67,7 @@ export default function Navigation({ setShowLogoutModal }) {
     const handleClickOutside = (e) => {
       if (searchBarRef.current && !searchBarRef.current.contains(e.target))
         setShowSearchBar(false);
+
       if (
         dhikrDuaDropdownRef.current &&
         !dhikrDuaDropdownRef.current.contains(e.target) &&
@@ -93,14 +97,28 @@ export default function Navigation({ setShowLogoutModal }) {
         !userDropdownRef.current.contains(e.target)
       )
         setIsUserDropdownOpen(false);
-      if (mobileCartRef.current && !mobileCartRef.current.contains(e.target))
-        setIsMobileCartOpen(false);
+
+      const mobileMenuButton = document.querySelector("#mobile-menu-button");
+      if (
+        isMobileMenuOpen &&
+        mobileMenuRef.current &&
+        !mobileMenuRef.current.contains(e.target) &&
+        e.target !== mobileMenuButton &&
+        !mobileMenuButton.contains(e.target)
+      ) {
+        setIsMobileMenuOpen(false);
+      }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  }, [isMobileMenuOpen]);
 
   useEffect(() => {
+    if (isMobileMenuOpen) {
+      setIsMobileMenuOpen(false);
+    }
+    closeAllDropdowns();
+
     const pathToName = {
       "/": "Home",
       "/quran": "Quran",
@@ -144,6 +162,7 @@ export default function Navigation({ setShowLogoutModal }) {
   const handleNavItemClick = (href, name) => {
     navigate(href);
     setActiveLink(name);
+    setIsMobileMenuOpen(false);
   };
 
   const handleUserAction = (action) => {
@@ -159,6 +178,7 @@ export default function Navigation({ setShowLogoutModal }) {
       navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
       setShowSearchBar(false);
       setSearchQuery("");
+      setIsMobileMenuOpen(false);
     }
   };
 
@@ -166,6 +186,7 @@ export default function Navigation({ setShowLogoutModal }) {
     navigate("/notifications");
     setActiveLink("Notifications");
     setHasNewNotifications(false);
+    setIsMobileMenuOpen(false);
   };
 
   const aboutMenuItems = [
@@ -183,7 +204,7 @@ export default function Navigation({ setShowLogoutModal }) {
 
   const desktopMenuItems = [
     { name: "Home", href: "/" },
-    { name: "Quran", href: "/quran" },
+    { name: "Quran", href: "/quran", mobileIcon: BookOpen },
     { name: "Prayer Times", href: "/prayer-times" },
     {
       name: "Dhikr & Du'a",
@@ -193,6 +214,7 @@ export default function Navigation({ setShowLogoutModal }) {
       setState: setIsDhikrDuaDropdownOpen,
       ref: dhikrDuaDropdownRef,
       component: DhikrDuaCardDropdown,
+      mobileIcon: Layers,
     },
     {
       name: "Teaching Resources",
@@ -202,6 +224,7 @@ export default function Navigation({ setShowLogoutModal }) {
       setState: setIsTeachingDropdownOpen,
       ref: teachingDropdownRef,
       component: TeachingResourceDropdown,
+      mobileIcon: PackageOpen,
     },
     {
       name: "Articles",
@@ -211,6 +234,7 @@ export default function Navigation({ setShowLogoutModal }) {
       setState: setIsArticleDropdownOpen,
       ref: articleDropdownRef,
       component: ArticleDropdown,
+      mobileIcon: FileText,
     },
     {
       name: "About",
@@ -220,6 +244,7 @@ export default function Navigation({ setShowLogoutModal }) {
       setState: setIsAboutDropdownOpen,
       ref: aboutDropdownRef,
       items: aboutMenuItems,
+      mobileIcon: Building,
     },
   ];
 
@@ -228,18 +253,11 @@ export default function Navigation({ setShowLogoutModal }) {
     { name: "Quran", icon: BookOpen, href: "/quran" },
     { name: "Prayer", icon: Clock, href: "/prayer-times" },
     { name: "Ramadan", icon: Calendar, href: "/ramadan" },
-    { name: "Resources", icon: PackageOpen, href: "/teaching-resources" },
-    { name: "Donation", icon: Heart, href: "/donation" },
     { name: "Mine", icon: User, href: token ? "/profile" : "/login" },
   ];
 
   const goToShop = () => {
     handleNavItemClick("/shop", "Shop");
-  };
-
-  const handleMobileCartClick = (e) => {
-    e.stopPropagation();
-    setIsMobileCartOpen(!isMobileCartOpen);
   };
 
   const closeAllDropdowns = () => {
@@ -257,8 +275,38 @@ export default function Navigation({ setShowLogoutModal }) {
 
   const handleDropdownItemClick = (href, name, closeDropdown) => {
     handleNavItemClick(href, name);
-    closeDropdown(false);
+    if (closeDropdown) {
+      closeDropdown(false);
+    }
     closeAllDropdowns();
+  };
+
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen((p) => !p);
+  };
+
+  const [isMobileDhikrDuaOpen, setIsMobileDhikrDuaOpen] = useState(false);
+  const [isMobileTeachingOpen, setIsMobileTeachingOpen] = useState(false);
+  const [isMobileArticleOpen, setIsMobileArticleOpen] = useState(false);
+  const [isMobileAboutOpen, setIsMobileAboutOpen] = useState(false);
+
+  const mobileDropdownStates = {
+    "Dhikr & Du'a": [isMobileDhikrDuaOpen, setIsMobileDhikrDuaOpen],
+    "Teaching Resources": [isMobileTeachingOpen, setIsMobileTeachingOpen],
+    Articles: [isMobileArticleOpen, setIsMobileArticleOpen],
+    About: [isMobileAboutOpen, setIsMobileAboutOpen],
+  };
+
+  const toggleMobileDropdown = (name) => {
+    const [state, setState] = mobileDropdownStates[name];
+
+    Object.keys(mobileDropdownStates).forEach((key) => {
+      if (key !== name) {
+        mobileDropdownStates[key][1](false);
+      }
+    });
+
+    setState(!state);
   };
 
   return (
@@ -595,46 +643,17 @@ export default function Navigation({ setShowLogoutModal }) {
               </button>
 
               <button
-                onClick={handleNotificationClick}
-                className="p-2 rounded-full hover:bg-white/15 transition-colors relative"
-                aria-label="Notifications"
+                id="mobile-menu-button"
+                onClick={toggleMobileMenu}
+                className="p-2 rounded-full hover:bg-white/15 transition-colors"
+                aria-label="Open Menu"
               >
-                <Bell className="w-5 h-5 text-white" />
-                {hasNewNotifications && (
-                  <span className="absolute -top-0 -right-0 h-3 w-3 bg-red-500 rounded-full border-2 border-emerald-700" />
+                {isMobileMenuOpen ? (
+                  <X className="w-6 h-6 text-white" />
+                ) : (
+                  <Menu className="w-6 h-6 text-white" />
                 )}
               </button>
-
-              <div className="relative" ref={mobileCartRef}>
-                <button
-                  onClick={handleMobileCartClick}
-                  className="p-2 rounded-full hover:bg-white/15 transition-colors relative"
-                  aria-label="Shopping Cart"
-                >
-                  <ShoppingCart className="w-5 h-5 text-white" />
-                  {cartItemCount > 0 && (
-                    <span className="absolute -top-0 -right-0 bg-red-500 text-white text-xs w-4 h-4 flex items-center justify-center rounded-full font-bold">
-                      {cartItemCount}
-                    </span>
-                  )}
-                </button>
-                {isMobileCartOpen && cartItemCount > 0 && (
-                  <div className="absolute right-0 mt-2 w-64 p-3 bg-white rounded-lg shadow-xl ring-1 ring-black ring-opacity-5 z-50">
-                    <h4 className="text-sm font-semibold text-gray-900 border-b pb-2 mb-2">
-                      Your Cart ({cartItemCount} items)
-                    </h4>
-                    <p className="text-sm text-gray-600 mb-2">
-                      Quick view is coming soon...
-                    </p>
-                    <button
-                      onClick={goToShop}
-                      className="w-full py-1.5 text-sm bg-emerald-600 text-white rounded hover:bg-emerald-700 transition-colors"
-                    >
-                      View Cart
-                    </button>
-                  </div>
-                )}
-              </div>
             </div>
           </div>
 
@@ -661,6 +680,134 @@ export default function Navigation({ setShowLogoutModal }) {
               </button>
             </div>
           </div>
+        </div>
+      </div>
+
+      <div
+        ref={mobileMenuRef}
+        className={`fixed top-0 left-0 h-full w-full z-50 transform transition-transform duration-300 ease-in-out md:hidden ${
+          isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
+        } bg-white overflow-y-auto`}
+      >
+        <div className="p-4 border-b border-emerald-100 flex justify-between items-center sticky top-0 bg-white z-10 shadow-sm">
+          <span className="text-xl font-bold text-emerald-800">Menu</span>
+          <button
+            onClick={toggleMobileMenu}
+            className="p-2 rounded-full text-emerald-600 hover:bg-emerald-50"
+          >
+            <X className="w-6 h-6" />
+          </button>
+        </div>
+
+        <div className="p-4 space-y-2">
+          <button
+            onClick={goToShop}
+            className="w-full text-left flex items-center justify-between py-3 text-lg font-medium text-gray-700 hover:text-emerald-700 transition-colors border-b border-gray-100 relative"
+          >
+            <div className="flex items-center">
+              <ShoppingCart className="w-5 h-5 mr-3 text-emerald-600" />
+              Shop / Cart
+            </div>
+            {cartItemCount > 0 && (
+              <span className="flex items-center justify-center h-5 w-5 text-xs font-bold text-white bg-red-500 rounded-full">
+                {cartItemCount}
+              </span>
+            )}
+          </button>
+
+          {desktopMenuItems.map((item) => {
+            const Icon = item.mobileIcon;
+
+            if (!Icon || item.name === "Home" || item.name === "Prayer Times")
+              return null;
+
+            if (item.dropdown) {
+              const [isDropdownOpen, setIsDropdownOpen] = mobileDropdownStates[
+                item.name
+              ] || [false, null];
+
+              return (
+                <div key={item.name} className="border-b border-gray-100">
+                  <button
+                    onClick={() => toggleMobileDropdown(item.name)}
+                    className="w-full text-left flex items-center justify-between py-3 text-lg font-medium text-gray-700 hover:text-emerald-700 transition-colors"
+                  >
+                    <div className="flex items-center">
+                      <Icon className="w-5 h-5 mr-3 text-emerald-600" />
+                      {item.name}
+                    </div>
+                    <ChevronDown
+                      className={`w-4 h-4 transition-transform duration-200 ${
+                        isDropdownOpen ? "rotate-180 text-emerald-600" : ""
+                      }`}
+                    />
+                  </button>
+                  <div
+                    className={`transition-all duration-300 overflow-hidden ${
+                      isDropdownOpen
+                        ? "max-h-96 opacity-100 py-2"
+                        : "max-h-0 opacity-0"
+                    }`}
+                  >
+                    {item.items ? (
+                      item.items.map((subItem) => (
+                        <button
+                          key={subItem.name}
+                          onClick={() =>
+                            handleNavItemClick(subItem.href, subItem.name)
+                          }
+                          className="w-full text-left flex items-center pl-10 py-2 text-base text-gray-600 hover:bg-emerald-50 hover:text-emerald-700 rounded-md transition-colors"
+                        >
+                          <subItem.icon className="w-4 h-4 mr-3 text-emerald-500" />
+                          {subItem.name}
+                        </button>
+                      ))
+                    ) : (
+                      <div className="p-2 text-sm text-gray-500">
+                        <p className="mb-2 pl-6">
+                          Full dropdown content coming soon on mobile.
+                        </p>
+                        <button
+                          onClick={() =>
+                            handleNavItemClick(item.href, item.name)
+                          }
+                          className="w-full py-1.5 text-center bg-emerald-100 text-emerald-700 rounded-md hover:bg-emerald-200 transition-colors"
+                        >
+                          View All {item.name}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            } else {
+              return (
+                <button
+                  key={item.name}
+                  onClick={() => handleNavItemClick(item.href, item.name)}
+                  className="w-full text-left flex items-center py-3 text-lg font-medium text-gray-700 hover:text-emerald-700 transition-colors border-b border-gray-100"
+                >
+                  <Icon className="w-5 h-5 mr-3 text-emerald-600" />
+                  {item.name}
+                </button>
+              );
+            }
+          })}
+
+          <button
+            onClick={handleNotificationClick}
+            className="w-full text-left flex items-center justify-between py-3 text-lg font-medium text-gray-700 hover:text-emerald-700 transition-colors border-b border-gray-100 relative"
+          >
+            <div className="flex items-center">
+              <Bell className="w-5 h-5 mr-3 text-emerald-600" />
+              Notifications
+            </div>
+            {hasNewNotifications && (
+              <span className="flex items-center justify-center h-5 w-5 text-xs font-bold text-white bg-red-500 rounded-full">
+                !
+              </span>
+            )}
+          </button>
         </div>
       </div>
 

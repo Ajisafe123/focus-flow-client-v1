@@ -14,8 +14,9 @@ import {
   X,
   ArrowLeft,
 } from "lucide-react";
-const API_BASE = "https://focus-flow-server-v1.onrender.com/api";
 
+const FRONTEND_BASE = "https://nibra-al-deen-v1.vercel.app";
+const API_BASE = "https://focus-flow-server-v1.onrender.com/api";
 const IMAGE_BASE = "https://focus-flow-server-v1.onrender.com";
 
 const getFullImageUrl = (relativePath) => {
@@ -36,8 +37,9 @@ const getAuthToken = () => {
 };
 
 const redirectToLogin = () => {
-  console.log("Redirecting user to login page...");
-  console.log("Requirement: User must be logged in to save favorites.");
+  const currentPath = window.location.pathname + window.location.search;
+  localStorage.setItem("post_login_redirect", currentPath);
+  window.location.href = `${FRONTEND_BASE}/login`;
 };
 
 const CategoryCard = ({ category, onClick }) => {
@@ -377,26 +379,27 @@ const DuaCategoryPage = ({ categoryId }) => {
       });
 
       if (!res.ok) {
-        const errorText = await res.text();
         console.error(
-          `Failed to generate share link for Dua ID ${duaId}. Status: ${res.status}. Response: ${errorText}`
+          `Server failed to generate tracking link for Dua ID ${duaId}.`
         );
-        throw new Error("Failed to generate share link on server.");
+      } else {
+        const data = await res.json();
+        console.log(
+          `Backend short code generated for tracking: ${data.share_url}`
+        );
       }
-
-      const data = await res.json();
-      console.log("----------------------------------------------");
-      console.log(` SUCCESS: Share Link generated for Dua ID: ${duaId}`);
-      console.log(
-        `VERIFY DB: A new short code should be in the 'dua_share_link' table.`
-      );
-      console.log(`Generated Share URL: ${data.share_url}`);
-      console.log("----------------------------------------------");
-      return data.share_url;
     } catch (err) {
-      console.error("API Error during share link generation:", err);
-      throw err;
+      console.error("API Error during share link generation (tracking):", err);
     }
+
+    const fullShareUrl = `${FRONTEND_BASE}/duas?duaId=${duaId}`;
+
+    console.log("----------------------------------------------");
+    console.log(` SUCCESS: Frontend Deep Link generated for Dua ID: ${duaId}`);
+    console.log(`Frontend Share URL: ${fullShareUrl}`);
+    console.log("----------------------------------------------");
+
+    return fullShareUrl;
   };
 
   const fetchDuasAndCategories = useCallback(
@@ -506,7 +509,6 @@ const DuaCategoryPage = ({ categoryId }) => {
         setSelectedCategoryId(targetCategoryId);
         setView("duas");
         setOpenDetails({ [duaToFocus.id]: "translation" });
-        searchParams.delete("duaId");
       }
     } else if (categoryId) {
       setSelectedCategoryId(categoryId);

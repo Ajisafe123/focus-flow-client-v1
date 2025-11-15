@@ -386,9 +386,9 @@ const DuaCategoryPage = ({ categoryId }) => {
 
       const data = await res.json();
       console.log("----------------------------------------------");
-      console.log(`✅ SUCCESS: Share Link generated for Dua ID: ${duaId}`);
+      console.log(` SUCCESS: Share Link generated for Dua ID: ${duaId}`);
       console.log(
-        `✅ VERIFY DB: A new short code should be in the 'dua_share_link' table.`
+        `VERIFY DB: A new short code should be in the 'dua_share_link' table.`
       );
       console.log(`Generated Share URL: ${data.share_url}`);
       console.log("----------------------------------------------");

@@ -40,6 +40,10 @@ import ArticlesPage from "./Components/ArticlesPage";
 import LiveVideo from "./Components/LiveVideo";
 import VideoPlayer from "./Components/VideoPlayer"
 import ShopPage from "./Components/ShopPage";
+import TeachingToolsPage from "./Components/TeachingToolsPage";
+import LessonPlansPage from "./Components/LessonPlansPage";
+import AudioResourcesPage from "./Components/AudioResourcesPage";
+import StudyGuidesPage from "./Components/StudyGuidesPage";
 const pageVariants = {
   initial: { opacity: 0, y: 10 },
   in: { opacity: 1, y: 0 },
@@ -224,6 +228,32 @@ function AppContent({
             }
           />
           <Route
+            path="/lesson-plans"
+            element={
+              <PageWrapper>
+                <LessonPlansPage />
+              </PageWrapper>
+            }
+          />
+          <Route
+            path="/audio-resources"
+            element={
+              <PageWrapper>
+                <AudioResourcesPage />
+              </PageWrapper>
+            }
+          />
+
+          <Route
+            path="/study-guides"
+            element={
+              <PageWrapper>
+                <StudyGuidesPage />
+              </PageWrapper>
+            }
+          />
+
+          <Route
             path="/zakat-calculator"
             element={
               <PageWrapper>
@@ -244,6 +274,14 @@ function AppContent({
             element={
               <PageWrapper>
                 <ShopPage />
+              </PageWrapper>
+            }
+          />
+          <Route
+            path="/teaching-resources"
+            element={
+              <PageWrapper>
+                <TeachingToolsPage />
               </PageWrapper>
             }
           />

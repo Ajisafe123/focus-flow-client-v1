@@ -10,7 +10,7 @@ export default function Hero() {
       className="relative pt-24 sm:pt-28 lg:pt-30 h-screen w-full flex items-center justify-center overflow-hidden"
     >
       <div
-        className="absolute inset-0 w-full h-full scale-105"
+        className="absolute  inset-0 w-full h-full scale-105"
         style={{
           backgroundImage: `url(${mosqueImage})`,
           backgroundSize: "cover",
@@ -23,7 +23,7 @@ export default function Hero() {
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_rgba(20,184,166,0.15)_0%,_transparent_50%)]"></div>
 
       <svg
-        className="absolute bottom-0 left-0 w-full h-40 sm:h-48 lg:h-56 pointer-events-none"
+        className="absolute  bottom-0 left-0 w-full h-40 sm:h-48 lg:h-56 pointer-events-none"
         preserveAspectRatio="none"
         viewBox="0 0 1440 320"
         xmlns="http://www.w3.org/2000/svg"

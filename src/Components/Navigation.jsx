@@ -21,7 +21,7 @@ import {
   Building,
   ShoppingCart,
   PackageOpen,
-  Anchor,
+  Calendar,
 } from "lucide-react";
 import DhikrDuaCardDropdown from "./DhikrDuaCardDropdown";
 import TeachingResourceDropdown from "./TeachingResourcesCardDropdown";
@@ -36,8 +36,10 @@ export default function Navigation({ setShowLogoutModal }) {
   const [isAboutDropdownOpen, setIsAboutDropdownOpen] = useState(false);
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   const [isCartHovered, setIsCartHovered] = useState(false);
+  const [isMobileCartOpen, setIsMobileCartOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [hasNewNotifications, setHasNewNotifications] = useState(true);
 
   const searchBarRef = useRef(null);
   const dhikrDuaDropdownRef = useRef(null);
@@ -45,12 +47,12 @@ export default function Navigation({ setShowLogoutModal }) {
   const articleDropdownRef = useRef(null);
   const aboutDropdownRef = useRef(null);
   const userDropdownRef = useRef(null);
-  const cartDropdownRef = useRef(null);
+  const mobileCartRef = useRef(null);
 
   const navigate = useNavigate();
   const location = useLocation();
   const token = localStorage.getItem("token");
-  const cartItemCount = 0;
+  const cartItemCount = 3;
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
@@ -64,22 +66,26 @@ export default function Navigation({ setShowLogoutModal }) {
         setShowSearchBar(false);
       if (
         dhikrDuaDropdownRef.current &&
-        !dhikrDuaDropdownRef.current.contains(e.target)
+        !dhikrDuaDropdownRef.current.contains(e.target) &&
+        !dhikrDuaDropdownRef.current.querySelector("button").contains(e.target)
       )
         setIsDhikrDuaDropdownOpen(false);
       if (
         teachingDropdownRef.current &&
-        !teachingDropdownRef.current.contains(e.target)
+        !teachingDropdownRef.current.contains(e.target) &&
+        !teachingDropdownRef.current.querySelector("button").contains(e.target)
       )
         setIsTeachingDropdownOpen(false);
       if (
         articleDropdownRef.current &&
-        !articleDropdownRef.current.contains(e.target)
+        !articleDropdownRef.current.contains(e.target) &&
+        !articleDropdownRef.current.querySelector("button").contains(e.target)
       )
         setIsArticleDropdownOpen(false);
       if (
         aboutDropdownRef.current &&
-        !aboutDropdownRef.current.contains(e.target)
+        !aboutDropdownRef.current.contains(e.target) &&
+        !aboutDropdownRef.current.querySelector("button").contains(e.target)
       )
         setIsAboutDropdownOpen(false);
       if (
@@ -87,11 +93,8 @@ export default function Navigation({ setShowLogoutModal }) {
         !userDropdownRef.current.contains(e.target)
       )
         setIsUserDropdownOpen(false);
-      if (
-        cartDropdownRef.current &&
-        !cartDropdownRef.current.contains(e.target)
-      )
-        setIsCartHovered(false);
+      if (mobileCartRef.current && !mobileCartRef.current.contains(e.target))
+        setIsMobileCartOpen(false);
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
@@ -103,19 +106,39 @@ export default function Navigation({ setShowLogoutModal }) {
       "/quran": "Quran",
       "/about": "About",
       "/contact": "About",
-      "/prayer-times": "Prayer Times",
+      "/donation": "About",
+      "/prayer-times": "Prayer",
       "/profile": "Mine",
       "/login": "Mine",
-      "/adhkar": "Dhikr & Du'a",
-      "/dhikr-guide": "Dhikr & Du'a",
       "/duas": "Dhikr & Du'a",
-      "/donation": "Donation",
-      "/resources": "Teaching Resources",
+      "/hadith": "Dhikr & Du'a",
+      "/99-names": "Dhikr & Du'a",
+      "/zakat-calculator": "Dhikr & Du'a",
+      "/qibla-finder": "Dhikr & Du'a",
+      "/islamic-calendar": "Ramadan",
+      "/ramadan": "Ramadan",
       "/articles": "Articles",
-      "/new-link": "New Link",
+      "/teaching-resources": "Resources",
+      "/lesson-plans": "Teaching Resources",
+      "/audio-resources": "Teaching Resources",
+      "/study-guides": "Teaching Resources",
       "/shop": "Shop",
+      "/videos": "Videos",
+      "/notifications": "Notifications",
     };
-    setActiveLink(pathToName[location.pathname] || "");
+    const currentPath = location.pathname;
+    let activeName = pathToName[currentPath] || "";
+
+    if (currentPath.startsWith("/dua-category")) {
+      activeName = "Dhikr & Du'a";
+    }
+
+    if (activeName === "Prayer Times") activeName = "Prayer";
+    if (activeName === "Teaching Resources") activeName = "Resources";
+    if (activeName === "About" && currentPath === "/donation")
+      activeName = "Donation";
+
+    setActiveLink(activeName);
   }, [location.pathname]);
 
   const handleNavItemClick = (href, name) => {
@@ -139,6 +162,12 @@ export default function Navigation({ setShowLogoutModal }) {
     }
   };
 
+  const handleNotificationClick = () => {
+    navigate("/notifications");
+    setActiveLink("Notifications");
+    setHasNewNotifications(false);
+  };
+
   const aboutMenuItems = [
     { name: "About Us", href: "/about", icon: Building },
     { name: "Contact Us", href: "/contact", icon: Mail },
@@ -156,16 +185,81 @@ export default function Navigation({ setShowLogoutModal }) {
     { name: "Home", href: "/" },
     { name: "Quran", href: "/quran" },
     { name: "Prayer Times", href: "/prayer-times" },
+    {
+      name: "Dhikr & Du'a",
+      href: "/duas",
+      dropdown: true,
+      state: isDhikrDuaDropdownOpen,
+      setState: setIsDhikrDuaDropdownOpen,
+      ref: dhikrDuaDropdownRef,
+      component: DhikrDuaCardDropdown,
+    },
+    {
+      name: "Teaching Resources",
+      href: "/teaching-resources",
+      dropdown: true,
+      state: isTeachingDropdownOpen,
+      setState: setIsTeachingDropdownOpen,
+      ref: teachingDropdownRef,
+      component: TeachingResourceDropdown,
+    },
+    {
+      name: "Articles",
+      href: "/articles",
+      dropdown: true,
+      state: isArticleDropdownOpen,
+      setState: setIsArticleDropdownOpen,
+      ref: articleDropdownRef,
+      component: ArticleDropdown,
+    },
+    {
+      name: "About",
+      href: "/about",
+      dropdown: true,
+      state: isAboutDropdownOpen,
+      setState: setIsAboutDropdownOpen,
+      ref: aboutDropdownRef,
+      items: aboutMenuItems,
+    },
   ];
 
   const mobileNavItems = [
     { name: "Home", icon: Home, href: "/" },
     { name: "Quran", icon: BookOpen, href: "/quran" },
     { name: "Prayer", icon: Clock, href: "/prayer-times" },
+    { name: "Ramadan", icon: Calendar, href: "/ramadan" },
+    { name: "Resources", icon: PackageOpen, href: "/teaching-resources" },
     { name: "Donation", icon: Heart, href: "/donation" },
-    { name: "New Link", icon: Anchor, href: "/new-link" },
     { name: "Mine", icon: User, href: token ? "/profile" : "/login" },
   ];
+
+  const goToShop = () => {
+    handleNavItemClick("/shop", "Shop");
+  };
+
+  const handleMobileCartClick = (e) => {
+    e.stopPropagation();
+    setIsMobileCartOpen(!isMobileCartOpen);
+  };
+
+  const closeAllDropdowns = () => {
+    setIsDhikrDuaDropdownOpen(false);
+    setIsTeachingDropdownOpen(false);
+    setIsArticleDropdownOpen(false);
+    setIsAboutDropdownOpen(false);
+  };
+
+  const toggleDropdown = (setState) => (e) => {
+    e.stopPropagation();
+    closeAllDropdowns();
+    setState(true);
+  };
+
+  const handleDropdownItemClick = (href, name, closeDropdown) => {
+    handleNavItemClick(href, name);
+    closeDropdown(false);
+    closeAllDropdowns();
+  };
 
   return (
     <>
@@ -185,33 +279,35 @@ export default function Navigation({ setShowLogoutModal }) {
                     </span>
                   </button>
                 ) : (
-                  <div className="flex items-center space-x-2 bg-white border-2 border-emerald-500 rounded-full px-4 py-2 shadow-lg transition-all">
-                    <Search className="w-4 h-4 text-emerald-600" />
-                    <input
-                      type="text"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      onKeyDown={(e) => e.key === "Enter" && handleSearch(e)}
-                      placeholder="Search..."
-                      className="w-64 focus:outline-none text-sm text-gray-800 placeholder-emerald-400"
-                      autoFocus
-                    />
-                    <button
-                      onClick={handleSearch}
-                      className="p-1.5 bg-emerald-600 text-white rounded-full hover:bg-emerald-700 transition-colors"
-                    >
-                      <Search className="w-3.5 h-3.5" />
-                    </button>
-                    <button
-                      onClick={() => {
-                        setShowSearchBar(false);
-                        setSearchQuery("");
-                      }}
-                      className="p-1.5 text-emerald-600 hover:text-emerald-700 transition-colors"
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
+                  <form onSubmit={handleSearch}>
+                    <div className="flex items-center space-x-2 bg-white border-2 border-emerald-500 rounded-full px-4 py-2 shadow-lg transition-all">
+                      <Search className="w-4 h-4 text-emerald-600" />
+                      <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="Search..."
+                        className="w-64 focus:outline-none text-sm text-gray-800 placeholder-emerald-400"
+                        autoFocus
+                      />
+                      <button
+                        type="submit"
+                        className="p-1.5 bg-emerald-600 text-white rounded-full hover:bg-emerald-700 transition-colors"
+                      >
+                        <Search className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowSearchBar(false);
+                          setSearchQuery("");
+                        }}
+                        className="p-1.5 text-emerald-600 hover:text-emerald-700 transition-colors"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </form>
                 )}
               </div>
             </div>
@@ -265,274 +361,211 @@ export default function Navigation({ setShowLogoutModal }) {
                 A Light of Guidance
               </span>
             </button>
-            <div className="flex items-center space-x-6">
-              {desktopMenuItems.map(({ name, href }) => (
-                <button
-                  key={name}
-                  onClick={() => handleNavItemClick(href, name)}
-                  className={`text-white hover:text-amber-300 transition-colors font-medium relative group ${
-                    activeLink === name ? "text-amber-300" : ""
-                  }`}
-                >
-                  {name}
-                  <div
-                    className={`h-0.5 bg-amber-300 absolute inset-x-0 bottom-0 transition-all duration-300 ${
-                      activeLink === name ? "w-full" : "w-0 group-hover:w-full"
-                    }`}
-                  />
-                </button>
-              ))}
-              <div
-                className="relative z-[60]"
-                ref={dhikrDuaDropdownRef}
-                onMouseEnter={() => setIsDhikrDuaDropdownOpen(true)}
-                onMouseLeave={() => setIsDhikrDuaDropdownOpen(false)}
-              >
-                <button
-                  onClick={() => {
-                    handleNavItemClick("/duas", "Dhikr & Du'a");
-                    setIsDhikrDuaDropdownOpen(false);
-                  }}
-                  className={`flex items-center space-x-1 text-white hover:text-amber-300 transition-colors font-medium group relative ${
-                    activeLink === "Dhikr & Du'a" ? "text-amber-300" : ""
-                  }`}
-                >
-                  <span>Dhikr & Du'a</span>
-                  <ChevronDown
-                    className={`w-4 h-4 transition-transform ${
-                      isDhikrDuaDropdownOpen ? "rotate-180" : ""
-                    }`}
-                  />
-                  <div
-                    className={`h-0.5 bg-amber-300 absolute inset-x-0 bottom-0 transition-all duration-300 ${
-                      activeLink === "Dhikr & Du'a"
-                        ? "w-full"
-                        : "w-0 group-hover:w-full"
-                    }`}
-                  />
-                </button>
-                {isDhikrDuaDropdownOpen && (
-                  <DhikrDuaCardDropdown
-                    handleNavItemClick={handleNavItemClick}
-                    setIsDhikrDuaDropdownOpen={setIsDhikrDuaDropdownOpen}
-                  />
-                )}
-              </div>
-              <div
-                className="relative z-[60]"
-                ref={teachingDropdownRef}
-                onMouseEnter={() => setIsTeachingDropdownOpen(true)}
-                onMouseLeave={() => setIsTeachingDropdownOpen(false)}
-              >
-                <button
-                  onClick={() => {
-                    handleNavItemClick("/resources", "Teaching Resources");
-                    setIsTeachingDropdownOpen(false);
-                  }}
-                  className={`flex items-center space-x-1 text-white hover:text-amber-300 transition-colors font-medium group relative ${
-                    activeLink === "Teaching Resources" ? "text-amber-300" : ""
-                  }`}
-                >
-                  <span>Teaching Resources</span>
-                  <ChevronDown
-                    className={`w-4 h-4 transition-transform ${
-                      isTeachingDropdownOpen ? "rotate-180" : ""
-                    }`}
-                  />
-                  <div
-                    className={`h-0.5 bg-amber-300 absolute inset-x-0 bottom-0 transition-all duration-300 ${
-                      activeLink === "Teaching Resources"
-                        ? "w-full"
-                        : "w-0 group-hover:w-full"
-                    }`}
-                  />
-                </button>
-                {isTeachingDropdownOpen && (
-                  <TeachingResourceDropdown
-                    handleNavItemClick={handleNavItemClick}
-                    setIsTeachingDropdownOpen={setIsTeachingDropdownOpen}
-                  />
-                )}
-              </div>
-              <div
-                className="relative z-[60]"
-                ref={articleDropdownRef}
-                onMouseEnter={() => setIsArticleDropdownOpen(true)}
-                onMouseLeave={() => setIsArticleDropdownOpen(false)}
-              >
-                <button
-                  onClick={() => {
-                    handleNavItemClick("/articles", "Articles");
-                    setIsArticleDropdownOpen(false);
-                  }}
-                  className={`flex items-center space-x-1 text-white hover:text-amber-300 transition-colors font-medium group relative ${
-                    activeLink === "Articles" ? "text-amber-300" : ""
-                  }`}
-                >
-                  <span>Articles</span>
-                  <ChevronDown
-                    className={`w-4 h-4 transition-transform ${
-                      isArticleDropdownOpen ? "rotate-180" : ""
-                    }`}
-                  />
-                  <div
-                    className={`h-0.5 bg-amber-300 absolute inset-x-0 bottom-0 transition-all duration-300 ${
-                      activeLink === "Articles"
-                        ? "w-full"
-                        : "w-0 group-hover:w-full"
-                    }`}
-                  />
-                </button>
-                {isArticleDropdownOpen && (
-                  <ArticleDropdown
-                    handleNavItemClick={handleNavItemClick}
-                    setIsArticleDropdownOpen={setIsArticleDropdownOpen}
-                  />
-                )}
-              </div>
-              <div
-                className="relative z-[60]"
-                ref={aboutDropdownRef}
-                onMouseEnter={() => setIsAboutDropdownOpen(true)}
-                onMouseLeave={() => setIsAboutDropdownOpen(false)}
-              >
-                <button
-                  onClick={() => setIsAboutDropdownOpen((p) => !p)}
-                  className={`flex items-center space-x-1 text-white hover:text-amber-300 transition-colors font-medium group relative ${
-                    activeLink === "About" || activeLink === "Donation"
-                      ? "text-amber-300"
-                      : ""
-                  }`}
-                >
-                  <span>About</span>
-                  <ChevronDown
-                    className={`w-4 h-4 transition-transform ${
-                      isAboutDropdownOpen ? "rotate-180" : ""
-                    }`}
-                  />
-                  <div
-                    className={`h-0.5 bg-amber-300 absolute inset-x-0 bottom-0 transition-all duration-300 ${
-                      activeLink === "About" || activeLink === "Donation"
-                        ? "w-full"
-                        : "w-0 group-hover:w-full"
-                    }`}
-                  />
-                </button>
-                {isAboutDropdownOpen && (
-                  <div className="absolute top-full right-0 mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-100 z-[60]">
-                    <div className="py-2">
-                      {aboutMenuItems.map(({ name, href, icon: Icon }) => (
-                        <button
-                          key={name}
-                          onClick={() => {
-                            handleNavItemClick(
-                              href,
-                              name === "Donation" ? "Donation" : "About"
-                            );
-                            setIsAboutDropdownOpen(false);
-                          }}
-                          className="flex items-center w-full px-4 py-2 text-gray-700 hover:bg-emerald-50 transition-colors text-sm"
-                        >
-                          <Icon className="w-4 h-4 mr-3 text-emerald-600" />
-                          <span>{name}</span>
-                        </button>
-                      ))}
+
+            <div className="flex items-center flex-wrap justify-end space-x-4 lg:space-x-6">
+              {desktopMenuItems.map((item) => {
+                if (item.dropdown) {
+                  const DropdownComponent = item.component;
+                  return (
+                    <div
+                      key={item.name}
+                      className="relative"
+                      ref={item.ref}
+                      onMouseEnter={toggleDropdown(item.setState)}
+                      onMouseLeave={() => item.setState(false)}
+                    >
+                      <button
+                        onClick={() => {
+                          handleNavItemClick(item.href, item.name);
+                          item.setState(false);
+                        }}
+                        className={`flex items-center text-white hover:text-amber-300 transition-colors font-medium relative group p-2 whitespace-nowrap ${
+                          item.state || activeLink === item.name
+                            ? "text-amber-300"
+                            : ""
+                        }`}
+                      >
+                        {item.name}
+                        <ChevronDown
+                          className={`w-4 h-4 ml-1 transition-transform duration-200 ${
+                            item.state ? "rotate-180" : ""
+                          }`}
+                        />
+                        <div
+                          className={`h-0.5 bg-amber-300 absolute inset-x-0 bottom-0 transition-all duration-300 ${
+                            activeLink === item.name
+                              ? "w-full"
+                              : "w-0 group-hover:w-full"
+                          }`}
+                        />
+                      </button>
+                      {item.state && (
+                        <div className="absolute top-full mt-2 right-0 z-50 w-64 rounded-lg shadow-xl bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
+                          {DropdownComponent ? (
+                            <DropdownComponent
+                              onItemClick={(href) => {
+                                handleDropdownItemClick(
+                                  href,
+                                  item.name,
+                                  item.setState
+                                );
+                              }}
+                            />
+                          ) : (
+                            <div className="p-2">
+                              {item.items.map((subItem) => (
+                                <button
+                                  key={subItem.name}
+                                  onClick={() =>
+                                    handleDropdownItemClick(
+                                      subItem.href,
+                                      subItem.name,
+                                      item.setState
+                                    )
+                                  }
+                                  className="w-full text-left flex items-center p-2 text-sm text-gray-700 hover:bg-emerald-100 hover:text-emerald-700 rounded-md transition-colors"
+                                >
+                                  <subItem.icon className="w-4 h-4 mr-3" />
+                                  {subItem.name}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
-                  </div>
-                )}
-              </div>
+                  );
+                } else {
+                  return (
+                    <button
+                      key={item.name}
+                      onClick={() => handleNavItemClick(item.href, item.name)}
+                      className={`text-white hover:text-amber-300 transition-colors font-medium relative group p-2 whitespace-nowrap ${
+                        activeLink === item.name ? "text-amber-300" : ""
+                      }`}
+                    >
+                      {item.name}
+                      <div
+                        className={`h-0.5 bg-amber-300 absolute inset-x-0 bottom-0 transition-all duration-300 ${
+                          activeLink === item.name
+                            ? "w-full"
+                            : "w-0 group-hover:w-full"
+                        }`}
+                      />
+                    </button>
+                  );
+                }
+              })}
             </div>
+
             <div className="flex items-center space-x-3">
               <div
-                className="relative z-[60]"
-                ref={cartDropdownRef}
+                className="relative"
                 onMouseEnter={() => setIsCartHovered(true)}
                 onMouseLeave={() => setIsCartHovered(false)}
               >
                 <button
-                  className="p-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors backdrop-blur-sm relative"
-                  onClick={() => setIsCartHovered((p) => !p)}
+                  onClick={goToShop}
+                  className={`p-2 rounded-full transition-colors relative ${
+                    activeLink === "Shop"
+                      ? "bg-amber-300 text-emerald-800"
+                      : "text-white hover:text-amber-300 hover:bg-emerald-700"
+                  }`}
+                  aria-label="Shopping Cart"
                 >
-                  <ShoppingCart className="w-5 h-5 text-white" />
+                  <ShoppingCart className="w-5 h-5" />
                   {cartItemCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full font-bold">
+                    <span className="absolute -top-1 -right-1 flex items-center justify-center h-4 w-4 text-xs font-bold text-white bg-red-500 rounded-full border-2 border-emerald-800">
                       {cartItemCount}
                     </span>
                   )}
                 </button>
-                {isCartHovered && cartItemCount === 0 && (
-                  <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-xl border border-gray-100 p-4 text-center z-[60]">
-                    <PackageOpen className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                    <p className="text-sm font-semibold text-gray-700">
-                      No product in cart
+                {isCartHovered && cartItemCount > 0 && (
+                  <div className="absolute right-0 mt-2 w-72 p-4 bg-white rounded-lg shadow-xl ring-1 ring-black ring-opacity-5 z-50">
+                    <h4 className="text-sm font-semibold text-gray-900 border-b pb-2 mb-2">
+                      Your Cart ({cartItemCount} items)
+                    </h4>
+                    <p className="text-sm text-gray-600 mb-2">
+                      Quick view is coming soon...
                     </p>
                     <button
-                      onClick={() => {
-                        navigate("/shop");
-                        setIsCartHovered(false);
-                      }}
-                      className="mt-3 w-full py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors text-sm font-medium"
+                      onClick={goToShop}
+                      className="w-full py-1.5 text-sm bg-emerald-600 text-white rounded hover:bg-emerald-700 transition-colors"
                     >
-                      Go to Shop
+                      View Cart
                     </button>
                   </div>
                 )}
               </div>
 
-              <div className="relative z-[60]" ref={userDropdownRef}>
+              <button
+                onClick={handleNotificationClick}
+                className={`p-2 rounded-full transition-colors relative ${
+                  activeLink === "Notifications"
+                    ? "bg-amber-300 text-emerald-800"
+                    : "text-white hover:text-amber-300 hover:bg-emerald-700"
+                }`}
+                aria-label="Notifications"
+              >
+                <Bell className="w-5 h-5" />
+                {hasNewNotifications && (
+                  <span className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full border-2 border-emerald-800" />
+                )}
+              </button>
+
+              <div className="relative" ref={userDropdownRef}>
                 <button
-                  className="p-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors backdrop-blur-sm"
-                  onClick={() => setIsUserDropdownOpen((p) => !p)}
+                  onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
+                  className={`p-2 rounded-full transition-colors flex items-center ${
+                    isUserDropdownOpen || activeLink === "Mine"
+                      ? "bg-amber-300 text-emerald-800"
+                      : "text-white hover:text-amber-300 hover:bg-emerald-700"
+                  }`}
+                  aria-label="User Menu"
                 >
-                  <User className="w-5 h-5 text-white" />
+                  <User className="w-5 h-5" />
                 </button>
                 {isUserDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-100 z-[60]">
-                    {token ? (
-                      <>
-                        <button
-                          onClick={() => handleUserAction("profile")}
-                          className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-emerald-50 transition-colors"
-                        >
-                          <User className="w-4 h-4 mr-3 text-emerald-600" />
-                          Profile
-                        </button>
-                        <button
-                          onClick={() => handleUserAction("settings")}
-                          className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-emerald-50 transition-colors"
-                        >
-                          <Settings className="w-4 h-4 mr-3 text-emerald-600" />
-                          Settings
-                        </button>
-                        <div className="border-t border-gray-100">
+                  <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50">
+                    <div className="py-1">
+                      {token ? (
+                        <>
+                          <button
+                            onClick={() => handleUserAction("profile")}
+                            className="w-full text-left flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-emerald-100 hover:text-emerald-700 transition-colors"
+                          >
+                            <User className="w-4 h-4 mr-3" />
+                            Profile
+                          </button>
+                          <button
+                            onClick={() => handleUserAction("settings")}
+                            className="w-full text-left flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-emerald-100 hover:text-emerald-700 transition-colors"
+                          >
+                            <Settings className="w-4 h-4 mr-3" />
+                            Settings
+                          </button>
+                          <div className="border-t border-gray-100" />
                           <button
                             onClick={() => handleUserAction("logout")}
-                            className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                            className="w-full text-left flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors"
                           >
                             <LogOut className="w-4 h-4 mr-3" />
-                            Log Out
+                            Logout
                           </button>
-                        </div>
-                      </>
-                    ) : (
-                      <button
-                        onClick={() => navigate("/login")}
-                        className="flex items-center w-full px-4 py-3 text-sm text-emerald-700 hover:bg-emerald-50"
-                      >
-                        <LogOut className="w-4 h-4 mr-3" />
-                        Login / Sign Up
-                      </button>
-                    )}
+                        </>
+                      ) : (
+                        <button
+                          onClick={() => handleNavItemClick("/login", "Mine")}
+                          className="w-full text-left flex items-center px-4 py-2 text-sm text-emerald-700 hover:bg-emerald-100 hover:text-emerald-900 transition-colors"
+                        >
+                          <LogOut className="w-4 h-4 mr-3 transform rotate-180" />
+                          Login / Register
+                        </button>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>
-
-              <button className="relative p-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors backdrop-blur-sm">
-                <Bell className="w-5 h-5 text-white" />
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full font-bold">
-                  3
-                </span>
-              </button>
             </div>
           </div>
         </div>
@@ -561,10 +594,22 @@ export default function Navigation({ setShowLogoutModal }) {
                 <Search className="w-5 h-5 text-white" />
               </button>
 
-              <div className="relative z-[60]" ref={cartDropdownRef}>
+              <button
+                onClick={handleNotificationClick}
+                className="p-2 rounded-full hover:bg-white/15 transition-colors relative"
+                aria-label="Notifications"
+              >
+                <Bell className="w-5 h-5 text-white" />
+                {hasNewNotifications && (
+                  <span className="absolute -top-0 -right-0 h-3 w-3 bg-red-500 rounded-full border-2 border-emerald-700" />
+                )}
+              </button>
+
+              <div className="relative" ref={mobileCartRef}>
                 <button
+                  onClick={handleMobileCartClick}
                   className="p-2 rounded-full hover:bg-white/15 transition-colors relative"
-                  onClick={() => setIsCartHovered((p) => !p)}
+                  aria-label="Shopping Cart"
                 >
                   <ShoppingCart className="w-5 h-5 text-white" />
                   {cartItemCount > 0 && (
@@ -573,20 +618,19 @@ export default function Navigation({ setShowLogoutModal }) {
                     </span>
                   )}
                 </button>
-                {isCartHovered && cartItemCount === 0 && (
-                  <div className="absolute right-0 mt-3 w-56 bg-white rounded-lg shadow-xl border border-gray-100 p-3 text-center z-[60] top-12">
-                    <PackageOpen className="w-6 h-6 text-gray-400 mx-auto mb-1" />
-                    <p className="text-xs font-semibold text-gray-700">
-                      No product in cart
+                {isMobileCartOpen && cartItemCount > 0 && (
+                  <div className="absolute right-0 mt-2 w-64 p-3 bg-white rounded-lg shadow-xl ring-1 ring-black ring-opacity-5 z-50">
+                    <h4 className="text-sm font-semibold text-gray-900 border-b pb-2 mb-2">
+                      Your Cart ({cartItemCount} items)
+                    </h4>
+                    <p className="text-sm text-gray-600 mb-2">
+                      Quick view is coming soon...
                     </p>
                     <button
-                      onClick={() => {
-                        navigate("/shop");
-                        setIsCartHovered(false);
-                      }}
-                      className="mt-2 w-full py-1.5 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors text-sm font-medium"
+                      onClick={goToShop}
+                      className="w-full py-1.5 text-sm bg-emerald-600 text-white rounded hover:bg-emerald-700 transition-colors"
                     >
-                      Go to Shop
+                      View Cart
                     </button>
                   </div>
                 )}
@@ -622,36 +666,30 @@ export default function Navigation({ setShowLogoutModal }) {
 
       <div className="md:pt-28 pt-16" />
 
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white shadow-lg border-t border-gray-200">
-        <div className="flex items-center justify-around h-16">
-          {mobileNavItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = activeLink === item.name;
-            return (
-              <button
-                key={item.name}
-                onClick={() => handleNavItemClick(item.href, item.name)}
-                className="flex flex-col items-center justify-center flex-1 h-full"
-              >
-                <Icon
-                  className={`w-6 h-6 mb-1 transition-all duration-200 ${
-                    isActive ? "text-emerald-600 scale-110" : "text-gray-500"
-                  }`}
-                  strokeWidth={isActive ? 2.5 : 2}
-                />
-                <span
-                  className={`text-xs font-medium transition-all duration-200 ${
-                    isActive ? "text-emerald-600" : "text-gray-500"
-                  }`}
-                >
-                  {item.name}
-                </span>
-                {isActive && (
-                  <div className="w-8 h-1 bg-emerald-600 rounded-full mt-1 transition-all duration-200" />
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white shadow-lg border-t border-emerald-200">
+        <div className="flex justify-around items-center h-16 max-w-xl mx-auto">
+          {mobileNavItems.map(({ name, icon: Icon, href }) => (
+            <button
+              key={name}
+              onClick={() => handleNavItemClick(href, name)}
+              className={`flex flex-col items-center p-1.5 transition-colors relative ${
+                activeLink === name
+                  ? "text-emerald-700"
+                  : "text-gray-500 hover:text-emerald-600"
+              }`}
+            >
+              <div className="relative">
+                <Icon className="w-5 h-5" />
+                {name === "Mine" && hasNewNotifications && token && (
+                  <span className="absolute -top-1 -right-1 h-2.5 w-2.5 bg-red-500 rounded-full border border-white" />
                 )}
-              </button>
-            );
-          })}
+              </div>
+              <span className="text-xs mt-1 font-medium">{name}</span>
+              {activeLink === name && (
+                <div className="w-6 h-1 bg-emerald-600 rounded-full mt-1 absolute bottom-0 transition-all duration-200" />
+              )}
+            </button>
+          ))}
         </div>
       </nav>
     </>

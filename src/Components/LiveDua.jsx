@@ -8,6 +8,9 @@ import {
   RotateCcw,
   BookOpenCheck,
   ArrowRight,
+  Heart,
+  Share2,
+  MessageSquare,
 } from "lucide-react";
 
 export default function LiveDua() {
@@ -28,6 +31,12 @@ export default function LiveDua() {
     useState(-1);
   const [highlightedEveningSegmentIndex, setHighlightedEveningSegmentIndex] =
     useState(-1);
+
+  const [isMorningLiked, setIsMorningLiked] = useState(false);
+  const [isEveningLiked, setIsEveningLiked] = useState(false);
+  const [morningFavoriteCount, setMorningFavoriteCount] = useState(0);
+  const [eveningFavoriteCount, setEveningFavoriteCount] = useState(0);
+
   const morningAudioRef = useRef(null);
   const eveningAudioRef = useRef(null);
   const morningListRef = useRef(null);
@@ -38,6 +47,10 @@ export default function LiveDua() {
   const eveningSegmentRefs = useRef({});
   const API_BASE_URL = "https://focus-flow-server-v1.onrender.com/api";
   const STATIC_BASE_URL = "https://focus-flow-server-v1.onrender.com";
+  const FRONTEND_BASE_URL = "https://nibra-al-deen-v1.vercel.app";
+  const LOGIN_URL = `${FRONTEND_BASE_URL}/login`;
+
+  const USER_IS_LOGGED_IN = true;
 
   const formatTime = (t) =>
     !t || isNaN(t)
@@ -79,12 +92,23 @@ export default function LiveDua() {
     try {
       const res = await fetch(`${API_BASE_URL}/duas`);
       const data = await res.json();
+
       const morning = data.filter((d) => d.category_id === 5);
       const evening = data.filter((d) => d.category_id === 6);
+
       setMorningAdkar(morning);
       setEveningAdkar(evening);
       setMorningSegments(await fetchSegmentsData(5));
       setEveningSegments(await fetchSegmentsData(6));
+
+      if (morning.length > 0) {
+        setIsMorningLiked(morning[0].is_favorite || false);
+        setMorningFavoriteCount(morning[0].favorite_count || 0);
+      }
+      if (evening.length > 0) {
+        setIsEveningLiked(evening[0].is_favorite || false);
+        setEveningFavoriteCount(evening[0].favorite_count || 0);
+      }
     } catch {}
   }, [API_BASE_URL, fetchSegmentsData]);
 
@@ -250,6 +274,69 @@ export default function LiveDua() {
     window.location.href = `/duas`;
   };
 
+  const toggleFavorite = async (type) => {
+    if (!USER_IS_LOGGED_IN) {
+      window.location.href = LOGIN_URL;
+      return;
+    }
+
+    const isMorning = type === "morning";
+    const adkarList = isMorning ? morningAdkar : eveningAdkar;
+
+    const primaryDuaId = adkarList.length > 0 ? adkarList[0].id : null;
+    if (!primaryDuaId) return;
+
+    try {
+      const res = await fetch(
+        `${API_BASE_URL}/duas/${primaryDuaId}/toggle-favorite`,
+        {
+          method: "PATCH",
+        }
+      );
+
+      if (res.status === 401) {
+        window.location.href = LOGIN_URL;
+        return;
+      }
+      if (!res.ok) throw new Error("Failed to toggle favorite");
+
+      const data = await res.json();
+
+      if (isMorning) {
+        setIsMorningLiked((p) => !p);
+        setMorningFavoriteCount(data.favorites);
+      } else {
+        setIsEveningLiked((p) => !p);
+        setEveningFavoriteCount(data.favorites);
+      }
+    } catch (error) {
+      console.error("Error toggling favorite:", error);
+    }
+  };
+
+  const handleShare = (type, adkarTitle, duaId) => {
+    const shareUrl = `${FRONTEND_BASE_URL}/duas?duaId=${duaId}`;
+
+    const shareTitle = `${adkarTitle} | Daily Remembrance`;
+    const shareText = `Share this Dua for the sake of Allah (swt): ${shareUrl}`;
+
+    if (navigator.share) {
+      navigator
+        .share({
+          title: shareTitle,
+          text: shareText,
+          url: shareUrl,
+        })
+        .then(() => console.log("Successfully shared"))
+        .catch((error) => console.error("Error sharing:", error));
+    } else {
+      prompt(
+        "Share this Dua for the sake of Allah (swt). Copy the link below:",
+        shareUrl
+      );
+    }
+  };
+
   const renderAdkarCard = (adkar, type, Icon) => {
     const isMorning = type === "morning";
     const isPlaying = isMorning ? isPlayingMorning : isPlayingEvening;
@@ -264,13 +351,23 @@ export default function LiveDua() {
     const highlightedDuaIndex = adkar.findIndex(
       (dua) => dua.id === highlightedDuaId
     );
+
+    const primaryAdkar = adkar[0] || {};
+    const adkarTitle = isMorning ? "Morning Adhkar" : "Evening Adhkar";
+
+    const isLiked = isMorning ? isMorningLiked : isEveningLiked;
+    const favoriteCount = isMorning
+      ? morningFavoriteCount
+      : eveningFavoriteCount;
+
     if (!adkar.length)
       return (
         <div className="rounded-3xl p-6 flex flex-col items-center justify-center h-full">
           <p className="text-gray-500">Loading {type} Adkar...</p>
         </div>
       );
-    const fullAudioSource = adkar[0];
+
+    const fullAudioSource = primaryAdkar;
     let localAudioPath =
       fullAudioSource.audio_path ||
       (isMorning
@@ -278,14 +375,18 @@ export default function LiveDua() {
         : "/static/audio/category_6_Evening_Dua.mp3");
     if (localAudioPath && localAudioPath.startsWith("/"))
       localAudioPath = STATIC_BASE_URL + localAudioPath;
+
     duaRefs.current = [];
     const setDuaRef = (el, index) => {
       if (el) duaRefs.current[index] = el;
     };
+
+    const shareButtonTitle = `Share for the sake of Allah (swt)`;
+
     return (
       <div className="rounded-3xl shadow-xl bg-white transition-all flex flex-col justify-between h-full overflow-hidden border border-gray-100">
         <div>
-          <div className="flex items-center justify-between mb-0 border-b border-gray-100 pb-4 pt-6 px-6 bg-gradient-to-r from-emerald-50 to-teal-50">
+          <div className="flex items-start justify-between mb-0 border-b border-gray-100 pb-4 pt-6 px-6 bg-gradient-to-r from-emerald-50 to-teal-50">
             <div className="flex items-center gap-3">
               <div
                 className={`p-3 rounded-full shadow-md ${
@@ -295,10 +396,44 @@ export default function LiveDua() {
                 <Icon className={`w-7 h-7 text-white`} />
               </div>
               <h3 className="text-xl font-extrabold text-gray-900 capitalize">
-                {type} Adkar
+                {adkarTitle}
               </h3>
             </div>
+
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => handleShare(type, adkarTitle, primaryAdkar.id)}
+                className="p-2 rounded-full text-gray-500 hover:text-emerald-600 hover:bg-emerald-100 transition duration-150 group"
+                title={shareButtonTitle}
+              >
+                <div className="flex items-center gap-1">
+                  <Share2 className="w-5 h-5" />
+                  <span className="hidden md:inline text-sm font-semibold text-gray-700 group-hover:text-emerald-700">
+                    Share for Allah's sake
+                  </span>
+                </div>
+              </button>
+              <button
+                onClick={() => toggleFavorite(type)}
+                className={`p-2 rounded-full transition duration-150 flex items-center gap-1 ${
+                  isLiked
+                    ? "text-red-500 hover:text-red-600 bg-red-100"
+                    : "text-gray-500 hover:text-red-500 hover:bg-gray-100"
+                }`}
+                title={
+                  USER_IS_LOGGED_IN ? "Toggle Favorite" : "Log in to favorite"
+                }
+              >
+                <Heart
+                  className={`w-5 h-5 ${
+                    isLiked ? "fill-red-500" : "fill-none"
+                  }`}
+                />
+                <span className="text-sm font-semibold">{favoriteCount}</span>
+              </button>
+            </div>
           </div>
+
           <div
             ref={listRef}
             className="rounded-lg p-4 mb-0 min-h-[300px] max-h-[450px] overflow-y-scroll scroll-smooth"
@@ -340,6 +475,33 @@ export default function LiveDua() {
                   <p className="text-sm text-gray-600 mt-2 leading-relaxed">
                     {dua.translation}
                   </p>
+                )}
+
+                {(dua.benefits || dua.notes) && (
+                  <div className="mt-4 pt-3 border-t border-gray-100">
+                    {dua.benefits && (
+                      <div className="mb-2">
+                        <h5 className="text-xs font-bold text-emerald-700 flex items-center gap-1">
+                          <MessageSquare className="w-3 h-3 text-emerald-500 flex-shrink-0" />
+                          Benefit:
+                        </h5>
+                        <p className="text-xs text-gray-600 italic mt-1">
+                          {dua.benefits}
+                        </p>
+                      </div>
+                    )}
+                    {dua.notes && (
+                      <div>
+                        <h5 className="text-xs font-bold text-gray-700 flex items-center gap-1">
+                          <BookOpenCheck className="w-3 h-3 text-gray-500 flex-shrink-0" />
+                          Note:
+                        </h5>
+                        <p className="text-xs text-gray-600 mt-1">
+                          {dua.notes}
+                        </p>
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
             ))}
@@ -440,7 +602,6 @@ export default function LiveDua() {
         .overflow-y-scroll::-webkit-scrollbar-thumb { background-color: #10b981; border-radius: 4px; }
         .overflow-y-scroll::-webkit-scrollbar-thumb:hover { background-color: #059669; }
         .overflow-y-scroll::-webkit-scrollbar-track { background-color: #f3f4f6; }
-        /* Custom scrollbar style for the horizontal row */
         .horizontal-scroll::-webkit-scrollbar { height: 8px; }
         .horizontal-scroll::-webkit-scrollbar-thumb { background-color: #10b981; border-radius: 4px; }
         .horizontal-scroll::-webkit-scrollbar-thumb:hover { background-color: #059669; }

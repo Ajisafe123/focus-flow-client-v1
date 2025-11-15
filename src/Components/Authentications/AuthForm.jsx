@@ -1,77 +1,8 @@
 import React, { useState } from "react";
 import { Mail, Lock, Eye, EyeOff, User, KeyRound } from "lucide-react";
+import SocialLogin from "./SocialLogin";
+import apiService from "../../Services/api";
 import { useNavigate } from "react-router-dom";
-
-const SocialLogin = () => {
-  return (
-    <div className="flex justify-center space-x-4">
-      <button
-        type="button"
-        className="p-3 rounded-full bg-white shadow-md hover:shadow-xl transition-all duration-200 flex items-center justify-center w-12 h-12 text-blue-600 text-xl font-bold border border-gray-200 transform hover:scale-105"
-        title="Login with Google"
-      >
-        G
-      </button>
-      <button
-        type="button"
-        className="p-3 rounded-full bg-white shadow-md hover:shadow-xl transition-all duration-200 flex items-center justify-center w-12 h-12 text-blue-400 text-xl font-bold border border-gray-200 transform hover:scale-105"
-        title="Login with Facebook"
-      >
-        F
-      </button>
-      <button
-        type="button"
-        className="p-3 rounded-full bg-white shadow-md hover:shadow-xl transition-all duration-200 flex items-center justify-center w-12 h-12 text-black text-xl font-bold border border-gray-200 transform hover:scale-105"
-        title="Login with Apple"
-      >
-        A
-      </button>
-    </div>
-  );
-};
-
-const apiService = {
-  login: async ({ identifier, password }) => {
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    if (identifier === "test@example.com" && password === "Test1234") {
-      return { token: "mock-jwt-token-admin", role: "admin" };
-    }
-    return { token: "mock-jwt-token-general", role: "user" };
-  },
-  register: async ({ username, email, password }) => {
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    if (email === "fail@example.com") {
-      throw new Error("Email already in use.");
-    }
-    return { status: "Registration successful. Please log in." };
-  },
-};
-
-const validatePassword = (password) => {
-  if (password.length < 8) {
-    return "Password must be at least 8 characters long.";
-  }
-  if (!/[A-Z]/.test(password)) {
-    return "Password must contain at least one uppercase letter.";
-  }
-  if (!/[a-z]/.test(password)) {
-    return "Password must contain at least one lowercase letter.";
-  }
-  if (!/[0-9]/.test(password)) {
-    return "Password must contain at least one number.";
-  }
-  return "";
-};
-
-const validateUsername = (username) => {
-  if (username.length < 3) {
-    return "Username must be at least 3 characters long.";
-  }
-  if (!/^[a-zA-Z0-9]+$/.test(username)) {
-    return "Username can only contain letters and numbers.";
-  }
-  return "";
-};
 
 export default function AuthForm({ isLogin }) {
   const [formData, setFormData] = useState({
@@ -94,6 +25,36 @@ export default function AuthForm({ isLogin }) {
 
   const handleForgotPassword = () => navigate("/forgot-password");
 
+  const validatePassword = (password) => {
+    const minLength = 6;
+    const hasUppercase = /[A-Z]/.test(password);
+    const hasLowercase = /[a-z]/.test(password);
+    const hasNumber = /[0-9]/.test(password);
+    const isValidLength = password.length >= minLength;
+
+    if (!isValidLength) {
+      return `Password must be at least ${minLength} characters long`;
+    }
+    if (!hasUppercase) {
+      return "Password must contain at least one uppercase letter";
+    }
+    if (!hasLowercase) {
+      return "Password must contain at least one lowercase letter";
+    }
+    if (!hasNumber) {
+      return "Password must contain at least one number";
+    }
+    return null;
+  };
+
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return "Invalid email format";
+    }
+    return null;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -103,13 +64,18 @@ export default function AuthForm({ isLogin }) {
     try {
       if (!isLogin) {
         const passwordError = validatePassword(formData.password);
-        if (passwordError) throw new Error(passwordError);
+        if (passwordError) {
+          throw new Error(passwordError);
+        }
 
-        const usernameError = validateUsername(formData.username);
-        if (usernameError) throw new Error(usernameError);
+        const emailError = validateEmail(formData.identifier);
+        if (emailError) {
+          throw new Error(emailError);
+        }
 
-        if (formData.password !== formData.confirmPassword)
+        if (formData.password !== formData.confirmPassword) {
           throw new Error("Passwords do not match");
+        }
       }
 
       if (isLogin) {
@@ -170,7 +136,7 @@ export default function AuthForm({ isLogin }) {
               value={formData.username}
               onChange={handleInputChange}
               className="w-full pl-10 sm:pl-12 pr-3 sm:pr-4 py-3 sm:py-4 bg-white rounded-2xl focus:outline-none focus:ring-4 focus:ring-emerald-200 shadow-md hover:shadow-lg transition-all duration-300 text-gray-800 placeholder-gray-400 text-sm sm:text-base border border-transparent focus:border-emerald-300"
-              placeholder="Choose a username (3+ alphanumeric characters)"
+              placeholder="Choose a username"
               required={!isLogin}
             />
           </div>

@@ -61,7 +61,6 @@ const STUDY_GUIDES = [
       "https://images.pexels.com/photos/4994726/pexels-photo-4994726.jpeg?auto=compress&cs=tinysrgb&w=400",
   },
 ];
-// --- END: Reduced Data Set ---
 
 const CATEGORIES = [
   "All Categories",
@@ -182,30 +181,30 @@ const StudyGuidesPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-emerald-50 to-teal-50">
-      <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-600 text-white py-16 shadow-2xl">
+      <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-600 text-white py-10 sm:py-16 shadow-2xl">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="flex items-center gap-4 mb-6">
-            <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center border-2 border-white">
-              <BookOpen className="w-8 h-8 text-white" />
+          <div className="flex items-center gap-3 sm:gap-4 mb-6">
+            <div className="w-12 h-12 sm:w-16 sm:h-16 bg-white/20 backdrop-blur-sm rounded-xl sm:rounded-2xl flex items-center justify-center border-2 border-white flex-shrink-0">
+              <BookOpen className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
             </div>
             <div>
-              <h1 className="text-5xl font-extrabold tracking-tight">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight">
                 Study Guides
               </h1>
-              <p className="text-emerald-100 text-lg mt-2">
+              <p className="text-emerald-100 text-sm sm:text-lg mt-1 sm:mt-2">
                 Comprehensive guides for structured Islamic learning
               </p>
             </div>
           </div>
 
-          <div className="relative mt-8">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-500 w-5 h-5" />
+          <div className="relative mt-6 sm:mt-8">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-500 w-4 h-4 sm:w-5 sm:h-5" />
             <input
               type="text"
               placeholder="Search study guides by topic or subject..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-12 pr-4 py-4 rounded-2xl border-2 border-white/30 focus:border-white text-gray-900 placeholder-gray-500 shadow-lg transition-all bg-white"
+              className="w-full pl-11 pr-4 py-3 sm:py-4 rounded-xl sm:rounded-2xl border-2 border-white/30 focus:border-white text-gray-900 placeholder-gray-500 shadow-lg transition-all bg-white text-sm sm:text-base"
             />
           </div>
         </div>

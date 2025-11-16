@@ -1,435 +1,652 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { useSearchParams } from "react-router-dom";
 import {
   BookOpenCheck,
   Loader2,
   Search,
-  Filter,
   Heart,
-  BookOpen,
+  ChevronDown,
+  ChevronUp,
   Tag,
-  Eye,
+  Share2,
+  BookOpen,
+  X,
+  ArrowLeft,
 } from "lucide-react";
+
+const FRONTEND_BASE = "https://nibrasudeen.vercel.app";
+const API_BASE = "https://focus-flow-server-v1.onrender.com/api";
+const IMAGE_BASE = "https://focus-flow-server-v1.onrender.com";
+
+const getFullImageUrl = (relativePath) => {
+  if (!relativePath) return null;
+  if (relativePath.startsWith("http")) return relativePath;
+  let path = relativePath.trim();
+  if (!path.startsWith("/static/")) {
+    path = `/static/category_images/${path}`;
+  }
+  if (path.startsWith("//")) path = path.replace(/^\/+/, "/");
+  return `${IMAGE_BASE}${path}`;
+};
 
 const getAuthToken = () => {
   return localStorage.getItem("token") || localStorage.getItem("access_token");
 };
 
 const redirectToLogin = () => {
-  console.log("Redirecting user to login page...");
-  console.log("Requirement: User must be logged in to save favorites.");
+  const currentPath = window.location.pathname + window.location.search;
+  localStorage.setItem("post_login_redirect", currentPath);
+  window.location.href = `${FRONTEND_BASE}/login`;
+};
+
+const CategoryCard = ({ category, onClick }) => {
+  const imageUrl = getFullImageUrl(category.image_url);
+  return (
+    <button
+      onClick={onClick}
+      className="group cursor-pointer bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden w-full text-left transform hover:-translate-y-1"
+    >
+      <div className="relative h-48 bg-gradient-to-br from-emerald-100 via-teal-50 to-emerald-50 overflow-hidden">
+        {imageUrl ? (
+          <img
+            src={imageUrl}
+            alt={category.name}
+            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+            onError={(e) => (e.target.style.display = "none")}
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            <BookOpenCheck className="w-16 h-16 text-emerald-400" />
+          </div>
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+      </div>
+      <div className="p-5">
+        <h3 className="text-lg font-bold text-gray-900 text-center group-hover:text-emerald-600 transition-colors line-clamp-2">
+          {category.name}
+        </h3>
+      </div>
+    </button>
+  );
 };
 
 const HadithItem = ({
   hadith,
-  index,
   toggleFavorite,
   isAuthenticated,
   isLocallyFavorite,
   handleLocalToggle,
-  categoryMap,
+  openDetails,
+  setOpenDetails,
+  generateShareLink,
 }) => {
+  const [shareUrl, setShareUrl] = useState(null);
+  const [isSharing, setIsSharing] = useState(false);
+
   const isFavorite = isAuthenticated
     ? hadith.is_favorite || false
     : isLocallyFavorite;
 
-  const favoriteCount = hadith.favorite_count || 0;
-  const viewCount = hadith.view_count || 0;
-
   const handleLikeClick = () => {
-    if (!isAuthenticated) {
-      handleLocalToggle(hadith.id);
-    } else {
-      toggleFavorite(hadith.id);
+    if (!isAuthenticated) handleLocalToggle(hadith.id);
+    else toggleFavorite(hadith.id);
+  };
+
+  const handleShareClick = async () => {
+    if (isSharing) return;
+    setShareUrl(null);
+    setIsSharing(true);
+    try {
+      const url = await generateShareLink(hadith.id);
+      setShareUrl(url);
+      if (navigator.share) {
+        await navigator.share({
+          title: `Hadith #${hadith.number || hadith.id}`,
+          text: `Check this authentic Hadith`,
+          url,
+        });
+      } else {
+        await navigator.clipboard.writeText(url);
+        alert(`Copied share link: ${url}`);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsSharing(false);
+      setTimeout(() => setShareUrl(null), 5000);
     }
   };
 
-  return (
-    <article key={hadith.id} className="border-b border-gray-200 pb-8 px-4">
-      <div className="mb-4 flex justify-between items-start">
-        <div className="flex flex-col items-start gap-1">
-          <span className="text-xs font-semibold text-emerald-600 uppercase">
-            Hadith #{hadith.number || index + 1}
-          </span>
-          <h3 className="text-sm font-medium text-gray-800 flex items-center gap-2">
-            <BookOpen className="w-4 h-4 text-gray-400" />
-            {hadith.book || "Unknown Book"}
-          </h3>
-        </div>
+  const toggleDetail = (key) => {
+    const cur = openDetails[hadith.id];
+    setOpenDetails((prev) => ({
+      ...prev,
+      [hadith.id]: cur === key ? null : key,
+    }));
+  };
 
+  const renderDetail = (key, title, content, icon) => {
+    if (!content) return null;
+    const isOpen = openDetails[hadith.id] === key;
+    return (
+      <div className="border-b border-gray-100 last:border-0">
         <button
-          onClick={handleLikeClick}
-          className="p-2 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-red-400 disabled:opacity-50 disabled:cursor-default"
-          aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
+          onClick={() => toggleDetail(key)}
+          className="w-full flex justify-between items-center py-3 px-2 text-gray-700 hover:text-emerald-600 transition-colors hover:bg-emerald-50 rounded-lg"
+          aria-expanded={isOpen}
         >
-          <Heart
-            className={`w-6 h-6 ${
-              isFavorite
-                ? "fill-red-500 text-red-500"
-                : "text-gray-400 hover:text-red-500"
-            }`}
-          />
+          <div className="flex items-center gap-2">
+            {icon}
+            <span className="text-sm font-semibold">{title}</span>
+          </div>
+          {isOpen ? (
+            <ChevronUp className="w-4 h-4 text-emerald-600" />
+          ) : (
+            <ChevronDown className="w-4 h-4 text-gray-400" />
+          )}
         </button>
+        {isOpen && (
+          <div className="pb-3 pt-1 px-2 animate-fadeIn">
+            <p className="text-sm leading-relaxed text-gray-800">{content}</p>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <article className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 p-6">
+      <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(-10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn { animation: fadeIn .3s ease-out; }
+      `}</style>
+
+      <div className="mb-4 flex justify-between items-start">
+        <h3 className="text-lg font-bold text-gray-900 flex-1 pr-2">
+          Hadith #{hadith.number || hadith.id}
+        </h3>
+        <div className="flex space-x-2">
+          <button
+            onClick={handleShareClick}
+            disabled={isSharing}
+            className="p-2 rounded-full hover:bg-emerald-50 transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-400"
+            aria-label="Share Hadith"
+          >
+            {isSharing ? (
+              <Loader2 className="w-5 h-5 text-emerald-500 animate-spin" />
+            ) : (
+              <Share2
+                className={`w-5 h-5 ${
+                  shareUrl
+                    ? "text-emerald-500 fill-emerald-100"
+                    : "text-gray-400 hover:text-emerald-500"
+                }`}
+              />
+            )}
+          </button>
+
+          <button
+            onClick={handleLikeClick}
+            className="p-2 rounded-full hover:bg-red-50 transition-colors focus:outline-none focus:ring-2 focus:ring-red-400"
+            aria-label={isFavorite ? "Remove favorite" : "Add favorite"}
+          >
+            <Heart
+              className={`w-5 h-5 ${
+                isFavorite
+                  ? "fill-red-500 text-red-500"
+                  : "text-gray-400 hover:text-red-500"
+              }`}
+            />
+          </button>
+        </div>
       </div>
 
-      <div className="space-y-5">
-        <div dir="rtl">
+      <div className="space-y-3 border-b border-gray-100 pb-5 mb-4">
+        <div
+          dir="rtl"
+          className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl p-4"
+        >
           <p
-            className="text-2xl text-right text-gray-900 leading-relaxed py-2 bg-gray-50 p-3 rounded-lg border border-gray-100"
+            className="text-xl text-right text-gray-900 leading-loose"
             style={{
               fontFamily: "Amiri, 'Times New Roman', serif",
-              lineHeight: "2.0",
+              lineHeight: "2.2",
             }}
           >
             {hadith.arabic}
           </p>
         </div>
 
-        {hadith.translation && (
-          <div className="p-3 border-l-4 border-emerald-500">
-            <p className="text-sm font-semibold text-emerald-700 mb-1 uppercase tracking-wide">
-              Meaning
-            </p>
-            <p className="text-base text-gray-800 font-medium">
-              {hadith.translation}
-            </p>
+        {(hadith.narrator || hadith.book) && (
+          <div className="flex gap-2 text-xs text-gray-600">
+            {hadith.book && (
+              <span className="flex items-center gap-1">
+                <BookOpen className="w-3 h-3" />
+                {hadith.book}
+              </span>
+            )}
+            {hadith.narrator && (
+              <span className="flex items-center gap-1">
+                <Tag className="w-3 h-3" />
+                {hadith.narrator}
+              </span>
+            )}
           </div>
         )}
-
-        <div className="pt-4 border-t border-dashed border-gray-100 space-y-2 text-sm flex justify-between items-center">
-          <div className="flex items-center gap-4 text-gray-600">
-            <span className="flex items-center gap-1">
-              <Tag className="w-4 h-4 text-emerald-600" />
-              {categoryMap[hadith.category_id] || "Uncategorized"}
-            </span>
-            <span className="flex items-center gap-1">
-              <BookOpen className="w-4 h-4 text-gray-500" />
-              Narrator: {hadith.narrator || "N/A"}
-            </span>
-          </div>
-          <div className="flex items-center gap-3 text-xs">
-            <span className="flex items-center gap-1 text-gray-500">
-              <Eye className="w-4 h-4" />
-              {viewCount.toLocaleString()}
-            </span>
-            <span className="flex items-center gap-1 text-red-500">
-              <Heart className="w-4 h-4 fill-red-500" />
-              {favoriteCount.toLocaleString()}
-            </span>
-          </div>
-        </div>
       </div>
+
+      <div className="space-y-1">
+        {renderDetail(
+          "translation",
+          "Translation",
+          hadith.translation,
+          <BookOpen className="w-4 h-4 text-emerald-600" />
+        )}
+        {renderDetail(
+          "source",
+          "Source",
+          hadith.source,
+          <Share2 className="w-4 h-4 text-gray-500" />
+        )}
+      </div>
+
+      {shareUrl && !navigator.share && (
+        <div className="mt-4 p-3 bg-emerald-50 rounded-lg text-sm text-emerald-800 break-all border border-emerald-200">
+          Link (Copied!): <strong className="font-mono">{shareUrl}</strong>
+        </div>
+      )}
     </article>
+  );
+};
+
+const CategoryDescription = ({ description }) => {
+  const [expanded, setExpanded] = useState(false);
+  const needToggle =
+    description &&
+    (description.split("\n").length > 3 || description.length > 200);
+
+  return (
+    <div className="mx-auto max-w-3xl leading-relaxed text-center mt-3">
+      <p
+        className={`text-lg text-gray-600 font-light mx-auto whitespace-pre-line transition-all duration-300 ${
+          expanded ? "" : "line-clamp-3"
+        }`}
+      >
+        {description}
+      </p>
+      {needToggle && (
+        <div className="flex justify-start max-w-3xl mx-auto">
+          <button
+            onClick={() => setExpanded(!expanded)}
+            className="text-sm font-semibold text-emerald-600 hover:text-emerald-700 mt-2 flex items-center transition-colors"
+          >
+            {expanded ? "See less" : "See more"}
+            {expanded ? (
+              <ChevronUp className="w-4 h-4 ml-1" />
+            ) : (
+              <ChevronDown className="w-4 h-4 ml-1" />
+            )}
+          </button>
+        </div>
+      )}
+    </div>
   );
 };
 
 export default function HadithViewer() {
   const [categories, setCategories] = useState([]);
-  const [allHadiths, setAllHadiths] = useState([]);
-  const [categoriesMap, setCategoriesMap] = useState({});
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [selectedCategoryId, setSelectedCategoryId] = useState(null);
   const [localFavorites, setLocalFavorites] = useState(new Set());
-  const [page, setPage] = useState(1);
-  const limit = 10;
+  const [openDetails, setOpenDetails] = useState({});
+  const [view, setView] = useState("categories");
+  const [searchExecuted, setSearchExecuted] = useState(false);
 
-  const API_BASE = "https://focus-flow-server-v1.onrender.com/api";
+  const [searchParams] = useSearchParams();
+  const deepLinkHadithId = searchParams.get("hadithId");
+  const urlCategoryId = searchParams.get("category_id");
+
   const AUTH_TOKEN = getAuthToken();
   const isAuthenticated = !!AUTH_TOKEN;
 
-  const buildFetchUrl = useCallback(
-    (q, p, l) => {
-      const params = new URLSearchParams({ page: p, limit: l });
-      if (q) {
-        params.append("q", q);
-      }
-      return `${API_BASE}/hadiths/paginated?${params.toString()}`;
-    },
-    [API_BASE]
-  );
+  const generateShareLink = async (hadithId) => {
+    try {
+      await fetch(`${API_BASE}/hadiths/${hadithId}/share-link`, {
+        method: "POST",
+        headers: AUTH_TOKEN ? { Authorization: `Bearer ${AUTH_TOKEN}` } : {},
+      });
+    } catch (e) {
+      console.error(e);
+    }
+    return `${FRONTEND_BASE}/hadiths?hadithId=${hadithId}`;
+  };
 
   const fetchHadithsAndCategories = useCallback(
-    async (q = searchTerm, p = page) => {
+    async (q = "") => {
       setLoading(true);
-      setError(null);
       try {
-        const fetchOptions = {
+        const opts = {
           headers: AUTH_TOKEN ? { Authorization: `Bearer ${AUTH_TOKEN}` } : {},
         };
 
         const catRes = await fetch(`${API_BASE}/hadith-categories`);
-        if (!catRes.ok) throw new Error("Failed to fetch categories.");
+        if (!catRes.ok) throw new Error("Categories failed");
         const catData = await catRes.json();
 
-        const catMap = catData.reduce((map, cat) => {
-          map[cat.id] = cat.name;
-          return map;
-        }, {});
-        setCategoriesMap(catMap);
-
-        const url = buildFetchUrl(q, p, limit);
-        const hadithsRes = await fetch(url, fetchOptions);
-
-        if (hadithsRes.status === 401 && isAuthenticated) {
+        const url = `${API_BASE}/hadiths/paginated?q=${encodeURIComponent(
+          q
+        )}&limit=1000`;
+        const hadRes = await fetch(url, opts);
+        if (hadRes.status === 401 && isAuthenticated) {
           redirectToLogin();
-          throw new Error("Authentication failed. Redirecting to login.");
+          throw new Error("Auth");
         }
-        if (!hadithsRes.ok) throw new Error("Failed to fetch Hadiths.");
+        if (!hadRes.ok) throw new Error("Hadiths failed");
 
-        let hadithsResponseObject = await hadithsRes.json();
+        const hadResponse = await hadRes.json();
+        const hadData = Array.isArray(hadResponse)
+          ? hadResponse
+          : hadResponse.items || [];
 
-        const hadithsData = hadithsResponseObject.items || [];
+        if (q) {
+          const searchCat = {
+            id: "search",
+            name: `Search Results for "${q}"`,
+            description: "All hadiths matching your query.",
+            image_url: null,
+            hadiths: hadData,
+          };
+          setCategories([searchCat]);
+          setSelectedCategoryId("search");
+          setView("hadiths");
+        } else {
+          const grouped = catData.map((c) => ({
+            ...c,
+            hadiths: hadData.filter((h) => h.category_id === c.id),
+          }));
+          setCategories(grouped);
 
-        if (!Array.isArray(hadithsData)) {
-          console.error(
-            "Hadiths data received is not an array:",
-            hadithsResponseObject
-          );
-          throw new Error(
-            "Invalid format for Hadith data received from server."
-          );
+          const initCat = urlCategoryId || null;
+          if (initCat) {
+            setSelectedCategoryId(initCat);
+            setView("hadiths");
+          } else {
+            setView("categories");
+            setSelectedCategoryId(null);
+          }
         }
-
-        setAllHadiths(hadithsData);
-
-        const groupedHadiths = catData
-          .map((cat) => ({
-            name: cat.name,
-            id: cat.id,
-            hadiths: hadithsData.filter((h) => h.category_id === cat.id),
-          }))
-          .filter((group) => group.hadiths.length > 0);
-
-        setCategories(groupedHadiths);
-      } catch (err) {
-        console.error("Fetch error:", err);
-        if (
-          !isAuthenticated ||
-          !err.message.includes("Authentication failed")
-        ) {
-          setError(
-            err.message || "Could not load Hadiths. Check the backend service."
-          );
-        }
+      } catch (e) {
+        if (!isAuthenticated || !e.message.includes("Auth")) console.error(e);
       } finally {
         setLoading(false);
       }
     },
-    [API_BASE, AUTH_TOKEN, isAuthenticated, buildFetchUrl, searchTerm, page]
+    [AUTH_TOKEN, isAuthenticated, urlCategoryId]
   );
 
-  useEffect(() => {
-    fetchHadithsAndCategories();
-  }, [fetchHadithsAndCategories]);
+  const executeSearch = useCallback(() => {
+    if (searchTerm.trim()) {
+      setSearchExecuted(true);
+      fetchHadithsAndCategories(searchTerm.trim());
+    } else {
+      clearSearch();
+    }
+  }, [fetchHadithsAndCategories, searchTerm]);
 
-  const handleLocalToggle = (hadithId) => {
-    setLocalFavorites((prevSet) => {
-      const newSet = new Set(prevSet);
-      if (newSet.has(hadithId)) {
-        newSet.delete(hadithId);
-      } else {
-        newSet.add(hadithId);
+  const handleKeyPress = (e) => {
+    if (e.key === "Enter") executeSearch();
+  };
+
+  useEffect(() => {
+    if (!searchExecuted && !deepLinkHadithId) fetchHadithsAndCategories("");
+  }, [fetchHadithsAndCategories, searchExecuted, deepLinkHadithId]);
+
+  useEffect(() => {
+    if (deepLinkHadithId && categories.length) {
+      let targetCat = null;
+      let foundHadith = null;
+
+      for (const cat of categories) {
+        foundHadith = cat.hadiths.find(
+          (h) => h.id.toString() === deepLinkHadithId
+        );
+        if (foundHadith) {
+          targetCat = cat.id;
+          break;
+        }
       }
-      if (newSet.has(hadithId)) {
+      if (foundHadith && targetCat) {
+        setSelectedCategoryId(targetCat);
+        setView("hadiths");
+        setOpenDetails({ [foundHadith.id]: "translation" });
+      }
+    } else if (urlCategoryId) {
+      setSelectedCategoryId(urlCategoryId);
+      setView("hadiths");
+    }
+  }, [deepLinkHadithId, categories, urlCategoryId, fetchHadithsAndCategories]);
+
+  const handleLocalToggle = (id) => {
+    setLocalFavorites((s) => {
+      const ns = new Set(s);
+      if (ns.has(id)) ns.delete(id);
+      else {
+        ns.add(id);
         redirectToLogin();
       }
-      return newSet;
+      return ns;
     });
   };
 
-  const toggleFavorite = async (hadithId) => {
+  const toggleFavorite = async (id) => {
     if (!isAuthenticated) {
       redirectToLogin();
       return;
     }
-
-    const updateHadith = (hadith) => {
-      if (hadith.id === hadithId) {
-        const newIsFavorite = !hadith.is_favorite;
-        return {
-          ...hadith,
-          is_favorite: newIsFavorite,
-          favorite_count: hadith.favorite_count + (newIsFavorite ? 1 : -1),
-        };
-      }
-      return hadith;
-    };
-
-    setAllHadiths((prevHadiths) => prevHadiths.map(updateHadith));
-    setCategories((prevGroups) =>
-      prevGroups.map((group) => ({
-        ...group,
-        hadiths: group.hadiths.map(updateHadith),
-      }))
-    );
-
     try {
-      const res = await fetch(
-        `${API_BASE}/hadiths/${hadithId}/toggle-favorite`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${AUTH_TOKEN}`,
-          },
-        }
-      );
-
+      const res = await fetch(`${API_BASE}/hadiths/${id}/toggle-favorite`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${AUTH_TOKEN}`,
+        },
+      });
       if (res.status === 401) {
         redirectToLogin();
-        fetchHadithsAndCategories(searchTerm, page);
         return;
       }
-      if (!res.ok) {
-        throw new Error("Failed to toggle favorite status.");
-      }
-    } catch (err) {
-      console.error("Error toggling favorite:", err);
-      fetchHadithsAndCategories(searchTerm, page);
-      setError("Failed to update favorite status.");
+      if (!res.ok) throw new Error("Toggle failed");
+      const { favorites } = await res.json();
+
+      const updater = (h) =>
+        h.id === id
+          ? { ...h, is_favorite: !h.is_favorite, favorite_count: favorites }
+          : h;
+
+      setCategories((prev) =>
+        prev.map((c) => ({
+          ...c,
+          hadiths: c.hadiths.map(updater),
+        }))
+      );
+    } catch (e) {
+      console.error(e);
     }
   };
 
-  const handleSearch = (e) => {
-    const term = e.target.value;
-    setSearchTerm(term);
-    setPage(1);
+  const clearSearch = () => {
+    setSearchTerm("");
+    setSearchExecuted(false);
+    setSelectedCategoryId(null);
+    setView("categories");
+    fetchHadithsAndCategories("");
   };
 
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      fetchHadithsAndCategories(searchTerm, 1);
-    }, 500);
-    return () => clearTimeout(timeout);
-  }, [searchTerm, fetchHadithsAndCategories]);
+  const handleCategoryClick = (catId) => {
+    setSelectedCategoryId(catId);
+    setView("hadiths");
+    setOpenDetails({});
+  };
 
-  const filteredCategories = categories
-    .filter(
-      (cat) => selectedCategory === "All" || cat.name === selectedCategory
-    )
-    .map((cat) => ({ ...cat, hadiths: cat.hadiths }));
+  const handleBackToCategories = () => {
+    setView("categories");
+    setSelectedCategoryId(null);
+    setSearchTerm("");
+    setSearchExecuted(false);
+    setOpenDetails({});
+    fetchHadithsAndCategories("");
+  };
 
-  const allCategoryNames = ["All", ...Object.values(categoriesMap)];
-
-  const displayedHadiths =
-    selectedCategory === "All" && filteredCategories.length > 0
-      ? allHadiths
-      : filteredCategories.flatMap((cat) => cat.hadiths);
-
-  if (loading && allHadiths.length === 0) {
+  if (loading && !searchExecuted) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-12 h-12 text-emerald-500 animate-spin" />
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-emerald-50 to-teal-50">
+        <Loader2 className="w-16 h-16 text-emerald-500 animate-spin mb-4" />
+        <p className="text-gray-600 font-medium">Loading Hadiths...</p>
       </div>
     );
   }
 
+  const currentCategory = selectedCategoryId
+    ? categories.find((c) => c.id.toString() === selectedCategoryId.toString())
+    : null;
+
+  const pageTitle = currentCategory?.name || "All Hadiths";
+  const categoryDescription =
+    currentCategory?.description ||
+    "Browse authentic prophetic sayings, neatly organized by topic.";
+
+  const showCategories = view === "categories" && !searchExecuted;
+  const showHadiths = view === "hadiths" && currentCategory;
+  const showNoResults =
+    searchExecuted && currentCategory && currentCategory.hadiths.length === 0;
+
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="text-green-800 py-10 border-b border-gray-200 bg-white shadow-sm">
-        <div className="max-w-xl mx-auto text-center">
-          <BookOpenCheck className="w-10 h-10 text-green-800 mx-auto mb-2" />
-          <h1
-            className="text-4xl font-extrabold tracking-tight"
-            style={{ fontFamily: "Amiri, serif" }}
-          >
-            أحاديث نبوية
-          </h1>
-          <p className="text-lg text-green-800 font-light mt-1">
-            Prophetic Sayings and Teachings Collection
-          </p>
-        </div>
-      </div>
-      <div className="sticky top-0 z-40 border-b border-gray-200 bg-white">
-        <div className="max-w-xl mx-auto py-4 px-4 flex flex-col sm:flex-row gap-3 items-center">
-          <div className="flex-1 relative w-full">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
-            <input
-              type="text"
-              placeholder="Search Hadiths by text, book, or narrator..."
-              value={searchTerm}
-              onChange={handleSearch}
-              className="w-full pl-10 pr-4 py-3 rounded-full border border-gray-300 focus:ring-2 focus:ring-emerald-400 focus:border-emerald-500 text-gray-700 placeholder-gray-400 text-sm shadow-sm transition"
-            />
-          </div>
-          <div className="relative w-full sm:w-auto">
-            <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
-            <select
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              className="w-full pl-10 pr-8 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-emerald-400 focus:border-emerald-500 text-gray-700 appearance-none cursor-pointer font-medium text-sm"
-            >
-              {allCategoryNames.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-      </div>
-      <div className="max-w-[1000px] mx-auto py-8 space-y-10">
-        {error && (
-          <div className="p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg max-w-xl mx-auto">
-            <p className="font-semibold">{error}</p>
-            {!isAuthenticated && (
-              <p className="text-sm mt-1">
-                Note: You need to log in to save favorites.
+      <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-600 text-white py-12 sm:py-16 shadow-xl">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-start gap-4 mb-6">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center border-2 border-white flex-shrink-0">
+              <BookOpenCheck className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
+            </div>
+            <div>
+              <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
+                {pageTitle}
+              </h1>
+              <p className="text-emerald-100 text-base sm:text-lg mt-1">
+                {currentCategory
+                  ? "Authentic sayings of the Prophet (Peace be upon him)"
+                  : "Explore the complete collection"}
               </p>
+            </div>
+          </div>
+
+          <div className="mt-6 sm:mt-8">
+            <div className="relative">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-500 w-5 h-5 sm:w-6 sm:h-6" />
+              <input
+                type="text"
+                placeholder="Search hadiths by Arabic, translation, book, or narrator..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                onKeyDown={handleKeyPress}
+                className="w-full pl-11 pr-4 py-3 sm:py-4 rounded-xl border-2 border-white/30 focus:border-white text-gray-900 placeholder-gray-500 shadow-md transition-all bg-white text-base"
+              />
+              {searchTerm && (
+                <button
+                  onClick={clearSearch}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  aria-label="Clear"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              )}
+            </div>
+
+            {!showCategories && (
+              <div className="mt-3 flex justify-start">
+                <button
+                  onClick={handleBackToCategories}
+                  className="bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white px-5 py-2.5 rounded-xl font-semibold text-sm transition-all flex items-center gap-2"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  Back to Categories
+                </button>
+              </div>
+            )}
+
+            {showCategories && currentCategory && (
+              <div className="mt-6 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                <CategoryDescription description={categoryDescription} />
+              </div>
             )}
           </div>
-        )}
+        </div>
+      </div>
 
-        {displayedHadiths.length === 0 && !loading ? (
-          <div className="text-center py-16 px-4">
-            <Search className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-            <p className="text-xl text-gray-600 font-medium">
-              No Hadiths found
-            </p>
-            <p className="text-gray-500 mt-2">
-              Try a different search term or category filter.
-            </p>
+      <div className="max-w-7xl mx-auto py-10 px-4">
+        {loading ? (
+          <div className="text-center py-20">
+            <Loader2 className="w-16 h-16 text-emerald-500 animate-spin mb-4 mx-auto" />
+            <p className="text-gray-600 font-medium">Loading...</p>
+          </div>
+        ) : showCategories ? (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+            {categories.map((cat) => (
+              <CategoryCard
+                key={cat.id}
+                category={cat}
+                onClick={() => handleCategoryClick(cat.id)}
+              />
+            ))}
+          </div>
+        ) : showHadiths && currentCategory.hadiths.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {currentCategory.hadiths.map((hadith) => (
+              <HadithItem
+                key={hadith.id}
+                hadith={hadith}
+                toggleFavorite={toggleFavorite}
+                isAuthenticated={isAuthenticated}
+                isLocallyFavorite={localFavorites.has(hadith.id)}
+                handleLocalToggle={handleLocalToggle}
+                openDetails={openDetails}
+                setOpenDetails={setOpenDetails}
+                generateShareLink={generateShareLink}
+              />
+            ))}
           </div>
         ) : (
-          <div className="bg-white p-4 rounded-lg shadow-md">
-            <div className="grid grid-cols-1 gap-12">
-              {displayedHadiths.map((hadith, index) => (
-                <HadithItem
-                  key={hadith.id}
-                  hadith={hadith}
-                  index={index}
-                  toggleFavorite={toggleFavorite}
-                  isAuthenticated={isAuthenticated}
-                  isLocallyFavorite={localFavorites.has(hadith.id)}
-                  handleLocalToggle={handleLocalToggle}
-                  categoryMap={categoriesMap}
-                />
-              ))}
+          <div className="text-center py-20">
+            <div className="bg-white rounded-3xl shadow-xl p-12 max-w-md mx-auto">
+              <Search className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+              <p className="text-2xl text-gray-600 font-bold mb-2">
+                No Hadiths Found
+              </p>
+              <p className="text-gray-500">
+                {searchExecuted
+                  ? `No matches for "${searchTerm}".`
+                  : "No categories available."}
+              </p>
             </div>
           </div>
         )}
       </div>
 
-      <div className="max-w-[1000px] mx-auto py-4">
-        <div className="flex justify-between items-center mt-4 px-4">
-          <button
-            disabled={page === 1}
-            onClick={() => setPage((p) => Math.max(p - 1, 1))}
-            className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-all disabled:opacity-50"
-          >
-            &larr; Previous
-          </button>
-          <span className="font-medium text-gray-700">Page {page}</span>
-          <button
-            disabled={loading || displayedHadiths.length < limit}
-            onClick={() => setPage((p) => p + 1)}
-            className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-all disabled:opacity-50"
-          >
-            Next &rarr;
-          </button>
+      <footer className="bg-white text-gray-800 py-8 mt-16 shadow-inner border-t border-gray-100">
+        <div className="max-w-7xl mx-auto px-4 text-center">
+          <p className="text-base font-medium">
+            May Allah increase us in beneficial knowledge.
+          </p>
+          <p className="text-sm text-gray-500 mt-2">
+            FocusFlow Copyright {new Date().getFullYear()} - All rights
+            reserved.
+          </p>
         </div>
-      </div>
+      </footer>
     </div>
   );
 }

@@ -239,7 +239,7 @@ export default function Navigation({ setShowLogoutModal }) {
         searchBarRef={searchBarRef}
         dhikrDuaDropdownRef={dhikrDuaDropdownRef}
         teachingDropdownRef={teachingDropdownRef}
-        articleDropdownRef={articleDropdownRef}
+        articleDropdownRef={articleDropdownRef}na
         aboutDropdownRef={aboutDropdownRef}
         isDhikrDuaDropdownOpen={isDhikrDuaDropdownOpen}
         setIsDhikrDuaDropdownOpen={setIsDhikrDuaDropdownOpen}

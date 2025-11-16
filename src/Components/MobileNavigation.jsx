@@ -17,9 +17,14 @@ import {
   Building,
   Heart,
   ChevronDown,
+  Globe,
+  Settings,
+  LogOut,
 } from "lucide-react";
 
 const MobileNavigation = ({
+  showSearchBar,
+  setShowSearchBar,
   searchQuery,
   setSearchQuery,
   handleSearch,
@@ -35,11 +40,14 @@ const MobileNavigation = ({
   DhikrDuaCardDropdown,
   TeachingResourceDropdown,
   ArticleDropdown,
+  onLogout,
 }) => {
   const [isMobileDhikrDuaOpen, setIsMobileDhikrDuaOpen] = useState(false);
   const [isMobileTeachingOpen, setIsMobileTeachingOpen] = useState(false);
   const [isMobileArticleOpen, setIsMobileArticleOpen] = useState(false);
   const [isMobileAboutOpen, setIsMobileAboutOpen] = useState(false);
+  const [isLanguageOpen, setIsLanguageOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   const toggleMobileDropdown = (name) => {
     const states = {
@@ -47,6 +55,8 @@ const MobileNavigation = ({
       "Teaching Resources": [isMobileTeachingOpen, setIsMobileTeachingOpen],
       Articles: [isMobileArticleOpen, setIsMobileArticleOpen],
       About: [isMobileAboutOpen, setIsMobileAboutOpen],
+      Languages: [isLanguageOpen, setIsLanguageOpen],
+      Profile: [isProfileOpen, setIsProfileOpen],
     };
 
     Object.keys(states).forEach((key) => {
@@ -55,6 +65,18 @@ const MobileNavigation = ({
     const [state, setState] = states[name];
     setState(!state);
   };
+
+  const languages = [
+    { code: "en", name: "English", flag: "GB" },
+    { code: "ar", name: "العربية", flag: "SA" },
+    { code: "ur", name: "اردو", flag: "PK" },
+    { code: "bn", name: "বাংলা", flag: "BD" },
+    { code: "id", name: "Bahasa Indonesia", flag: "ID" },
+    { code: "ms", name: "Bahasa Melayu", flag: "MY" },
+    { code: "tr", name: "Türkçe", flag: "TR" },
+    { code: "fr", name: "Français", flag: "FR" },
+    { code: "ha", name: "Hausa", flag: "NG" },
+  ];
 
   return (
     <>
@@ -282,6 +304,45 @@ const MobileNavigation = ({
             </div>
           </div>
 
+          <div className="border-b border-gray-100">
+            <button
+              onClick={() => toggleMobileDropdown("Languages")}
+              className="w-full text-left flex items-center justify-between py-3 text-lg font-medium text-gray-700 hover:text-emerald-700 transition-colors"
+            >
+              <div className="flex items-center">
+                <Globe className="w-5 h-5 mr-3 text-emerald-600" />
+                Language
+              </div>
+              <ChevronDown
+                className={`w-4 h-4 transition-transform duration-200 ${
+                  isLanguageOpen ? "rotate-180 text-emerald-600" : ""
+                }`}
+              />
+            </button>
+
+            <div
+              className={`transition-all duration-300 overflow-hidden ${
+                isLanguageOpen
+                  ? "max-h-96 opacity-100 py-2"
+                  : "max-h-0 opacity-0"
+              }`}
+            >
+              {languages.map((lang) => (
+                <button
+                  key={lang.code}
+                  onClick={() => {
+                    console.log("Switch to:", lang.name);
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="w-full text-left flex items-center pl-10 py-1.5 text-base text-gray-600 hover:bg-emerald-50 hover:text-emerald-700 rounded-md transition-colors"
+                >
+                  <span className="w-6 h-6 mr-3 text-lg">{lang.flag}</span>
+                  {lang.name}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <button
             onClick={() => handleNavItemClick("/donation", "Donation")}
             className="w-full text-left flex items-center py-3 text-lg font-medium text-gray-700 hover:text-emerald-700 transition-colors border-b border-gray-100"
@@ -290,15 +351,73 @@ const MobileNavigation = ({
             Donation
           </button>
 
-          <button
-            onClick={() =>
-              handleNavItemClick(token ? "/profile" : "/login", "Mine")
-            }
-            className="w-full text-left flex items-center py-3 text-lg font-medium text-gray-700 hover:text-emerald-700 transition-colors border-b border-gray-100"
-          >
-            <User className="w-5 h-5 mr-3 text-emerald-600" />
-            {token ? "My Profile" : "Login / Register"}
-          </button>
+          {token ? (
+            <div className="border-b border-gray-100">
+              <button
+                onClick={() => toggleMobileDropdown("Profile")}
+                className="w-full text-left flex items-center justify-between py-3 text-lg font-medium text-gray-700 hover:text-emerald-700 transition-colors"
+              >
+                <div className="flex items-center">
+                  <User className="w-5 h-5 mr-3 text-emerald-600" />
+                  My Profile
+                </div>
+                <ChevronDown
+                  className={`w-4 h-4 transition-transform duration-200 ${
+                    isProfileOpen ? "rotate-180 text-emerald-600" : ""
+                  }`}
+                />
+              </button>
+
+              <div
+                className={`transition-all duration-300 overflow-hidden ${
+                  isProfileOpen
+                    ? "max-h-40 opacity-100 py-1"
+                    : "max-h-0 opacity-0"
+                }`}
+              >
+                <button
+                  onClick={() => {
+                    handleNavItemClick("/profile", "Profile");
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="w-full text-left flex items-center pl-10 py-1.5 text-base text-gray-600 hover:bg-emerald-50 hover:text-emerald-700 rounded-md transition-colors"
+                >
+                  <User className="w-4 h-4 mr-3 text-emerald-500" />
+                  View Profile
+                </button>
+
+                <button
+                  onClick={() => {
+                    handleNavItemClick("/settings", "Settings");
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="w-full text-left flex items-center pl-10 py-1.5 text-base text-gray-600 hover:bg-emerald-50 hover:text-emerald-700 rounded-md transition-colors"
+                >
+                  <Settings className="w-4 h-4 mr-3 text-emerald-500" />
+                  Settings
+                </button>
+
+                <button
+                  onClick={() => {
+                    onLogout?.();
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="w-full text-left flex items-center pl-10 py-1.5 text-base text-gray-600 hover:bg-gray-100 hover:text-gray-800 rounded-md transition-colors"
+                >
+                  <LogOut className="w-4 h-4 mr-3 text-gray-500" />
+                  Logout
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button
+              onClick={() => handleNavItemClick("/login", "Login")}
+              className="w-full text-left flex items-center py-3 text-lg font-medium text-gray-700 hover:text-emerald-700 transition-colors border-b border-gray-100"
+            >
+              <User className="w-5 h-5 mr-3 text-emerald-600" />
+              Login / Register
+            </button>
+          )}
         </div>
       </div>
 

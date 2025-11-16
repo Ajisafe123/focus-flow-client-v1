@@ -174,9 +174,7 @@ const ArticleCard = ({
 
   const handleLike = (e) => {
     e.stopPropagation();
-    isAuthenticated
-      ? {} // Placeholder for actual toggleFavorite
-      : handleLocalToggle(article.id);
+    isAuthenticated ? {} : handleLocalToggle(article.id);
   };
 
   const handleShare = (e) => {
@@ -187,12 +185,11 @@ const ArticleCard = ({
   };
 
   return (
-    // Reverting max-w-xs on the card itself, letting the grid handle the width
     <article
       onClick={() => onReadMore(article)}
       className="group bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden border border-gray-100 cursor-pointer flex flex-col h-full"
     >
-      <div className="relative h-32 overflow-hidden w-full">
+      <div className="relative h-28 sm:h-32 overflow-hidden w-full">
         <img
           src={article.image_url}
           alt={article.title}
@@ -228,7 +225,7 @@ const ArticleCard = ({
 
       <div className="p-3 flex flex-col justify-between flex-grow">
         <div>
-          <h3 className="text-base font-semibold text-gray-900 group-hover:text-emerald-600 transition-colors line-clamp-2 mb-1">
+          <h3 className="text-sm font-semibold text-gray-900 group-hover:text-emerald-600 transition-colors line-clamp-2 mb-1">
             {article.title}
           </h3>
           <p className="text-xs text-gray-600 line-clamp-2 mb-2">
@@ -239,7 +236,7 @@ const ArticleCard = ({
             {article.tags.slice(0, 2).map((t, i) => (
               <span
                 key={i}
-                className="px-1.5 py-0.5 bg-emerald-50 text-emerald-700 rounded-full text-xs font-medium"
+                className="px-1.5 py-0.5 bg-emerald-50 text-emerald-700 rounded-full text-[10px] font-medium"
               >
                 {t}
               </span>
@@ -247,8 +244,8 @@ const ArticleCard = ({
           </div>
         </div>
 
-        <div className="mt-3 pt-2 border-t border-gray-100">
-          <div className="flex items-center justify-between text-xs text-gray-500">
+        <div className="mt-2 pt-2 border-t border-gray-100">
+          <div className="flex flex-wrap justify-between text-xs text-gray-500 gap-y-1">
             <span className="flex items-center gap-1">
               <User className="w-3 h-3 text-emerald-600" />
               <span className="font-medium text-gray-700 text-[11px]">
@@ -376,18 +373,17 @@ const ArticlesPage = ({ categoryId }) => {
         }
       `}</style>
 
-      {/* Revert to wider container for header */}
       <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-600 text-white py-10 sm:py-12 shadow-xl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-start gap-3 mb-5">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white/20 backdrop-blur-sm rounded-md flex items-center justify-center border-2 border-white flex-shrink-0">
-              <Lightbulb className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+          <div className="flex items-start gap-4 mb-5">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center border-2 border-white flex-shrink-0">
+              <Lightbulb className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
             </div>
             <div>
-              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight">
                 {currentCat?.name || "Islamic Articles"}
               </h1>
-              <p className="text-emerald-100 text-sm sm:text-base mt-1">
+              <p className="text-emerald-100 text-sm sm:text-lg mt-1">
                 {currentCat?.description ||
                   "Explore insightful articles on Islamic knowledge and guidance"}
               </p>
@@ -431,10 +427,8 @@ const ArticlesPage = ({ categoryId }) => {
         </div>
       </div>
 
-      {/* Revert to wider container for main content */}
       <div className="max-w-7xl mx-auto py-8 px-4">
         {showCategories ? (
-          // Category Grid remains the same
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
             {MOCK_CATEGORIES.map((c) => (
               <CategoryCard
@@ -445,9 +439,7 @@ const ArticlesPage = ({ categoryId }) => {
             ))}
           </div>
         ) : filteredArticles.length > 0 ? (
-          // **CHANGE HERE:** Increased columns to 4 (lg:grid-cols-4) and 5 (xl:grid-cols-5)
-          // to make the Article Cards narrower within the available space.
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
             {filteredArticles.map((a) => (
               <ArticleCard
                 key={a.id}

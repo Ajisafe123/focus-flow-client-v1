@@ -168,7 +168,7 @@ const ShopPage = () => {
         <WhyShopAccordion whyShopData={WHY_SHOP_WITH_US} />
       </main>
 
-      <div className="fixed bottom-4 right-4 z-50">
+      <div className="fixed bottom-[100px] right-4 z-50">
         <button
           onClick={() => setIsCartOpen(true)}
           className="relative bg-emerald-600 hover:bg-emerald-700 text-white p-4 rounded-full shadow-xl transition-all flex items-center justify-center"

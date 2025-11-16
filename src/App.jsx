@@ -11,7 +11,6 @@ import {
 import { AnimatePresence, motion } from "framer-motion";
 import Hero from "./Components/Hero";
 import LiveDua from "./Components/LiveDua";
-import LiveArticles from "./Components/LiveArticles";
 import LiveChat from "./Components/LiveChat";
 import DailyHadith from "./Components/DailyHadith";
 import About from "./Components/About";
@@ -37,7 +36,6 @@ import ArticlesInterface from "./Admin/ArticlesInterface";
 import QuranPage from "./Components/Quran";
 import DuaCategoryPage from "./Components/DuaList";
 import ArticlesPage from "./Components/ArticlesPage";
-import LiveVideo from "./Components/LiveVideo";
 import VideoPlayer from "./Components/VideoPlayer"
 import ShopPage from "./Components/ShopPage";
 import TeachingToolsPage from "./Components/TeachingToolsPage";
@@ -47,6 +45,7 @@ import StudyGuidesPage from "./Components/StudyGuidesPage";
 import PrivacyPolicy from "./Components/PrivacyPolicy";
 import AppShowcase from "./Components/AppShowCase";
 import NotificationCenter from "./Components/Notification";
+import RamadanPage from "./Components/Ramadan"
 const pageVariants = {
   initial: { opacity: 0, y: 10 },
   in: { opacity: 1, y: 0 },
@@ -75,8 +74,6 @@ function GuestHome() {
       <Hero />
       <LiveDua />
       <DailyHadith />
-      <LiveArticles />
-      <LiveVideo />
       <About />
       <Contact />
     </>
@@ -309,6 +306,14 @@ function AppContent({
             element={
               <PageWrapper>
                 <NotificationCenter />
+              </PageWrapper>
+            }
+          />
+          <Route
+            path="/ramadan"
+            element={
+              <PageWrapper>
+                <RamadanPage />
               </PageWrapper>
             }
           />

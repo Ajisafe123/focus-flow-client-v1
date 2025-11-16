@@ -13,6 +13,7 @@ import {
   Volume2,
   X,
   ArrowLeft,
+  Lightbulb,
 } from "lucide-react";
 
 const FRONTEND_BASE = "https://nibrasudeen.vercel.app";
@@ -362,7 +363,6 @@ const DuaCategoryPage = ({ categoryId }) => {
   const [localFavorites, setLocalFavorites] = useState(new Set());
   const [openDetails, setOpenDetails] = useState({});
   const [view, setView] = useState(categoryId ? "duas" : "categories");
-  const [searchFocused, setSearchFocused] = useState(false);
   const [searchExecuted, setSearchExecuted] = useState(false);
 
   const [searchParams] = useSearchParams();
@@ -487,7 +487,6 @@ const DuaCategoryPage = ({ categoryId }) => {
     if (!searchExecuted && !deepLinkDuaId) {
       fetchDuasAndCategories("");
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetchDuasAndCategories, searchExecuted, deepLinkDuaId]);
 
   useEffect(() => {
@@ -635,12 +634,8 @@ const DuaCategoryPage = ({ categoryId }) => {
   const showNoResults =
     searchExecuted && currentCategory && currentCategory.duas.length === 0;
 
-  const showHeaderImage =
-    (categoryImageUrl && selectedCategoryId !== "search") ||
-    selectedCategoryId === "search";
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-emerald-50 to-teal-50">
+    <div className="min-h-screen bg-gray-50">
       <style>{`
         @keyframes fadeIn {
           from { opacity: 0; transform: translateY(-10px); }
@@ -651,87 +646,65 @@ const DuaCategoryPage = ({ categoryId }) => {
         }
       `}</style>
 
-      <header className="bg-white text-gray-900 py-12 border-b-4 border-gray-100 shadow-lg">
-        <div className="max-w-7xl mx-auto text-center px-4">
-          {showHeaderImage ? (
-            categoryImageUrl && selectedCategoryId !== "search" ? (
-              <img
-                src={categoryImageUrl}
-                alt={`${pageTitle} category`}
-                className="w-24 h-24 object-cover rounded-full mx-auto mb-4 border-4 border-white shadow-xl"
-                onError={(e) => {
-                  e.target.style.display = "none";
-                }}
-              />
-            ) : (
-              <div className="w-24 h-24 bg-gray-100 rounded-full mx-auto mb-4 flex items-center justify-center border-4 border-white shadow-xl">
-                {selectedCategoryId === "search" ? (
-                  <Search className="w-12 h-12 text-emerald-500" />
-                ) : (
-                  <BookOpenCheck className="w-12 h-12 text-emerald-500" />
-                )}
-              </div>
-            )
-          ) : null}
-          <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight mb-3">
-            {pageTitle}
-          </h1>
-          <p className="text-xl text-gray-700 font-light mb-4">
-            A beautiful collection of supplications to enrich your daily life.
-          </p>
-          {currentCategory && (
-            <CategoryDescription description={categoryDescription} />
-          )}
-        </div>
-      </header>
+      <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-600 text-white py-12 sm:py-16 shadow-xl">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-start gap-4 mb-6">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center border-2 border-white flex-shrink-0">
+              <BookOpenCheck className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
+            </div>
+            <div>
+              <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
+                {pageTitle}
+              </h1>
+              <p className="text-emerald-100 text-base sm:text-lg mt-1">
+                {currentCategory
+                  ? "Essential supplications for every moment"
+                  : "Explore essential resources for the Islamic classroom"}
+              </p>
+            </div>
+          </div>
 
-      <div className="sticky top-0 z-50 bg-white/95 backdrop-blur-md shadow-lg border-b border-gray-200 w-full">
-        <div className="max-w-7xl mx-auto px-4 py-5">
-          {showCategories ? (
-            <div
-              className={`relative flex items-center transition-all duration-300 ${
-                searchFocused ? "transform scale-105" : ""
-              }`}
-            >
-              <button
-                onClick={executeSearch}
-                className="absolute left-0 top-1/2 -translate-y-1/2 text-emerald-500 hover:text-emerald-600 p-3 transition-colors z-20"
-                aria-label="Execute search"
-              >
-                <Search className="w-6 h-6" />
-              </button>
-
+          <div className="mt-6 sm:mt-8">
+            <div className="relative">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-500 w-5 h-5 sm:w-6 sm:h-6" />
               <input
                 type="text"
-                placeholder="Search for duas by title, arabic text, or transliteration..."
+                placeholder="Search duas by title, arabic text, or transliteration..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 onKeyDown={handleKeyPress}
-                onFocus={() => setSearchFocused(true)}
-                onBlur={() => setSearchFocused(false)}
-                className="w-full pl-12 pr-12 py-4 rounded-2xl border-2 border-gray-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 text-gray-700 placeholder-gray-400 text-base shadow-sm transition-all duration-300 bg-white"
+                className="w-full pl-11 pr-4 py-3 sm:py-4 rounded-xl border-2 border-white/30 focus:border-white text-gray-900 placeholder-gray-500 shadow-md transition-all bg-white text-base"
               />
-
               {searchTerm && (
                 <button
                   onClick={clearSearch}
-                  className="absolute right-0 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors z-10 p-4"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
                   aria-label="Clear search"
                 >
                   <X className="w-5 h-5" />
                 </button>
               )}
             </div>
-          ) : (
-            <button
-              onClick={handleBackToCategories}
-              className="flex items-center gap-2 text-emerald-600 hover:text-emerald-700 font-semibold transition-colors px-4 py-5 rounded-full"
-              aria-label="Back to all categories"
-            >
-              <ArrowLeft className="w-5 h-5" />
-              Back to Categories
-            </button>
-          )}
+
+            {!showCategories && (
+              <div className="mt-3 flex justify-start">
+                <button
+                  onClick={handleBackToCategories}
+                  className="bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white px-5 py-2.5 rounded-xl font-semibold text-sm transition-all flex items-center gap-2"
+                  aria-label="Back to all categories"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  Back to Categories
+                </button>
+              </div>
+            )}
+
+            {showCategories && currentCategory && (
+              <div className="mt-6 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                <CategoryDescription description={categoryDescription} />
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

@@ -46,6 +46,7 @@ import AudioResourcesPage from "./Components/AudioResourcesPage";
 import StudyGuidesPage from "./Components/StudyGuidesPage";
 import PrivacyPolicy from "./Components/PrivacyPolicy";
 import AppShowcase from "./Components/AppShowCase";
+import NotificationCenter from "./Components/Notification";
 const pageVariants = {
   initial: { opacity: 0, y: 10 },
   in: { opacity: 1, y: 0 },
@@ -296,10 +297,18 @@ function AppContent({
             }
           />
           <Route
-            path="/teaching-resources"
+            path="/teaching-tools"
             element={
               <PageWrapper>
                 <TeachingToolsPage />
+              </PageWrapper>
+            }
+          />
+          <Route
+            path="/notifications"
+            element={
+              <PageWrapper>
+                <NotificationCenter />
               </PageWrapper>
             }
           />

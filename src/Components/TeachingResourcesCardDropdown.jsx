@@ -14,7 +14,11 @@ import {
 
 const API_BASE = "http://localhost:8000/api";
 
-const TeachingResourceDropdown = ({ setIsTeachingDropdownOpen }) => {
+export default function TeachingResourceDropdown({
+  setIsTeachingDropdownOpen,
+  quickLinksOnly = false,
+  onQuickLinkClick,
+}) {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -94,33 +98,28 @@ const TeachingResourceDropdown = ({ setIsTeachingDropdownOpen }) => {
       name: "Lesson Plans",
       href: "/lesson-plans",
       icon: FileText,
-      color: "emerald",
     },
     {
       name: "Video Lectures",
       href: "/video-lectures",
       icon: Video,
-      color: "teal",
     },
     {
       name: "Audio Resources",
       href: "/audio-resources",
       icon: Headphones,
-      color: "green",
     },
     {
       name: "Study Guides",
       href: "/study-guides",
-      icon: BookOpen,
-      color: "emerald",
+      icon: Lightbulb,
     },
     {
       name: "Teaching Tools",
       href: "/teaching-tools",
-      icon: Lightbulb,
-      color: "teal",
+      icon: Users,
     },
-    { name: "Community Forum", href: "/forum", icon: Users, color: "emerald" },
+    { name: "Hadith", href: "/hadith", icon: BookOpen },
   ];
 
   if (loading) {
@@ -132,6 +131,26 @@ const TeachingResourceDropdown = ({ setIsTeachingDropdownOpen }) => {
             Loading resources...
           </p>
         </div>
+      </div>
+    );
+  }
+
+  if (quickLinksOnly) {
+    return (
+      <div className="space-y-1">
+        {quickLinks.map(({ name, href, icon: Icon }) => (
+          <button
+            key={name}
+            onClick={() => {
+              onQuickLinkClick?.(href);
+              setIsTeachingDropdownOpen(false);
+            }}
+            className="w-full text-left flex items-center pl-10 py-2 text-base text-gray-600 hover:bg-emerald-50 hover:text-emerald-700 rounded-md transition-colors"
+          >
+            {Icon && <Icon className="w-4 h-4 mr-3 text-emerald-500" />}
+            {name}
+          </button>
+        ))}
       </div>
     );
   }
@@ -197,6 +216,4 @@ const TeachingResourceDropdown = ({ setIsTeachingDropdownOpen }) => {
       </div>
     </div>
   );
-};
-
-export default TeachingResourceDropdown;
+}

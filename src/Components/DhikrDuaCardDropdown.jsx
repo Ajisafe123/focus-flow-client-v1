@@ -14,7 +14,11 @@ const getFullImageUrl = (relativePath) => {
   return `${IMAGE_BASE}${path}`;
 };
 
-const DhikrDuaCardDropdown = ({ setIsDhikrDuaDropdownOpen }) => {
+export default function DhikrDuaCardDropdown({
+  setIsDhikrDuaDropdownOpen,
+  quickLinksOnly = false,
+  onQuickLinkClick,
+}) {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -104,6 +108,26 @@ const DhikrDuaCardDropdown = ({ setIsDhikrDuaDropdownOpen }) => {
     );
   }
 
+  if (quickLinksOnly) {
+    return (
+      <div className="space-y-1">
+        {quickLinks.map(({ name, href }) => (
+          <button
+            key={name}
+            onClick={() => {
+              onQuickLinkClick?.(href);
+              setIsDhikrDuaDropdownOpen(false);
+            }}
+            className="w-full text-left flex items-center pl-10 py-2 text-base text-gray-600 hover:bg-emerald-50 hover:text-emerald-700 rounded-md transition-colors"
+          >
+            <ChevronRight className="w-4 h-4 mr-3 text-emerald-500" />
+            {name}
+          </button>
+        ))}
+      </div>
+    );
+  }
+
   return (
     <div className="absolute z-[80] top-full left-1/2 -translate-x-1/2 mt-3 w-[720px] bg-white rounded-md shadow-2xl border border-emerald-100 pointer-events-auto">
       <div className="bg-gradient-to-br from-emerald-50 via-white to-teal-50 p-6">
@@ -158,6 +182,4 @@ const DhikrDuaCardDropdown = ({ setIsDhikrDuaDropdownOpen }) => {
       </div>
     </div>
   );
-};
-
-export default DhikrDuaCardDropdown;
+}

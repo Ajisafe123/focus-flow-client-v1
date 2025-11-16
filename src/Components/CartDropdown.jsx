@@ -14,7 +14,7 @@ export default function CartDropdown({
   const items = cart.reduce((s, i) => s + i.quantity, 0);
 
   return (
-    <div className="w-80 p-4 bg-white border border-gray-200 rounded-xl shadow-lg z-50 animate-fadeIn absolute right-0 mt-2">
+    <div className="w-80 p-4 h-50 bg-white border border-gray-200 rounded-xl shadow-lg z-50 animate-fadeIn absolute right-0 mt-2">
       <style>{`.animate-fadeIn{animation:fadeIn .3s ease-out}@keyframes fadeIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}`}</style>
 
       <div className="flex items-center justify-between border-b border-gray-100 pb-3 mb-3">

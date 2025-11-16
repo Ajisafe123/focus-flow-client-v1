@@ -20,8 +20,6 @@ import {
 } from "lucide-react";
 
 const MobileNavigation = ({
-  showSearchBar,
-  setShowSearchBar,
   searchQuery,
   setSearchQuery,
   handleSearch,
@@ -77,11 +75,19 @@ const MobileNavigation = ({
 
             <div className="flex items-center space-x-2">
               <button
-                onClick={() => setShowSearchBar((p) => !p)}
-                className="p-2 rounded-full hover:bg-white/15 transition-colors"
+                onClick={() =>
+                  handleNavItemClick("/notifications", "Notifications")
+                }
+                className="p-2 rounded-full hover:bg-white/15 transition-colors relative"
               >
-                <Search className="w-5 h-5 text-white" />
+                <Bell className="w-5 h-5 text-white" />
+                {notificationCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center h-4 w-4 text-xs font-bold text-white bg-red-500 rounded-full border border-white">
+                    {notificationCount}
+                  </span>
+                )}
               </button>
+
               <button
                 id="mobile-menu-button"
                 onClick={() => setIsMobileMenuOpen((p) => !p)}
@@ -92,30 +98,6 @@ const MobileNavigation = ({
                 ) : (
                   <Menu className="w-6 h-6 text-white" />
                 )}
-              </button>
-            </div>
-          </div>
-
-          <div
-            className={`transition-all duration-300 overflow-hidden ${
-              showSearchBar ? "max-h-16 pt-2 pb-4 px-4" : "max-h-0 p-0"
-            }`}
-          >
-            <div className="flex items-center w-full space-x-2">
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleSearch(e)}
-                placeholder="Search resources, articles, and more..."
-                className="flex-1 px-4 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 text-white placeholder-white/60 text-sm"
-                autoFocus={showSearchBar}
-              />
-              <button
-                onClick={handleSearch}
-                className="p-2 bg-white/15 text-white rounded-lg hover:bg-white/25 transition-colors"
-              >
-                <Search className="w-5 h-5" />
               </button>
             </div>
           </div>
@@ -138,20 +120,27 @@ const MobileNavigation = ({
         </div>
 
         <div className="p-4 space-y-2">
-          <button
-            onClick={goToShop}
-            className="w-full text-left flex items-center justify-between py-3 text-lg font-medium text-gray-700 hover:text-emerald-700 transition-colors border-b border-gray-100 relative"
-          >
-            <div className="flex items-center">
-              <ShoppingCart className="w-5 h-5 mr-3 text-emerald-600" />
-              Shop / Cart
+          <div className="mb-4">
+            <div className="flex items-center w-full space-x-2 bg-gray-50 rounded-lg p-2">
+              <Search className="w-5 h-5 text-emerald-600" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSearch(e)}
+                placeholder="Search resources, articles..."
+                className="flex-1 px-2 py-1 bg-transparent focus:outline-none text-sm text-gray-700 placeholder-gray-500"
+                autoFocus={isMobileMenuOpen}
+              />
+              <button
+                onClick={handleSearch}
+                className="p-1.5 bg-emerald-600 text-white rounded-full hover:bg-emerald-700 transition-colors"
+              >
+                <Search className="w-3.5 h-3.5" />
+              </button>
             </div>
-            {cartItemCount > 0 && (
-              <span className="flex items-center justify-center h-5 w-5 text-xs font-bold text-white bg-red-500 rounded-full">
-                {cartItemCount}
-              </span>
-            )}
-          </button>
+          </div>
+
           <div className="border-b border-gray-100">
             <button
               onClick={() => toggleMobileDropdown("Dhikr & Du'a")}
@@ -185,6 +174,7 @@ const MobileNavigation = ({
               />
             </div>
           </div>
+
           <div className="border-b border-gray-100">
             <button
               onClick={() => toggleMobileDropdown("Teaching Resources")}
@@ -218,6 +208,7 @@ const MobileNavigation = ({
               />
             </div>
           </div>
+
           <div className="border-b border-gray-100">
             <button
               onClick={() => toggleMobileDropdown("Articles")}
@@ -251,6 +242,7 @@ const MobileNavigation = ({
               />
             </div>
           </div>
+
           <div className="border-b border-gray-100">
             <button
               onClick={() => toggleMobileDropdown("About")}
@@ -289,6 +281,7 @@ const MobileNavigation = ({
               ))}
             </div>
           </div>
+
           <button
             onClick={() => handleNavItemClick("/donation", "Donation")}
             className="w-full text-left flex items-center py-3 text-lg font-medium text-gray-700 hover:text-emerald-700 transition-colors border-b border-gray-100"
@@ -296,22 +289,15 @@ const MobileNavigation = ({
             <Heart className="w-5 h-5 mr-3 text-emerald-600" />
             Donation
           </button>
-          
+
           <button
             onClick={() =>
-              handleNavItemClick("/notifications", "Notifications")
+              handleNavItemClick(token ? "/profile" : "/login", "Mine")
             }
-            className="w-full text-left flex items-center justify-between py-3 text-lg font-medium text-gray-700 hover:text-emerald-700 transition-colors border-b border-gray-100 relative"
+            className="w-full text-left flex items-center py-3 text-lg font-medium text-gray-700 hover:text-emerald-700 transition-colors border-b border-gray-100"
           >
-            <div className="flex items-center">
-              <Bell className="w-5 h-5 mr-3 text-emerald-600" />
-              Notifications
-            </div>
-            {notificationCount > 0 && (
-              <span className="flex items-center justify-center h-5 w-5 text-xs font-bold text-white bg-red-500 rounded-full">
-                {notificationCount}
-              </span>
-            )}
+            <User className="w-5 h-5 mr-3 text-emerald-600" />
+            {token ? "My Profile" : "Login / Register"}
           </button>
         </div>
       </div>
@@ -323,11 +309,18 @@ const MobileNavigation = ({
             { name: "Quran", icon: BookOpen, href: "/quran" },
             { name: "Prayer", icon: Clock, href: "/prayer-times" },
             { name: "Ramadan", icon: Calendar, href: "/ramadan" },
-            { name: "Mine", icon: User, href: token ? "/profile" : "/login" },
-          ].map(({ name, icon: Icon, href }) => (
+            {
+              name: "Shop",
+              icon: ShoppingCart,
+              href: "/shop",
+              onClick: goToShop,
+            },
+          ].map(({ name, icon: Icon, href, onClick }) => (
             <button
               key={name}
-              onClick={() => handleNavItemClick(href, name)}
+              onClick={() =>
+                onClick ? onClick() : handleNavItemClick(href, name)
+              }
               className={`flex flex-col items-center p-1.5 transition-colors relative ${
                 activeLink === name
                   ? "text-emerald-700"
@@ -336,7 +329,7 @@ const MobileNavigation = ({
             >
               <div className="relative">
                 <Icon className="w-5 h-5" />
-                {name === "Mine" && notificationCount > 0 && token && (
+                {name === "Shop" && cartItemCount > 0 && (
                   <span className="absolute -top-1 -right-1 h-2.5 w-2.5 bg-red-500 rounded-full border border-white" />
                 )}
               </div>

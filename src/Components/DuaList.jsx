@@ -367,6 +367,7 @@ const DuaCategoryPage = ({ categoryId }) => {
 
   const [searchParams] = useSearchParams();
   const deepLinkDuaId = searchParams.get("duaId");
+  const urlCategoryId = searchParams.get("category_id");
 
   const AUTH_TOKEN = getAuthToken();
   const isAuthenticated = !!AUTH_TOKEN;
@@ -442,10 +443,13 @@ const DuaCategoryPage = ({ categoryId }) => {
             duas: duasData.filter((d) => d.category_id === cat.id),
           }));
           setCategories(groupedDuas);
-          if (categoryId && !selectedCategoryId) {
-            setSelectedCategoryId(categoryId);
+
+          const initialCategoryId = urlCategoryId || categoryId;
+
+          if (initialCategoryId) {
+            setSelectedCategoryId(initialCategoryId.toString());
             setView("duas");
-          } else if (!categoryId) {
+          } else {
             setView("categories");
             setSelectedCategoryId(null);
           }
@@ -461,7 +465,7 @@ const DuaCategoryPage = ({ categoryId }) => {
         setLoading(false);
       }
     },
-    [AUTH_TOKEN, isAuthenticated, categoryId, selectedCategoryId]
+    [AUTH_TOKEN, isAuthenticated, categoryId, urlCategoryId]
   );
 
   const executeSearch = useCallback(() => {
@@ -480,10 +484,11 @@ const DuaCategoryPage = ({ categoryId }) => {
   };
 
   useEffect(() => {
-    if (!searchExecuted && view === "categories" && !deepLinkDuaId) {
+    if (!searchExecuted && !deepLinkDuaId) {
       fetchDuasAndCategories("");
     }
-  }, [fetchDuasAndCategories, view, searchExecuted, deepLinkDuaId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fetchDuasAndCategories, searchExecuted, deepLinkDuaId]);
 
   useEffect(() => {
     if (deepLinkDuaId) {
@@ -510,11 +515,20 @@ const DuaCategoryPage = ({ categoryId }) => {
         setView("duas");
         setOpenDetails({ [duaToFocus.id]: "translation" });
       }
+    } else if (urlCategoryId) {
+      setSelectedCategoryId(urlCategoryId);
+      setView("duas");
     } else if (categoryId) {
       setSelectedCategoryId(categoryId);
       setView("duas");
     }
-  }, [deepLinkDuaId, categories, categoryId, fetchDuasAndCategories]);
+  }, [
+    deepLinkDuaId,
+    categories,
+    categoryId,
+    urlCategoryId,
+    fetchDuasAndCategories,
+  ]);
 
   const handleLocalToggle = (duaId) => {
     setLocalFavorites((prevSet) => {

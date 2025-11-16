@@ -8,6 +8,9 @@ import {
   Heart,
   Share2,
   Zap,
+  Tag,
+  Layers,
+  ChevronDown,
 } from "lucide-react";
 
 const TOOLS = [
@@ -68,120 +71,6 @@ const TOOLS = [
     thumbnail:
       "https://images.pexels.com/photos/3184317/pexels-photo-3184317.jpeg?auto=compress&cs=tinysrgb&w=400",
   },
-  {
-    id: 4,
-    title: "Arabic Alphabet Flashcards",
-    category: "Language Learning",
-    type: "Printable",
-    rating: 4.9,
-    reviews: 456,
-    downloads: 6789,
-    description:
-      "Beautiful flashcards with all Arabic letters including pronunciation guides and examples.",
-    features: [
-      "All 28 letters",
-      "Pronunciation guide",
-      "Example words",
-      "Color coded",
-    ],
-    thumbnail:
-      "https://images.pexels.com/photos/5327585/pexels-photo-5327585.jpeg?auto=compress&cs=tinysrgb&w=400",
-  },
-  {
-    id: 5,
-    title: "Prophets Timeline Chart",
-    category: "Visual Aids",
-    type: "Poster",
-    rating: 4.8,
-    reviews: 234,
-    downloads: 4567,
-    description:
-      "Large timeline poster showing all 25 prophets with key events and dates.",
-    features: [
-      "Visual timeline",
-      "Key events",
-      "High quality print",
-      "Educational notes",
-    ],
-    thumbnail:
-      "https://images.pexels.com/photos/2403209/pexels-photo-2403209.jpeg?auto=compress&cs=tinysrgb&w=400",
-  },
-  {
-    id: 6,
-    title: "Wudu Steps Poster",
-    category: "Visual Aids",
-    type: "Poster",
-    rating: 4.9,
-    reviews: 389,
-    downloads: 5901,
-    description:
-      "Step-by-step illustrated guide for performing wudu correctly.",
-    features: [
-      "Clear illustrations",
-      "Arabic & English",
-      "Printable",
-      "Multiple sizes",
-    ],
-    thumbnail:
-      "https://images.pexels.com/photos/4994726/pexels-photo-4994726.jpeg?auto=compress&cs=tinysrgb&w=400",
-  },
-  {
-    id: 7,
-    title: "Islamic Trivia Quiz Generator",
-    category: "Assessment Tools",
-    type: "Digital Tool",
-    rating: 4.7,
-    reviews: 167,
-    downloads: 3245,
-    description:
-      "Customizable quiz generator with hundreds of Islamic knowledge questions.",
-    features: [
-      "Question bank",
-      "Custom quizzes",
-      "Auto grading",
-      "Progress tracking",
-    ],
-    thumbnail:
-      "https://images.pexels.com/photos/5943880/pexels-photo-5943880.jpeg?auto=compress&cs=tinysrgb&w=400",
-  },
-  {
-    id: 8,
-    title: "Classroom Behavior Chart",
-    category: "Classroom Management",
-    type: "Template",
-    rating: 4.6,
-    reviews: 145,
-    downloads: 2987,
-    description:
-      "Islamic-themed behavior tracking chart with positive reinforcement system.",
-    features: [
-      "Reward system",
-      "Progress tracking",
-      "Customizable",
-      "Parent reports",
-    ],
-    thumbnail:
-      "https://images.pexels.com/photos/3184317/pexels-photo-3184317.jpeg?auto=compress&cs=tinysrgb&w=400",
-  },
-  {
-    id: 9,
-    title: "Hadith Study Worksheet Pack",
-    category: "Worksheets",
-    type: "Printable",
-    rating: 4.8,
-    reviews: 276,
-    downloads: 4321,
-    description:
-      "Collection of worksheets for studying and memorizing important hadiths.",
-    features: [
-      "Multiple worksheets",
-      "Different levels",
-      "Answer keys",
-      "Translation included",
-    ],
-    thumbnail:
-      "https://images.pexels.com/photos/5943880/pexels-photo-5943880.jpeg?auto=compress&cs=tinysrgb&w=400",
-  },
 ];
 
 const CATEGORIES = [
@@ -200,43 +89,55 @@ const ToolCard = ({ tool }) => {
   const [isFavorite, setIsFavorite] = useState(false);
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100 group">
-      <div className="relative h-48 overflow-hidden bg-gray-100">
+    <div className="bg-white rounded-2xl shadow-2xl hover:shadow-emerald-500/50 transition-all duration-500 overflow-hidden transform hover:-translate-y-2 group">
+      <div className="relative h-44 sm:h-48 overflow-hidden bg-gray-100">
         <img
           src={tool.thumbnail}
           alt={tool.title}
-          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
         />
-        <div className="absolute top-3 left-3 flex gap-2">
-          <span className="px-3 py-1 bg-purple-500 text-white text-xs font-bold rounded-full">
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+
+        <div className="absolute top-3 right-3 flex gap-2 z-10">
+          <button
+            onClick={() => setIsFavorite(!isFavorite)}
+            className="bg-white rounded-full p-2 shadow-lg hover:scale-110 transition-transform"
+          >
+            <Heart
+              className={`w-5 h-5 ${
+                isFavorite ? "fill-red-500 text-red-500" : "text-gray-400"
+              }`}
+            />
+          </button>
+          <button className="bg-white rounded-full p-2 shadow-lg hover:scale-110 transition-transform">
+            <Share2 className="w-5 h-5 text-emerald-600" />
+          </button>
+        </div>
+        <span className="absolute top-3 left-3 z-10 px-3 py-1 bg-red-600 text-white text-xs font-bold rounded-full shadow-xl flex items-center gap-1 opacity-90 animate-pulse">
+          <Zap className="w-3 h-3 fill-white" />
+          LIVE
+        </span>
+        <div className="absolute bottom-3 left-3 right-3 flex justify-between items-center">
+          <span className="px-3 py-1 bg-teal-600 text-white text-xs font-bold rounded-full shadow-lg flex items-center gap-1 opacity-90">
+            <Layers className="w-3 h-3" />
             {tool.type}
           </span>
-          <span className="px-3 py-1 bg-white/90 backdrop-blur-sm text-gray-900 text-xs font-semibold rounded-full flex items-center gap-1">
+          <span className="px-3 py-1 bg-white text-gray-900 text-xs font-bold rounded-full flex items-center gap-1 shadow-lg opacity-90">
             <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
             {tool.rating}
           </span>
         </div>
-        <button
-          onClick={() => setIsFavorite(!isFavorite)}
-          className="absolute top-3 right-3 bg-white rounded-full p-2 shadow-lg hover:scale-110 transition-transform"
-        >
-          <Heart
-            className={`w-5 h-5 ${
-              isFavorite ? "fill-red-500 text-red-500" : "text-gray-400"
-            }`}
-          />
-        </button>
       </div>
 
-      <div className="p-5">
-        <div className="flex items-center gap-2 mb-2">
-          <Lightbulb className="w-4 h-4 text-emerald-600" />
-          <span className="text-xs font-semibold text-emerald-600">
+      <div className="p-4 sm:p-5 border-b border-gray-100">
+        <div className="flex items-center gap-1 mb-2">
+          <Tag className="w-3 h-3 text-emerald-600" />
+          <span className="text-xs font-bold uppercase text-emerald-600 tracking-wider">
             {tool.category}
           </span>
         </div>
 
-        <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-emerald-600 transition-colors">
+        <h3 className="text-lg sm:text-xl font-extrabold text-gray-900 mb-2 line-clamp-2 group-hover:text-teal-700 transition-colors">
           {tool.title}
         </h3>
 
@@ -244,48 +145,55 @@ const ToolCard = ({ tool }) => {
           {tool.description}
         </p>
 
-        <div className="mb-4">
-          <div className="flex items-center gap-2 mb-2">
-            <Zap className="w-4 h-4 text-emerald-600" />
-            <span className="text-xs font-semibold text-gray-700">
-              Features:
+        <div className="flex justify-between gap-4 text-sm pt-2 border-t border-gray-100">
+          <div className="flex items-center gap-2 text-gray-700">
+            <Download className="w-4 h-4 text-teal-500" />
+            <span className="font-semibold">
+              {tool.downloads.toLocaleString()}
             </span>
           </div>
-          <div className="flex flex-wrap gap-2">
-            {tool.features.slice(0, 3).map((feature, idx) => (
-              <span
-                key={idx}
-                className="px-2 py-1 bg-emerald-50 text-emerald-700 text-xs font-medium rounded-lg"
-              >
-                {feature}
-              </span>
-            ))}
+          <div className="flex items-center gap-2 text-gray-700">
+            <Star className="w-4 h-4 text-amber-500" />
+            <span className="font-semibold">{tool.reviews} Reviews</span>
           </div>
         </div>
+      </div>
 
-        <div className="grid grid-cols-2 gap-2 mb-4 text-xs text-gray-600">
-          <div className="flex items-center gap-1">
-            <Download className="w-4 h-4 text-emerald-600" />
-            <span>{tool.downloads.toLocaleString()} downloads</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <Star className="w-4 h-4 text-amber-400" />
-            <span>{tool.reviews} reviews</span>
-          </div>
-        </div>
-
+      <div className="p-4 bg-emerald-50">
         <div className="flex gap-2">
-          <button className="flex-1 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl font-semibold hover:from-emerald-600 hover:to-teal-700 transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 text-sm">
+          <button className="flex-1 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-lg font-bold text-sm hover:from-emerald-700 hover:to-teal-700 transition-all shadow-lg flex items-center justify-center gap-1">
             <Download className="w-4 h-4" />
-            Download
+            Get Resource
           </button>
-          <button className="px-4 py-2.5 bg-emerald-50 text-emerald-700 rounded-xl font-semibold hover:bg-emerald-100 transition-colors flex items-center justify-center">
-            <Eye className="w-4 h-4" />
-          </button>
-          <button className="px-4 py-2.5 bg-emerald-50 text-emerald-700 rounded-xl font-semibold hover:bg-emerald-100 transition-colors flex items-center justify-center">
-            <Share2 className="w-4 h-4" />
+
+          <button className="p-2.5 bg-white text-emerald-700 rounded-lg font-semibold hover:bg-emerald-200 transition-colors flex items-center justify-center shadow-md">
+            <Eye className="w-5 h-5" />
           </button>
         </div>
+      </div>
+    </div>
+  );
+};
+
+const FilterDropdown = ({ label, value, options, onChange }) => {
+  return (
+    <div>
+      <label className="block text-sm font-bold text-gray-700 mb-2">
+        {label}
+      </label>
+      <div className="relative">
+        <select
+          value={value}
+          onChange={onChange}
+          className="w-full appearance-none px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-600 outline-none transition-colors bg-white shadow-inner pr-10 text-gray-700 font-medium cursor-pointer hover:border-emerald-400"
+        >
+          {options.map((option) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </select>
+        <ChevronDown className="w-5 h-5 absolute right-3 top-1/2 transform -translate-y-1/2 text-emerald-600 pointer-events-none" />
       </div>
     </div>
   );
@@ -309,71 +217,51 @@ const TeachingToolsPage = () => {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-emerald-50 to-teal-50">
-      <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-600 text-white py-16 shadow-2xl">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex items-center gap-4 mb-6">
-            <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center border-2 border-white">
-              <Lightbulb className="w-8 h-8 text-white" />
+    <div className="min-h-screen bg-gray-50">
+      <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-600 text-white py-12 sm:py-16 shadow-xl">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-start gap-4 mb-6">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center border-2 border-white flex-shrink-0">
+              <Lightbulb className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
             </div>
             <div>
-              <h1 className="text-5xl font-extrabold tracking-tight">
-                Teaching Tools
+              <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
+                Teaching Tools Marketplace
               </h1>
-              <p className="text-emerald-100 text-lg mt-2">
-                Essential resources to enhance your Islamic classroom
+              <p className="text-emerald-100 text-base sm:text-lg mt-1">
+                Explore essential resources for the Islamic classroom
               </p>
             </div>
           </div>
 
-          <div className="relative mt-8">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-500 w-5 h-5" />
+          <div className="relative mt-6 sm:mt-8">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-500 w-5 h-5 sm:w-6 sm:h-6" />
             <input
               type="text"
-              placeholder="Search teaching tools and resources..."
+              placeholder="Search tools and resources..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-12 pr-4 py-4 rounded-2xl border-2 border-white/30 focus:border-white text-gray-900 placeholder-gray-500 shadow-lg transition-all bg-white"
+              className="w-full pl-11 pr-4 py-3 sm:py-4 rounded-xl border-2 border-white/30 focus:border-white text-gray-900 placeholder-gray-500 shadow-md transition-all bg-white text-base"
             />
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-white rounded-2xl shadow-lg p-6 mb-8 border border-gray-100">
-          <div className="grid md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Category
-              </label>
-              <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-500 outline-none transition-colors bg-white"
-              >
-                {CATEGORIES.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Type
-              </label>
-              <select
-                value={selectedType}
-                onChange={(e) => setSelectedType(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-500 outline-none transition-colors bg-white"
-              >
-                {TYPES.map((type) => (
-                  <option key={type} value={type}>
-                    {type}
-                  </option>
-                ))}
-              </select>
-            </div>
+          <div className="grid md:grid-cols-2 gap-4 sm:gap-6">
+            <FilterDropdown
+              label="Category"
+              value={selectedCategory}
+              options={CATEGORIES}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+            />
+            <FilterDropdown
+              label="Type"
+              value={selectedType}
+              options={TYPES}
+              onChange={(e) => setSelectedType(e.target.value)}
+            />
           </div>
         </div>
 
@@ -383,38 +271,38 @@ const TeachingToolsPage = () => {
             <span className="font-semibold text-gray-900">
               {filteredTools.length}
             </span>{" "}
-            teaching tools
+            matching tools
           </p>
         </div>
 
         {filteredTools.length === 0 ? (
-          <div className="text-center py-20">
-            <div className="bg-white rounded-3xl shadow-xl p-12 max-w-md mx-auto">
-              <Lightbulb className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <p className="text-2xl text-gray-600 font-bold mb-2">
+          <div className="text-center py-16">
+            <div className="bg-white rounded-2xl shadow-xl p-10 max-w-sm mx-auto border-2 border-emerald-200">
+              <Lightbulb className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+              <p className="text-xl text-gray-600 font-bold mb-2">
                 No tools found
               </p>
-              <p className="text-gray-500">
+              <p className="text-sm text-gray-500">
                 Try adjusting your search or filters
               </p>
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
             {filteredTools.map((tool) => (
               <ToolCard key={tool.id} tool={tool} />
             ))}
           </div>
         )}
 
-        <div className="bg-gradient-to-r from-emerald-600 to-teal-600 rounded-3xl p-12 text-white text-center shadow-2xl mt-16">
-          <Lightbulb className="w-16 h-16 mx-auto mb-4" />
-          <h3 className="text-3xl font-bold mb-4">Submit Your Tool</h3>
-          <p className="text-emerald-100 mb-6 max-w-2xl mx-auto">
+        <div className="bg-gradient-to-r from-emerald-600 to-teal-600 rounded-2xl p-8 sm:p-10 text-white text-center shadow-lg mt-12">
+          <Lightbulb className="w-10 h-10 mx-auto mb-3" />
+          <h3 className="text-2xl font-bold mb-3">Submit Your Tool</h3>
+          <p className="text-emerald-100 text-sm mb-4 max-w-xl mx-auto">
             Have a great teaching tool to share? Submit your resource and help
             educators worldwide.
           </p>
-          <button className="px-8 py-4 bg-white text-emerald-700 rounded-xl font-bold hover:bg-emerald-50 transition-colors shadow-lg">
+          <button className="px-6 py-3 bg-white text-emerald-700 rounded-lg font-bold text-sm hover:bg-emerald-50 transition-colors shadow-md">
             Submit Resource
           </button>
         </div>

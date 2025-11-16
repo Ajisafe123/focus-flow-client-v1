@@ -11,7 +11,6 @@ import {
   ChevronDown,
   Heart,
   Share2,
-  CheckCircle,
   Target,
 } from "lucide-react";
 
@@ -28,18 +27,6 @@ const STUDY_GUIDES = [
     downloads: 3421,
     description:
       "Comprehensive study guide covering all essential tajweed rules with practice exercises and examples.",
-    topics: [
-      "Makharij",
-      "Sifaat",
-      "Noon Sakinah",
-      "Meem Sakinah",
-      "Madd Rules",
-    ],
-    objectives: [
-      "Master pronunciation",
-      "Apply tajweed rules",
-      "Improve recitation quality",
-    ],
     thumbnail:
       "https://images.pexels.com/photos/4195325/pexels-photo-4195325.jpeg?auto=compress&cs=tinysrgb&w=400",
   },
@@ -55,18 +42,6 @@ const STUDY_GUIDES = [
     downloads: 2876,
     description:
       "Explore the six major hadith collections with authentication methods and practical applications.",
-    topics: [
-      "Sahih Bukhari",
-      "Sahih Muslim",
-      "Authentication",
-      "Narrator Chain",
-      "Hadith Sciences",
-    ],
-    objectives: [
-      "Understand hadith classification",
-      "Learn authentication methods",
-      "Apply teachings",
-    ],
     thumbnail:
       "https://images.pexels.com/photos/5943880/pexels-photo-5943880.jpeg?auto=compress&cs=tinysrgb&w=400",
   },
@@ -82,103 +57,11 @@ const STUDY_GUIDES = [
     downloads: 1987,
     description:
       "In-depth guide to usul al-fiqh, legal theory, and methodologies of the four major schools.",
-    topics: [
-      "Usul al-Fiqh",
-      "Qiyas",
-      "Ijma",
-      "Ijtihad",
-      "Four Schools Comparison",
-    ],
-    objectives: [
-      "Understand legal principles",
-      "Compare methodologies",
-      "Develop analytical skills",
-    ],
     thumbnail:
       "https://images.pexels.com/photos/4994726/pexels-photo-4994726.jpeg?auto=compress&cs=tinysrgb&w=400",
   },
-  {
-    id: 4,
-    title: "Arabic Grammar Mastery",
-    category: "Arabic Language",
-    difficulty: "Intermediate",
-    pages: 78,
-    duration: "6-7 weeks",
-    rating: 4.7,
-    reviews: 298,
-    downloads: 4123,
-    description:
-      "Step-by-step guide to Arabic grammar with exercises, examples, and practical applications.",
-    topics: [
-      "I'rab",
-      "Verb Conjugation",
-      "Sentence Structure",
-      "Particles",
-      "Grammar Rules",
-    ],
-    objectives: [
-      "Master Arabic grammar",
-      "Understand sentence structure",
-      "Read classical texts",
-    ],
-    thumbnail:
-      "https://images.pexels.com/photos/5327585/pexels-photo-5327585.jpeg?auto=compress&cs=tinysrgb&w=400",
-  },
-  {
-    id: 5,
-    title: "Seerah Study Guide: Life of Prophet Muhammad",
-    category: "Islamic History",
-    difficulty: "Beginner",
-    pages: 124,
-    duration: "10-12 weeks",
-    rating: 4.9,
-    reviews: 412,
-    downloads: 5234,
-    description:
-      "Chronological study of the Prophet's life with historical context, lessons, and reflections.",
-    topics: [
-      "Meccan Period",
-      "Migration",
-      "Battles",
-      "Treaty of Hudaybiyyah",
-      "Final Sermon",
-    ],
-    objectives: [
-      "Learn prophetic biography",
-      "Extract life lessons",
-      "Understand historical context",
-    ],
-    thumbnail:
-      "https://images.pexels.com/photos/2403209/pexels-photo-2403209.jpeg?auto=compress&cs=tinysrgb&w=400",
-  },
-  {
-    id: 6,
-    title: "Islamic Ethics and Morality",
-    category: "Islamic Ethics",
-    difficulty: "Intermediate",
-    pages: 56,
-    duration: "4-5 weeks",
-    rating: 4.8,
-    reviews: 176,
-    downloads: 2654,
-    description:
-      "Practical guide to Islamic ethics, moral values, and character development in daily life.",
-    topics: [
-      "Akhlaq",
-      "Character Traits",
-      "Social Ethics",
-      "Business Ethics",
-      "Personal Development",
-    ],
-    objectives: [
-      "Develop good character",
-      "Apply ethical principles",
-      "Improve relationships",
-    ],
-    thumbnail:
-      "https://images.pexels.com/photos/3184317/pexels-photo-3184317.jpeg?auto=compress&cs=tinysrgb&w=400",
-  },
 ];
+// --- END: Reduced Data Set ---
 
 const CATEGORIES = [
   "All Categories",
@@ -235,29 +118,9 @@ const StudyGuideCard = ({ guide }) => {
           {guide.title}
         </h3>
 
-        <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+        <p className="text-sm text-gray-600 mb-4 line-clamp-3">
           {guide.description}
         </p>
-
-        <div className="mb-4">
-          <div className="flex items-center gap-2 mb-2">
-            <Target className="w-4 h-4 text-emerald-600" />
-            <span className="text-xs font-semibold text-gray-700">
-              Learning Objectives:
-            </span>
-          </div>
-          <ul className="space-y-1">
-            {guide.objectives.slice(0, 2).map((obj, idx) => (
-              <li
-                key={idx}
-                className="flex items-start gap-2 text-xs text-gray-600"
-              >
-                <CheckCircle className="w-3 h-3 text-emerald-600 mt-0.5 flex-shrink-0" />
-                <span>{obj}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
 
         <div className="grid grid-cols-2 gap-2 mb-4 text-xs text-gray-600">
           <div className="flex items-center gap-1">
@@ -270,7 +133,7 @@ const StudyGuideCard = ({ guide }) => {
           </div>
           <div className="flex items-center gap-1">
             <Download className="w-4 h-4 text-emerald-600" />
-            <span>{guide.downloads.toLocaleString()}</span>
+            <span>{guide.downloads.toLocaleString()} downloads</span>
           </div>
           <div className="flex items-center gap-1">
             <Star className="w-4 h-4 text-amber-400" />
@@ -314,6 +177,8 @@ const StudyGuidesPage = () => {
 
     return matchesSearch && matchesCategory && matchesDifficulty;
   });
+
+  const displayGuides = filteredGuides.slice(0, 3);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-emerald-50 to-teal-50">
@@ -411,13 +276,13 @@ const StudyGuidesPage = () => {
           <p className="text-gray-600">
             Showing{" "}
             <span className="font-semibold text-gray-900">
-              {filteredGuides.length}
+              {displayGuides.length}
             </span>{" "}
-            study guides
+            matching study guides
           </p>
         </div>
 
-        {filteredGuides.length === 0 ? (
+        {displayGuides.length === 0 ? (
           <div className="text-center py-20">
             <div className="bg-white rounded-3xl shadow-xl p-12 max-w-md mx-auto">
               <BookOpen className="w-16 h-16 text-gray-300 mx-auto mb-4" />
@@ -431,7 +296,7 @@ const StudyGuidesPage = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredGuides.map((guide) => (
+            {displayGuides.map((guide) => (
               <StudyGuideCard key={guide.id} guide={guide} />
             ))}
           </div>

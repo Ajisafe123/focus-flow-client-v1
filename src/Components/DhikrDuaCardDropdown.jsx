@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { Link } from "react-router-dom";
 import { Loader2, ChevronRight, ImageIcon } from "lucide-react";
 
 const API_BASE = "https://focus-flow-server-v1.onrender.com/api";
@@ -13,10 +14,7 @@ const getFullImageUrl = (relativePath) => {
   return `${IMAGE_BASE}${path}`;
 };
 
-const DhikrDuaCardDropdown = ({
-  handleNavItemClick,
-  setIsDhikrDuaDropdownOpen,
-}) => {
+const DhikrDuaCardDropdown = ({ setIsDhikrDuaDropdownOpen }) => {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -39,15 +37,15 @@ const DhikrDuaCardDropdown = ({
   }, [fetchCategories]);
 
   const Card = ({ name, id, imageUrl }) => {
-    const href = `/dua?category_id=${id}`;
     const fullImageUrl = getFullImageUrl(imageUrl);
 
     return (
-      <button
-        onClick={() => {
-          handleNavItemClick(href, name);
-          setIsDhikrDuaDropdownOpen(false);
+      <Link
+        to={{
+          pathname: "/dua",
+          search: `?category_id=${id}`,
         }}
+        onClick={() => setIsDhikrDuaDropdownOpen(false)}
         className="group w-full flex items-center bg-white rounded-md shadow-md hover:shadow-xl transition-all duration-300 border border-gray-200 hover:border-emerald-300 p-2 cursor-pointer"
       >
         <div className="flex-shrink-0 w-16 h-16 flex items-center justify-center">
@@ -68,7 +66,7 @@ const DhikrDuaCardDropdown = ({
           </h3>
         </div>
         <ChevronRight className="w-5 h-5 text-emerald-600" />
-      </button>
+      </Link>
     );
   };
 
@@ -79,7 +77,7 @@ const DhikrDuaCardDropdown = ({
 
   const getCategoryHrefByName = (name) => {
     const cat = categories.find((c) => c.name === name);
-    if (cat) return `/dua?category_id=${cat.id}`;
+    if (cat) return { pathname: "/dua", search: `?category_id=${cat.id}` };
     return name.includes("Dhikr") ? "/dhikr-guide" : "/dua-guide";
   };
 
@@ -116,16 +114,14 @@ const DhikrDuaCardDropdown = ({
               Explore supplications and remembrance
             </p>
           </div>
-          <button
-            onClick={() => {
-              handleNavItemClick("/dua", "View All Duas");
-              setIsDhikrDuaDropdownOpen(false);
-            }}
+          <Link
+            to="/dua"
+            onClick={() => setIsDhikrDuaDropdownOpen(false)}
             className="px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-md flex items-center gap-2 font-medium text-sm transition-all duration-200"
           >
             View All Duas
             <ChevronRight className="w-4 h-4" />
-          </button>
+          </Link>
         </div>
 
         <div className="grid grid-cols-2 gap-4 mb-6">
@@ -145,19 +141,17 @@ const DhikrDuaCardDropdown = ({
           </h4>
           <div className="grid grid-cols-2 gap-2">
             {quickLinks.map(({ name, href }) => (
-              <button
+              <Link
                 key={name}
-                onClick={() => {
-                  handleNavItemClick(href, name);
-                  setIsDhikrDuaDropdownOpen(false);
-                }}
-                className="flex items-center gap-3 p-3 rounded-md hover:bg-gradient-to-r hover:from-emerald-50 hover:to-teal-50 transition-all duration-200 text-left border border-transparent hover:border-emerald-200"
+                to={href}
+                onClick={() => setIsDhikrDuaDropdownOpen(false)}
+                className="flex items-center gap-3 p-3 rounded-md hover:bg-gradient-to-r hover:from-emerald-50 hover:to-teal-50 transition-all duration-200 text-left border border-transparent hover:border-emerald-200 group"
               >
                 <span className="text-gray-800 font-medium text-sm flex-1">
                   {name}
                 </span>
                 <ChevronRight className="w-4 h-4 text-gray-400 opacity-0 group-hover:opacity-100 transform -translate-x-1 group-hover:translate-x-0 transition-all duration-200" />
-              </button>
+              </Link>
             ))}
           </div>
         </div>

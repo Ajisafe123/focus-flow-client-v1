@@ -25,6 +25,12 @@ import {
   Menu,
   Layers,
   FileText,
+  TrendingUp,
+  Bookmark,
+  Video,
+  Headphones,
+  Lightbulb,
+  Users,
 } from "lucide-react";
 import DhikrDuaCardDropdown from "./DhikrDuaCardDropdown";
 import TeachingResourceDropdown from "./TeachingResourcesCardDropdown";
@@ -44,6 +50,10 @@ export default function Navigation({ setShowLogoutModal }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [hasNewNotifications, setHasNewNotifications] = useState(true);
 
+  const [dhikrDuaCategories, setDhikrDuaCategories] = useState([]);
+  const [teachingCategories, setTeachingCategories] = useState([]);
+  const [articleCategories, setArticleCategories] = useState([]);
+
   const searchBarRef = useRef(null);
   const dhikrDuaDropdownRef = useRef(null);
   const teachingDropdownRef = useRef(null);
@@ -56,6 +66,52 @@ export default function Navigation({ setShowLogoutModal }) {
   const location = useLocation();
   const token = localStorage.getItem("token");
   const cartItemCount = 3;
+
+  useEffect(() => {
+    const fetchDhikrDuaCategories = async () => {
+      try {
+        const res = await fetch(
+          "https://focus-flow-server-v1.onrender.com/api/dua-categories"
+        );
+        if (res.ok) {
+          const data = await res.json();
+          setDhikrDuaCategories(data);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    const fetchTeachingCategories = async () => {
+      try {
+        const res = await fetch(
+          "http://localhost:8000/api/teaching-categories"
+        );
+        if (res.ok) {
+          const data = await res.json();
+          setTeachingCategories(data);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    const fetchArticleCategories = async () => {
+      try {
+        const res = await fetch("http://localhost:8000/api/article-categories");
+        if (res.ok) {
+          const data = await res.json();
+          setArticleCategories(data);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchDhikrDuaCategories();
+    fetchTeachingCategories();
+    fetchArticleCategories();
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
@@ -124,7 +180,8 @@ export default function Navigation({ setShowLogoutModal }) {
       "/quran": "Quran",
       "/about": "About",
       "/contact": "About",
-      "/donation": "About",
+      "/donation": "Donation",
+      "/app": "About",
       "/prayer-times": "Prayer",
       "/profile": "Mine",
       "/login": "Mine",
@@ -153,8 +210,6 @@ export default function Navigation({ setShowLogoutModal }) {
 
     if (activeName === "Prayer Times") activeName = "Prayer";
     if (activeName === "Teaching Resources") activeName = "Resources";
-    if (activeName === "About" && currentPath === "/donation")
-      activeName = "Donation";
 
     setActiveLink(activeName);
   }, [location.pathname]);
@@ -192,6 +247,7 @@ export default function Navigation({ setShowLogoutModal }) {
   const aboutMenuItems = [
     { name: "About Us", href: "/about", icon: Building },
     { name: "Contact Us", href: "/contact", icon: Mail },
+    { name: "Mobiles App", href: "/app", icon: Phone },
     { name: "Donation", href: "/donation", icon: Heart },
   ];
 
@@ -308,6 +364,38 @@ export default function Navigation({ setShowLogoutModal }) {
 
     setState(!state);
   };
+
+  const articleQuickLinks = [
+    {
+      name: "Latest Articles",
+      href: "/articles/latest",
+      icon: Clock,
+    },
+    {
+      name: "Trending Now",
+      href: "/articles/trending",
+      icon: TrendingUp,
+    },
+    {
+      name: "Most Popular",
+      href: "/articles/popular",
+      icon: Heart,
+    },
+    {
+      name: "Saved Articles",
+      href: "/articles/saved",
+      icon: Bookmark,
+    },
+  ];
+
+  const teachingQuickLinks = [
+    { name: "Lesson Plans", href: "/lesson-plans", icon: FileText },
+    { name: "Video Lectures", href: "/video-lectures", icon: Video },
+    { name: "Audio Resources", href: "/audio-resources", icon: Headphones },
+    { name: "Study Guides", href: "/study-guides", icon: BookOpen },
+    { name: "Teaching Tools", href: "/teaching-tools", icon: Lightbulb },
+    { name: "Community Forum", href: "/forum", icon: Users },
+  ];
 
   return (
     <>
@@ -715,84 +803,194 @@ export default function Navigation({ setShowLogoutModal }) {
             )}
           </button>
 
-          {desktopMenuItems.map((item) => {
-            const Icon = item.mobileIcon;
+          <button
+            onClick={() => handleNavItemClick("/quran", "Quran")}
+            className="w-full text-left flex items-center py-3 text-lg font-medium text-gray-700 hover:text-emerald-700 transition-colors border-b border-gray-100"
+          >
+            <BookOpen className="w-5 h-5 mr-3 text-emerald-600" />
+            Quran
+          </button>
 
-            if (!Icon || item.name === "Home" || item.name === "Prayer Times")
-              return null;
-
-            if (item.dropdown) {
-              const [isDropdownOpen, setIsDropdownOpen] = mobileDropdownStates[
-                item.name
-              ] || [false, null];
-
-              return (
-                <div key={item.name} className="border-b border-gray-100">
-                  <button
-                    onClick={() => toggleMobileDropdown(item.name)}
-                    className="w-full text-left flex items-center justify-between py-3 text-lg font-medium text-gray-700 hover:text-emerald-700 transition-colors"
-                  >
-                    <div className="flex items-center">
-                      <Icon className="w-5 h-5 mr-3 text-emerald-600" />
-                      {item.name}
-                    </div>
-                    <ChevronDown
-                      className={`w-4 h-4 transition-transform duration-200 ${
-                        isDropdownOpen ? "rotate-180 text-emerald-600" : ""
-                      }`}
-                    />
-                  </button>
-                  <div
-                    className={`transition-all duration-300 overflow-hidden ${
-                      isDropdownOpen
-                        ? "max-h-96 opacity-100 py-2"
-                        : "max-h-0 opacity-0"
-                    }`}
-                  >
-                    {item.items ? (
-                      item.items.map((subItem) => (
-                        <button
-                          key={subItem.name}
-                          onClick={() =>
-                            handleNavItemClick(subItem.href, subItem.name)
-                          }
-                          className="w-full text-left flex items-center pl-10 py-2 text-base text-gray-600 hover:bg-emerald-50 hover:text-emerald-700 rounded-md transition-colors"
-                        >
-                          <subItem.icon className="w-4 h-4 mr-3 text-emerald-500" />
-                          {subItem.name}
-                        </button>
-                      ))
-                    ) : (
-                      <div className="p-2 text-sm text-gray-500">
-                        <p className="mb-2 pl-6">
-                          Full dropdown content coming soon on mobile.
-                        </p>
-                        <button
-                          onClick={() =>
-                            handleNavItemClick(item.href, item.name)
-                          }
-                          className="w-full py-1.5 text-center bg-emerald-100 text-emerald-700 rounded-md hover:bg-emerald-200 transition-colors"
-                        >
-                          View All {item.name}
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              );
-            } else {
-              return (
+          <div className="border-b border-gray-100">
+            <button
+              onClick={() => toggleMobileDropdown("Dhikr & Du'a")}
+              className="w-full text-left flex items-center justify-between py-3 text-lg font-medium text-gray-700 hover:text-emerald-700 transition-colors"
+            >
+              <div className="flex items-center">
+                <Layers className="w-5 h-5 mr-3 text-emerald-600" />
+                Dhikr & Du'a
+              </div>
+              <ChevronDown
+                className={`w-4 h-4 transition-transform duration-200 ${
+                  isMobileDhikrDuaOpen ? "rotate-180 text-emerald-600" : ""
+                }`}
+              />
+            </button>
+            <div
+              className={`transition-all duration-300 overflow-hidden ${
+                isMobileDhikrDuaOpen
+                  ? "max-h-96 opacity-100 py-2"
+                  : "max-h-0 opacity-0"
+              }`}
+            >
+              {dhikrDuaCategories.map((cat) => (
                 <button
-                  key={item.name}
-                  onClick={() => handleNavItemClick(item.href, item.name)}
-                  className="w-full text-left flex items-center py-3 text-lg font-medium text-gray-700 hover:text-emerald-700 transition-colors border-b border-gray-100"
+                  key={cat.id}
+                  onClick={() =>
+                    handleNavItemClick(`/dua?category_id=${cat.id}`, cat.name)
+                  }
+                  className="w-full text-left flex items-center pl-10 py-2 text-base text-gray-600 hover:bg-emerald-50 hover:text-emerald-700 rounded-md transition-colors"
                 >
-                  <Icon className="w-5 h-5 mr-3 text-emerald-600" />
-                  {item.name}
+                  {cat.name}
                 </button>
-              );
-            }
-          })}
+              ))}
+            </div>
+          </div>
+
+          <div className="border-b border-gray-100">
+            <button
+              onClick={() => toggleMobileDropdown("Teaching Resources")}
+              className="w-full text-left flex items-center justify-between py-3 text-lg font-medium text-gray-700 hover:text-emerald-700 transition-colors"
+            >
+              <div className="flex items-center">
+                <PackageOpen className="w-5 h-5 mr-3 text-emerald-600" />
+                Teaching Resources
+              </div>
+              <ChevronDown
+                className={`w-4 h-4 transition-transform duration-200 ${
+                  isMobileTeachingOpen ? "rotate-180 text-emerald-600" : ""
+                }`}
+              />
+            </button>
+            <div
+              className={`transition-all duration-300 overflow-hidden ${
+                isMobileTeachingOpen
+                  ? "max-h-96 opacity-100 py-2"
+                  : "max-h-0 opacity-0"
+              }`}
+            >
+              {teachingQuickLinks.map(({ name, href, icon: Icon }) => (
+                <button
+                  key={name}
+                  onClick={() => handleNavItemClick(href, name)}
+                  className="w-full text-left flex items-center pl-10 py-2 text-base text-gray-600 hover:bg-emerald-50 hover:text-emerald-700 rounded-md transition-colors"
+                >
+                  <Icon className="w-4 h-4 mr-2 text-emerald-600" />
+                  {name}
+                </button>
+              ))}
+              {teachingCategories.map((cat) => (
+                <button
+                  key={cat.id}
+                  onClick={() =>
+                    handleNavItemClick(
+                      `/teaching-category/${cat.id}/${cat.name
+                        .replace(/\s/g, "-")
+                        .toLowerCase()}`,
+                      cat.name
+                    )
+                  }
+                  className="w-full text-left flex items-center pl-10 py-2 text-base text-gray-600 hover:bg-emerald-50 hover:text-emerald-700 rounded-md transition-colors"
+                >
+                  {cat.name}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="border-b border-gray-100">
+            <button
+              onClick={() => toggleMobileDropdown("Articles")}
+              className="w-full text-left flex items-center justify-between py-3 text-lg font-medium text-gray-700 hover:text-emerald-700 transition-colors"
+            >
+              <div className="flex items-center">
+                <FileText className="w-5 h-5 mr-3 text-emerald-600" />
+                Articles
+              </div>
+              <ChevronDown
+                className={`w-4 h-4 transition-transform duration-200 ${
+                  isMobileArticleOpen ? "rotate-180 text-emerald-600" : ""
+                }`}
+              />
+            </button>
+            <div
+              className={`transition-all duration-300 overflow-hidden ${
+                isMobileArticleOpen
+                  ? "max-h-96 opacity-100 py-2"
+                  : "max-h-0 opacity-0"
+              }`}
+            >
+              {articleQuickLinks.map(({ name, href, icon: Icon }) => (
+                <button
+                  key={name}
+                  onClick={() => handleNavItemClick(href, name)}
+                  className="w-full text-left flex items-center pl-10 py-2 text-base text-gray-600 hover:bg-emerald-50 hover:text-emerald-700 rounded-md transition-colors"
+                >
+                  <Icon className="w-4 h-4 mr-2 text-emerald-600" />
+                  {name}
+                </button>
+              ))}
+              {articleCategories.map((cat) => (
+                <button
+                  key={cat.id}
+                  onClick={() =>
+                    handleNavItemClick(
+                      `/article-category/${cat.id}/${cat.name
+                        .replace(/\s/g, "-")
+                        .toLowerCase()}`,
+                      cat.name
+                    )
+                  }
+                  className="w-full text-left flex items-center pl-10 py-2 text-base text-gray-600 hover:bg-emerald-50 hover:text-emerald-700 rounded-md transition-colors"
+                >
+                  {cat.name}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="border-b border-gray-100">
+            <button
+              onClick={() => toggleMobileDropdown("About")}
+              className="w-full text-left flex items-center justify-between py-3 text-lg font-medium text-gray-700 hover:text-emerald-700 transition-colors"
+            >
+              <div className="flex items-center">
+                <Building className="w-5 h-5 mr-3 text-emerald-600" />
+                About
+              </div>
+              <ChevronDown
+                className={`w-4 h-4 transition-transform duration-200 ${
+                  isMobileAboutOpen ? "rotate-180 text-emerald-600" : ""
+                }`}
+              />
+            </button>
+            <div
+              className={`transition-all duration-300 overflow-hidden ${
+                isMobileAboutOpen
+                  ? "max-h-96 opacity-100 py-2"
+                  : "max-h-0 opacity-0"
+              }`}
+            >
+              {aboutMenuItems.map((subItem) => (
+                <button
+                  key={subItem.name}
+                  onClick={() => handleNavItemClick(subItem.href, subItem.name)}
+                  className="w-full text-left flex items-center pl-10 py-2 text-base text-gray-600 hover:bg-emerald-50 hover:text-emerald-700 rounded-md transition-colors"
+                >
+                  <subItem.icon className="w-4 h-4 mr-3 text-emerald-500" />
+                  {subItem.name}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <button
+            onClick={() => handleNavItemClick("/donation", "Donation")}
+            className="w-full text-left flex items-center py-3 text-lg font-medium text-gray-700 hover:text-emerald-700 transition-colors border-b border-gray-100"
+          >
+            <Heart className="w-5 h-5 mr-3 text-emerald-600" />
+            Donation
+          </button>
 
           <button
             onClick={handleNotificationClick}

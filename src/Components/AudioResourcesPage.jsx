@@ -15,6 +15,7 @@ import {
   BookOpen,
   ChevronDown,
   Mic,
+  FileText,
 } from "lucide-react";
 
 const AUDIO_RESOURCES = [
@@ -33,8 +34,6 @@ const AUDIO_RESOURCES = [
     language: "Arabic",
     quality: "High Quality (320kbps)",
     releaseDate: "2024-10-15",
-    thumbnail:
-      "https://images.pexels.com/photos/4195325/pexels-photo-4195325.jpeg?auto=compress&cs=tinysrgb&w=400",
     tags: ["Quran", "Complete Surah", "Tajweed"],
   },
   {
@@ -52,8 +51,6 @@ const AUDIO_RESOURCES = [
     language: "English",
     quality: "Standard Quality (192kbps)",
     releaseDate: "2024-09-20",
-    thumbnail:
-      "https://images.pexels.com/photos/5943880/pexels-photo-5943880.jpeg?auto=compress&cs=tinysrgb&w=400",
     tags: ["Hadith", "Commentary", "Education"],
   },
   {
@@ -71,8 +68,6 @@ const AUDIO_RESOURCES = [
     language: "English",
     quality: "High Quality (320kbps)",
     releaseDate: "2024-11-01",
-    thumbnail:
-      "https://images.pexels.com/photos/2403209/pexels-photo-2403209.jpeg?auto=compress&cs=tinysrgb&w=400",
     tags: ["History", "Caliphs", "Biography"],
   },
   {
@@ -90,47 +85,7 @@ const AUDIO_RESOURCES = [
     language: "Arabic & English",
     quality: "High Quality (320kbps)",
     releaseDate: "2024-10-28",
-    thumbnail:
-      "https://images.pexels.com/photos/4195325/pexels-photo-4195325.jpeg?auto=compress&cs=tinysrgb&w=400",
     tags: ["Dua", "Daily", "Supplication"],
-  },
-  {
-    id: 5,
-    title: "Arabic Language Basics - Spoken Course",
-    category: "Language Learning",
-    reciter: "Ustadha Nouman Ali Khan",
-    duration: "4:50:30",
-    fileSize: "278 MB",
-    rating: 4.8,
-    reviews: 312,
-    downloads: 4567,
-    description:
-      "Interactive audio course for learning conversational Arabic with proper pronunciation.",
-    language: "English & Arabic",
-    quality: "Standard Quality (192kbps)",
-    releaseDate: "2024-09-15",
-    thumbnail:
-      "https://images.pexels.com/photos/5327585/pexels-photo-5327585.jpeg?auto=compress&cs=tinysrgb&w=400",
-    tags: ["Arabic", "Language", "Learning"],
-  },
-  {
-    id: 6,
-    title: "Stories of the Prophets",
-    category: "Islamic Stories",
-    reciter: "Sheikh Mufti Menk",
-    duration: "12:15:00",
-    fileSize: "698 MB",
-    rating: 4.9,
-    reviews: 523,
-    downloads: 8945,
-    description:
-      "Engaging narration of prophetic stories with lessons and moral teachings.",
-    language: "English",
-    quality: "High Quality (320kbps)",
-    releaseDate: "2024-10-05",
-    thumbnail:
-      "https://images.pexels.com/photos/3184317/pexels-photo-3184317.jpeg?auto=compress&cs=tinysrgb&w=400",
-    tags: ["Prophets", "Stories", "Inspiration"],
   },
 ];
 
@@ -146,39 +101,69 @@ const CATEGORIES = [
 
 const LANGUAGES = ["All Languages", "Arabic", "English", "Arabic & English"];
 
-const AudioCard = ({ audio }) => {
-  const [isPlaying, setIsPlaying] = useState(false);
+const AudioRow = ({ audio, isPlaying, onTogglePlay, isSelected, onSelect }) => {
   const [isFavorite, setIsFavorite] = useState(false);
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100 group">
-      <div className="relative h-48 overflow-hidden bg-gradient-to-br from-emerald-500 to-teal-600">
-        <img
-          src={audio.thumbnail}
-          alt={audio.title}
-          className="w-full h-full object-cover opacity-40 transition-transform duration-300 group-hover:scale-110"
-        />
-        <div className="absolute inset-0 flex items-center justify-center">
-          <button
-            onClick={() => setIsPlaying(!isPlaying)}
-            className="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-2xl hover:scale-110 transition-transform"
-          >
-            {isPlaying ? (
-              <Pause className="w-10 h-10 text-emerald-600" />
-            ) : (
-              <Play className="w-10 h-10 text-emerald-600 ml-1" />
-            )}
-          </button>
-        </div>
-        <div className="absolute top-3 left-3 flex gap-2">
-          <span className="px-3 py-1 bg-white/90 backdrop-blur-sm text-gray-900 text-xs font-semibold rounded-full flex items-center gap-1">
-            <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
-            {audio.rating}
-          </span>
-        </div>
+    <div
+      className={`flex items-center p-4 sm:p-5 border-b border-gray-100 transition-all duration-200 cursor-pointer ${
+        isSelected ? "bg-emerald-50 shadow-inner" : "bg-white hover:bg-gray-50"
+      }`}
+      onClick={() => onSelect(audio)}
+    >
+      <div className="flex-shrink-0 w-12 h-12 flex items-center justify-center mr-4">
         <button
-          onClick={() => setIsFavorite(!isFavorite)}
-          className="absolute top-3 right-3 bg-white rounded-full p-2 shadow-lg hover:scale-110 transition-transform"
+          onClick={(e) => {
+            e.stopPropagation();
+            onTogglePlay(audio);
+          }}
+          className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
+            isPlaying
+              ? "bg-red-500 text-white hover:bg-red-600"
+              : "bg-emerald-600 text-white hover:bg-emerald-700"
+          } shadow-md`}
+        >
+          {isPlaying ? (
+            <Pause className="w-5 h-5" />
+          ) : (
+            <Play className="w-5 h-5 ml-0.5" />
+          )}
+        </button>
+      </div>
+
+      <div className="flex-1 min-w-0 pr-4">
+        <h3
+          className={`text-base font-semibold truncate ${
+            isSelected ? "text-emerald-800" : "text-gray-900"
+          }`}
+        >
+          {audio.title}
+        </h3>
+        <p className="text-sm text-gray-500 truncate">
+          <Mic className="w-3 h-3 inline mr-1" />
+          {audio.reciter} &middot; {audio.category}
+        </p>
+      </div>
+
+      <div className="hidden sm:block text-sm text-gray-600 flex-shrink-0 w-24 text-right">
+        <div className="flex items-center justify-end">
+          <Clock className="w-4 h-4 text-emerald-600 mr-1" />
+          {audio.duration}
+        </div>
+      </div>
+
+      <div className="hidden md:flex items-center flex-shrink-0 w-28 text-sm text-gray-600 justify-end mr-4">
+        <Star className="w-4 h-4 fill-amber-400 text-amber-400 mr-1" />
+        {audio.rating} ({audio.reviews})
+      </div>
+
+      <div className="flex items-center space-x-2 flex-shrink-0">
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsFavorite(!isFavorite);
+          }}
+          className="p-2 rounded-full hover:bg-gray-200 transition-colors"
         >
           <Heart
             className={`w-5 h-5 ${
@@ -186,70 +171,37 @@ const AudioCard = ({ audio }) => {
             }`}
           />
         </button>
+        <a
+          href="#"
+          onClick={(e) => e.stopPropagation()}
+          className="p-2 rounded-full bg-emerald-100 text-emerald-700 hover:bg-emerald-200 transition-colors hidden lg:flex items-center"
+        >
+          <Download className="w-5 h-5" />
+        </a>
       </div>
+    </div>
+  );
+};
 
-      <div className="p-5">
-        <div className="flex items-center gap-2 mb-2">
-          <Headphones className="w-4 h-4 text-emerald-600" />
-          <span className="text-xs font-semibold text-emerald-600">
-            {audio.category}
-          </span>
-        </div>
-
-        <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-emerald-600 transition-colors">
-          {audio.title}
-        </h3>
-
-        <p className="text-sm text-gray-600 mb-3 line-clamp-2">
-          {audio.description}
-        </p>
-
-        <div className="flex items-center gap-2 mb-4">
-          <Mic className="w-4 h-4 text-gray-500" />
-          <span className="text-sm text-gray-700 font-medium">
-            {audio.reciter}
-          </span>
-        </div>
-
-        <div className="flex flex-wrap gap-2 mb-4">
-          {audio.tags.slice(0, 3).map((tag, idx) => (
-            <span
-              key={idx}
-              className="px-2 py-1 bg-emerald-50 text-emerald-700 text-xs font-medium rounded-lg"
-            >
-              {tag}
-            </span>
+const FilterDropdown = ({ label, value, options, onChange }) => {
+  return (
+    <div>
+      <label className="block text-sm font-bold text-gray-700 mb-2">
+        {label}
+      </label>
+      <div className="relative">
+        <select
+          value={value}
+          onChange={onChange}
+          className="w-full appearance-none px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-600 outline-none transition-colors bg-white shadow-inner pr-10 text-gray-700 font-medium cursor-pointer hover:border-emerald-400 text-sm"
+        >
+          {options.map((option) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
           ))}
-        </div>
-
-        <div className="grid grid-cols-2 gap-2 mb-4 text-xs text-gray-600">
-          <div className="flex items-center gap-1">
-            <Clock className="w-4 h-4 text-emerald-600" />
-            <span>{audio.duration}</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <Volume2 className="w-4 h-4 text-emerald-600" />
-            <span>{audio.quality.split(" ")[0]}</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <Download className="w-4 h-4 text-emerald-600" />
-            <span>{audio.downloads.toLocaleString()} downloads</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <BookOpen className="w-4 h-4 text-emerald-600" />
-            <span>{audio.language}</span>
-          </div>
-        </div>
-
-        <div className="flex gap-2">
-          <button className="flex-1 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl font-semibold hover:from-emerald-600 hover:to-teal-700 transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 text-sm">
-            <Download className="w-4 h-4" />
-            Download ({audio.fileSize})
-          </button>
-          <button className="px-4 py-2.5 bg-emerald-50 text-emerald-700 rounded-xl font-semibold hover:bg-emerald-100 transition-colors flex items-center justify-center">
-            <Share2 className="w-4 h-4" />
-          </button>
-        </div>
+        </select>
+        <ChevronDown className="w-5 h-5 absolute right-3 top-1/2 transform -translate-y-1/2 text-emerald-600 pointer-events-none" />
       </div>
     </div>
   );
@@ -260,6 +212,8 @@ const AudioResourcesPage = () => {
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
   const [selectedLanguage, setSelectedLanguage] = useState("All Languages");
   const [showFilters, setShowFilters] = useState(false);
+  const [currentAudio, setCurrentAudio] = useState(null);
+  const [isPlaying, setIsPlaying] = useState(false);
 
   const filteredAudios = AUDIO_RESOURCES.filter((audio) => {
     const matchesSearch =
@@ -276,38 +230,55 @@ const AudioResourcesPage = () => {
     return matchesSearch && matchesCategory && matchesLanguage;
   });
 
+  const handleTogglePlay = (audio) => {
+    if (currentAudio && currentAudio.id === audio.id) {
+      setIsPlaying(!isPlaying);
+    } else {
+      setCurrentAudio(audio);
+      setIsPlaying(true);
+    }
+  };
+
+  const handleSelectAudio = (audio) => {
+    if (currentAudio && currentAudio.id === audio.id) {
+      return;
+    }
+    setCurrentAudio(audio);
+    setIsPlaying(false);
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-emerald-50 to-teal-50">
-      <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-600 text-white py-16 shadow-2xl">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex items-center gap-4 mb-6">
-            <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center border-2 border-white">
-              <Headphones className="w-8 h-8 text-white" />
+    <div className="min-h-screen bg-gray-50">
+      <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-600 text-white py-12 sm:py-16 shadow-xl">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-start gap-4 mb-6">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center border-2 border-white flex-shrink-0">
+              <Headphones className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
             </div>
             <div>
-              <h1 className="text-5xl font-extrabold tracking-tight">
-                Audio Resources
+              <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
+                Audio Resources Library
               </h1>
-              <p className="text-emerald-100 text-lg mt-2">
+              <p className="text-emerald-100 text-base sm:text-lg mt-1">
                 Listen and learn with our collection of Islamic audio content
               </p>
             </div>
           </div>
 
-          <div className="relative mt-8">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-500 w-5 h-5" />
+          <div className="relative mt-6 sm:mt-8">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-500 w-5 h-5 sm:w-6 sm:h-6" />
             <input
               type="text"
               placeholder="Search by title, reciter, or topic..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-12 pr-4 py-4 rounded-2xl border-2 border-white/30 focus:border-white text-gray-900 placeholder-gray-500 shadow-lg transition-all bg-white"
+              className="w-full pl-11 pr-4 py-3 sm:py-4 rounded-xl border-2 border-white/30 focus:border-white text-gray-900 placeholder-gray-500 shadow-md transition-all bg-white text-base"
             />
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-white rounded-2xl shadow-lg p-6 mb-8 border border-gray-100">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
@@ -330,43 +301,22 @@ const AudioResourcesPage = () => {
           </div>
 
           <div
-            className={`grid md:grid-cols-2 gap-4 ${
+            className={`grid md:grid-cols-2 gap-4 sm:gap-6 ${
               showFilters ? "block" : "hidden lg:grid"
             }`}
           >
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Category
-              </label>
-              <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-500 outline-none transition-colors bg-white"
-              >
-                {CATEGORIES.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Language
-              </label>
-              <select
-                value={selectedLanguage}
-                onChange={(e) => setSelectedLanguage(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-500 outline-none transition-colors bg-white"
-              >
-                {LANGUAGES.map((lang) => (
-                  <option key={lang} value={lang}>
-                    {lang}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <FilterDropdown
+              label="Category"
+              value={selectedCategory}
+              options={CATEGORIES}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+            />
+            <FilterDropdown
+              label="Language"
+              value={selectedLanguage}
+              options={LANGUAGES}
+              onChange={(e) => setSelectedLanguage(e.target.value)}
+            />
           </div>
         </div>
 
@@ -376,39 +326,103 @@ const AudioResourcesPage = () => {
             <span className="font-semibold text-gray-900">
               {filteredAudios.length}
             </span>{" "}
-            audio resources
+            matching audio resources
           </p>
         </div>
 
-        {filteredAudios.length === 0 ? (
-          <div className="text-center py-20">
-            <div className="bg-white rounded-3xl shadow-xl p-12 max-w-md mx-auto">
-              <Headphones className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <p className="text-2xl text-gray-600 font-bold mb-2">
+        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+          {filteredAudios.length === 0 ? (
+            <div className="text-center py-10">
+              <Headphones className="w-10 h-10 text-gray-300 mx-auto mb-3" />
+              <p className="text-lg text-gray-600 font-bold mb-1">
                 No audio resources found
               </p>
-              <p className="text-gray-500">
+              <p className="text-sm text-gray-500">
                 Try adjusting your search or filters
               </p>
             </div>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredAudios.map((audio) => (
-              <AudioCard key={audio.id} audio={audio} />
-            ))}
+          ) : (
+            <div>
+              <div className="hidden sm:grid grid-cols-5 gap-4 px-5 py-3 border-b-2 border-emerald-100 bg-gray-50 text-sm font-bold text-gray-600">
+                <div className="col-span-2">Title / Reciter</div>
+                <div className="text-right">Duration</div>
+                <div className="text-right">Rating (Reviews)</div>
+                <div className="text-center">Actions</div>
+              </div>
+              {filteredAudios.map((audio) => (
+                <AudioRow
+                  key={audio.id}
+                  audio={audio}
+                  isPlaying={currentAudio?.id === audio.id && isPlaying}
+                  onTogglePlay={handleTogglePlay}
+                  isSelected={currentAudio?.id === audio.id}
+                  onSelect={handleSelectAudio}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+
+        {currentAudio && (
+          <div className="fixed bottom-0 left-0 right-0 bg-white border-t-4 border-emerald-600 shadow-2xl p-4 z-50">
+            <div className="max-w-7xl mx-auto flex items-center justify-between">
+              <div className="flex items-center min-w-0 pr-4">
+                <button
+                  onClick={() => handleTogglePlay(currentAudio)}
+                  className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors mr-4 ${
+                    isPlaying
+                      ? "bg-red-500 text-white hover:bg-red-600"
+                      : "bg-emerald-600 text-white hover:bg-emerald-700"
+                  } shadow-lg`}
+                >
+                  {isPlaying ? (
+                    <Pause className="w-6 h-6" />
+                  ) : (
+                    <Play className="w-6 h-6 ml-1" />
+                  )}
+                </button>
+                <div className="min-w-0">
+                  <p className="text-base font-bold truncate text-gray-900">
+                    {currentAudio.title}
+                  </p>
+                  <p className="text-sm text-gray-500 truncate">
+                    {currentAudio.reciter} &middot; {currentAudio.duration}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-4">
+                <Volume2 className="w-5 h-5 text-gray-500 hidden sm:block" />
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  defaultValue="80"
+                  className="w-24 h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer hidden sm:block"
+                />
+                <a
+                  href="#"
+                  className="px-4 py-2 bg-emerald-600 text-white rounded-lg font-bold text-sm hover:bg-emerald-700 transition-colors flex items-center gap-1"
+                >
+                  <Download className="w-4 h-4" />
+                  Download
+                </a>
+              </div>
+            </div>
           </div>
         )}
 
-        <div className="bg-gradient-to-r from-emerald-600 to-teal-600 rounded-3xl p-12 text-white text-center shadow-2xl mt-16">
-          <Volume2 className="w-16 h-16 mx-auto mb-4" />
-          <h3 className="text-3xl font-bold mb-4">Premium Audio Collection</h3>
-          <p className="text-emerald-100 mb-6 max-w-2xl mx-auto">
-            Get access to our exclusive collection of high-quality Islamic audio
-            content from renowned scholars worldwide.
+        <div className="bg-gradient-to-r from-emerald-600 to-teal-600 rounded-2xl p-8 sm:p-10 text-white text-center shadow-lg mt-12">
+          <Mic className="w-10 h-10 mx-auto mb-3" />
+          <h3 className="text-2xl font-bold mb-3">
+            Become an Audio Contributor
+          </h3>
+          <p className="text-emerald-100 text-sm mb-4 max-w-xl mx-auto">
+            Share your recitations, lectures, or commentaries with our global
+            community of learners and educators.
           </p>
-          <button className="px-8 py-4 bg-white text-emerald-700 rounded-xl font-bold hover:bg-emerald-50 transition-colors shadow-lg">
-            Explore Premium Content
+          <button className="px-6 py-3 bg-white text-emerald-700 rounded-lg font-bold text-sm hover:bg-emerald-50 transition-colors shadow-md">
+            Submit Your Audio
           </button>
         </div>
       </div>

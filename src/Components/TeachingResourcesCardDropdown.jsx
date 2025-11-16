@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { Link } from "react-router-dom";
 import {
   BookOpen,
   Video,
@@ -13,10 +14,7 @@ import {
 
 const API_BASE = "http://localhost:8000/api";
 
-const TeachingResourceDropdown = ({
-  handleNavItemClick,
-  setIsTeachingDropdownOpen,
-}) => {
+const TeachingResourceDropdown = ({ setIsTeachingDropdownOpen }) => {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -61,14 +59,10 @@ const TeachingResourceDropdown = ({
     const href = `/teaching-category/${id}/${categoryName}`;
     const img = images[name] || defaultImg;
 
-    const handleClick = () => {
-      handleNavItemClick(href, name);
-      setIsTeachingDropdownOpen(false);
-    };
-
     return (
-      <button
-        onClick={handleClick}
+      <Link
+        to={href}
+        onClick={() => setIsTeachingDropdownOpen(false)}
         className="group relative w-full bg-gradient-to-br from-white to-emerald-50/30 rounded-2xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 border border-gray-100 hover:border-emerald-300"
       >
         <div className="aspect-[16/10] overflow-hidden relative">
@@ -91,7 +85,7 @@ const TeachingResourceDropdown = ({
             </div>
           </div>
         </div>
-      </button>
+      </Link>
     );
   };
 
@@ -159,16 +153,14 @@ const TeachingResourceDropdown = ({
               </p>
             </div>
           </div>
-          <button
-            onClick={() => {
-              handleNavItemClick("/teaching-resources", "All Resources");
-              setIsTeachingDropdownOpen(false);
-            }}
+          <Link
+            to="/teaching-resources"
+            onClick={() => setIsTeachingDropdownOpen(false)}
             className="px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-xl flex items-center gap-2 font-medium text-sm transition-all duration-200 shadow-sm hover:shadow-md"
           >
             View All
             <ChevronRight className="w-4 h-4" />
-          </button>
+          </Link>
         </div>
 
         <div className="grid grid-cols-3 gap-4 mb-6">
@@ -183,12 +175,10 @@ const TeachingResourceDropdown = ({
           </h4>
           <div className="grid grid-cols-3 gap-2">
             {quickLinks.map(({ name, href, icon: Icon, color }) => (
-              <button
+              <Link
                 key={name}
-                onClick={() => {
-                  handleNavItemClick(href, name);
-                  setIsTeachingDropdownOpen(false);
-                }}
+                to={href}
+                onClick={() => setIsTeachingDropdownOpen(false)}
                 className="flex items-center gap-3 p-3 rounded-xl hover:bg-gradient-to-r hover:from-emerald-50 hover:to-teal-50 transition-all duration-200 group text-left border border-transparent hover:border-emerald-200"
               >
                 <div
@@ -200,7 +190,7 @@ const TeachingResourceDropdown = ({
                   {name}
                 </span>
                 <ChevronRight className="w-4 h-4 text-gray-400 opacity-0 group-hover:opacity-100 transform -translate-x-1 group-hover:translate-x-0 transition-all duration-200" />
-              </button>
+              </Link>
             ))}
           </div>
         </div>

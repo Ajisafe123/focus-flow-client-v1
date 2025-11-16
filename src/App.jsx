@@ -45,6 +45,7 @@ import LessonPlansPage from "./Components/LessonPlansPage";
 import AudioResourcesPage from "./Components/AudioResourcesPage";
 import StudyGuidesPage from "./Components/StudyGuidesPage";
 import PrivacyPolicy from "./Components/PrivacyPolicy";
+import AppShowcase from "./Components/AppShowCase";
 const pageVariants = {
   initial: { opacity: 0, y: 10 },
   in: { opacity: 1, y: 0 },
@@ -249,6 +250,14 @@ function AppContent({
             element={
               <PageWrapper>
                 <AudioResourcesPage />
+              </PageWrapper>
+            }
+          />
+          <Route
+            path="/app"
+            element={
+              <PageWrapper>
+                <AppShowcase />
               </PageWrapper>
             }
           />

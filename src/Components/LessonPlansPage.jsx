@@ -20,7 +20,7 @@ import {
 const LESSON_PLANS = [
   {
     id: 1,
-    title: "Introduction to Salah - Complete Guide",
+    title: "Interactive Salah Tracker",
     category: "Fiqh & Jurisprudence",
     gradeLevel: "Elementary (6-10 years)",
     duration: "45 minutes",
@@ -44,7 +44,7 @@ const LESSON_PLANS = [
   },
   {
     id: 2,
-    title: "Quran Memorization Techniques",
+    title: "Quran Memory Game Cards",
     category: "Quran Studies",
     gradeLevel: "Middle School (11-14 years)",
     duration: "60 minutes",
@@ -68,7 +68,7 @@ const LESSON_PLANS = [
   },
   {
     id: 3,
-    title: "Islamic History: The Golden Age",
+    title: "Islamic Calendar & Planner",
     category: "Islamic History",
     gradeLevel: "High School (15-18 years)",
     duration: "90 minutes",
@@ -89,78 +89,6 @@ const LESSON_PLANS = [
     lastUpdated: "2024-11-05",
     thumbnail:
       "https://images.pexels.com/photos/256546/pexels-photo-256546.jpeg?auto=compress&cs=tinysrgb&w=400",
-  },
-  {
-    id: 4,
-    title: "Arabic Alphabet Mastery",
-    category: "Arabic Language",
-    gradeLevel: "Elementary (6-10 years)",
-    duration: "45 minutes",
-    difficulty: "Beginner",
-    downloads: 1456,
-    rating: 4.7,
-    reviews: 112,
-    description:
-      "Fun and engaging lesson to teach children the Arabic alphabet with pronunciation and writing practice.",
-    objectives: [
-      "Recognize all Arabic letters",
-      "Practice proper pronunciation",
-      "Write basic letters",
-    ],
-    materials: ["Flashcards", "Writing worksheets", "Audio clips"],
-    tags: ["Language", "Alphabet", "Writing"],
-    author: "Ustadha Zainab Hassan",
-    lastUpdated: "2024-11-12",
-    thumbnail:
-      "https://images.pexels.com/photos/5327585/pexels-photo-5327585.jpeg?auto=compress&cs=tinysrgb&w=400",
-  },
-  {
-    id: 5,
-    title: "Prophetic Stories: Prophet Yusuf",
-    category: "Hadith Studies",
-    gradeLevel: "Middle School (11-14 years)",
-    duration: "60 minutes",
-    difficulty: "Intermediate",
-    downloads: 892,
-    rating: 4.8,
-    reviews: 71,
-    description:
-      "Interactive lesson exploring the story of Prophet Yusuf with moral lessons and character building.",
-    objectives: [
-      "Learn the story narrative",
-      "Extract moral lessons",
-      "Apply to daily life",
-    ],
-    materials: ["Storybook", "Discussion cards", "Activity sheets"],
-    tags: ["Prophets", "Stories", "Character"],
-    author: "Sheikh Ibrahim Khan",
-    lastUpdated: "2024-11-07",
-    thumbnail:
-      "https://images.pexels.com/photos/5943880/pexels-photo-5943880.jpeg?auto=compress&cs=tinysrgb&w=400",
-  },
-  {
-    id: 6,
-    title: "Islamic Ethics in Modern Life",
-    category: "Islamic Ethics",
-    gradeLevel: "High School (15-18 years)",
-    duration: "75 minutes",
-    difficulty: "Advanced",
-    downloads: 654,
-    rating: 4.9,
-    reviews: 43,
-    description:
-      "Contemporary application of Islamic ethical principles in daily situations and decision-making.",
-    objectives: [
-      "Understand ethical framework",
-      "Apply to real scenarios",
-      "Develop moral reasoning",
-    ],
-    materials: ["Case studies", "Group activities", "Reflection journals"],
-    tags: ["Ethics", "Modern", "Critical Thinking"],
-    author: "Dr. Omar Siddiqui",
-    lastUpdated: "2024-11-09",
-    thumbnail:
-      "https://images.pexels.com/photos/3184317/pexels-photo-3184317.jpeg?auto=compress&cs=tinysrgb&w=400",
   },
 ];
 
@@ -190,43 +118,51 @@ const LessonCard = ({ lesson }) => {
   const [isFavorite, setIsFavorite] = useState(false);
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100 group">
-      <div className="relative h-48 overflow-hidden bg-gray-100">
+    <div className="bg-white rounded-2xl shadow-2xl hover:shadow-emerald-500/50 transition-all duration-500 overflow-hidden transform hover:-translate-y-2 group">
+      <div className="relative h-44 sm:h-48 overflow-hidden bg-gray-100">
         <img
           src={lesson.thumbnail}
           alt={lesson.title}
-          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
         />
-        <div className="absolute top-3 left-3 flex gap-2">
-          <span className="px-3 py-1 bg-emerald-500 text-white text-xs font-bold rounded-full">
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+
+        <div className="absolute top-3 right-3 flex gap-2 z-10">
+          <button
+            onClick={() => setIsFavorite(!isFavorite)}
+            className="bg-white rounded-full p-2 shadow-lg hover:scale-110 transition-transform"
+          >
+            <Heart
+              className={`w-5 h-5 ${
+                isFavorite ? "fill-red-500 text-red-500" : "text-gray-400"
+              }`}
+            />
+          </button>
+          <button className="bg-white rounded-full p-2 shadow-lg hover:scale-110 transition-transform">
+            <Share2 className="w-5 h-5 text-emerald-600" />
+          </button>
+        </div>
+
+        <div className="absolute bottom-3 left-3 right-3 flex justify-between items-center">
+          <span className="px-3 py-1 bg-teal-600 text-white text-xs font-bold rounded-full shadow-lg flex items-center gap-1 opacity-90">
             {lesson.difficulty}
           </span>
-          <span className="px-3 py-1 bg-white/90 backdrop-blur-sm text-gray-900 text-xs font-semibold rounded-full flex items-center gap-1">
+          <span className="px-3 py-1 bg-white text-gray-900 text-xs font-bold rounded-full flex items-center gap-1 shadow-lg opacity-90">
             <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
             {lesson.rating}
           </span>
         </div>
-        <button
-          onClick={() => setIsFavorite(!isFavorite)}
-          className="absolute top-3 right-3 bg-white rounded-full p-2 shadow-lg hover:scale-110 transition-transform"
-        >
-          <Heart
-            className={`w-5 h-5 ${
-              isFavorite ? "fill-red-500 text-red-500" : "text-gray-400"
-            }`}
-          />
-        </button>
       </div>
 
-      <div className="p-5">
-        <div className="flex items-center gap-2 mb-2">
-          <Tag className="w-4 h-4 text-emerald-600" />
-          <span className="text-xs font-semibold text-emerald-600">
+      <div className="p-4 sm:p-5 border-b border-gray-100">
+        <div className="flex items-center gap-1 mb-2">
+          <Tag className="w-3 h-3 text-emerald-600" />
+          <span className="text-xs font-bold uppercase text-emerald-600 tracking-wider">
             {lesson.category}
           </span>
         </div>
 
-        <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-emerald-600 transition-colors">
+        <h3 className="text-lg sm:text-xl font-extrabold text-gray-900 mb-2 line-clamp-2 group-hover:text-teal-700 transition-colors">
           {lesson.title}
         </h3>
 
@@ -234,50 +170,67 @@ const LessonCard = ({ lesson }) => {
           {lesson.description}
         </p>
 
-        <div className="flex flex-wrap gap-2 mb-4">
-          {lesson.tags.slice(0, 3).map((tag, idx) => (
-            <span
-              key={idx}
-              className="px-2 py-1 bg-emerald-50 text-emerald-700 text-xs font-medium rounded-lg"
-            >
-              {tag}
+        <div className="grid grid-cols-2 gap-y-2 gap-x-4 text-xs pt-2 border-t border-gray-100">
+          <div className="flex items-center gap-2 text-gray-700">
+            <Clock className="w-4 h-4 text-teal-500" />
+            <span className="font-semibold">{lesson.duration}</span>
+          </div>
+          <div className="flex items-center gap-2 text-gray-700">
+            <Users className="w-4 h-4 text-teal-500" />
+            <span className="font-semibold">
+              {lesson.gradeLevel.split(" ")[0]}
             </span>
-          ))}
-        </div>
-
-        <div className="grid grid-cols-2 gap-2 mb-4 text-xs text-gray-600">
-          <div className="flex items-center gap-1">
-            <Clock className="w-4 h-4 text-emerald-600" />
-            <span>{lesson.duration}</span>
           </div>
-          <div className="flex items-center gap-1">
-            <Users className="w-4 h-4 text-emerald-600" />
-            <span>{lesson.gradeLevel.split(" ")[0]}</span>
+          <div className="flex items-center gap-2 text-gray-700">
+            <Download className="w-4 h-4 text-teal-500" />
+            <span className="font-semibold">
+              {lesson.downloads.toLocaleString()}
+            </span>
           </div>
-          <div className="flex items-center gap-1">
-            <Download className="w-4 h-4 text-emerald-600" />
-            <span>{lesson.downloads} downloads</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <Calendar className="w-4 h-4 text-emerald-600" />
-            <span>
-              Updated {new Date(lesson.lastUpdated).toLocaleDateString()}
+          <div className="flex items-center gap-2 text-gray-700">
+            <Calendar className="w-4 h-4 text-teal-500" />
+            <span className="font-semibold">
+              {new Date(lesson.lastUpdated).toLocaleDateString()}
             </span>
           </div>
         </div>
+      </div>
 
+      <div className="p-4 bg-emerald-50">
         <div className="flex gap-2">
-          <button className="flex-1 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl font-semibold hover:from-emerald-600 hover:to-teal-700 transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 text-sm">
+          <button className="flex-1 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-lg font-bold text-sm hover:from-emerald-700 hover:to-teal-700 transition-all shadow-lg flex items-center justify-center gap-1">
             <Download className="w-4 h-4" />
-            Download
+            Get Plan
           </button>
-          <button className="px-4 py-2.5 bg-emerald-50 text-emerald-700 rounded-xl font-semibold hover:bg-emerald-100 transition-colors flex items-center justify-center">
-            <Eye className="w-4 h-4" />
-          </button>
-          <button className="px-4 py-2.5 bg-emerald-50 text-emerald-700 rounded-xl font-semibold hover:bg-emerald-100 transition-colors flex items-center justify-center">
-            <Share2 className="w-4 h-4" />
+
+          <button className="p-2.5 bg-white text-emerald-700 rounded-lg font-semibold hover:bg-emerald-200 transition-colors flex items-center justify-center shadow-md">
+            <Eye className="w-5 h-5" />
           </button>
         </div>
+      </div>
+    </div>
+  );
+};
+
+const FilterDropdown = ({ label, value, options, onChange }) => {
+  return (
+    <div>
+      <label className="block text-sm font-bold text-gray-700 mb-2">
+        {label}
+      </label>
+      <div className="relative">
+        <select
+          value={value}
+          onChange={onChange}
+          className="w-full appearance-none px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-600 outline-none transition-colors bg-white shadow-inner pr-10 text-gray-700 font-medium cursor-pointer hover:border-emerald-400"
+        >
+          {options.map((option) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </select>
+        <ChevronDown className="w-5 h-5 absolute right-3 top-1/2 transform -translate-y-1/2 text-emerald-600 pointer-events-none" />
       </div>
     </div>
   );
@@ -310,40 +263,37 @@ const LessonPlansPage = () => {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-emerald-50 to-teal-50">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-600 text-white py-16 shadow-2xl">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex items-center gap-4 mb-6">
-            <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center border-2 border-white">
-              <FileText className="w-8 h-8 text-white" />
+    <div className="min-h-screen bg-gray-50">
+      <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-600 text-white py-12 sm:py-16 shadow-xl">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-start gap-4 mb-6">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center border-2 border-white flex-shrink-0">
+              <BookOpen className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
             </div>
             <div>
-              <h1 className="text-5xl font-extrabold tracking-tight">
-                Lesson Plans
+              <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
+                Lesson Plan Library
               </h1>
-              <p className="text-emerald-100 text-lg mt-2">
+              <p className="text-emerald-100 text-base sm:text-lg mt-1">
                 Comprehensive teaching resources for Islamic education
               </p>
             </div>
           </div>
 
-          {/* Search Bar */}
-          <div className="relative mt-8">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-500 w-5 h-5" />
+          <div className="relative mt-6 sm:mt-8">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-500 w-5 h-5 sm:w-6 sm:h-6" />
             <input
               type="text"
               placeholder="Search lesson plans by title, topic, or keywords..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-12 pr-4 py-4 rounded-2xl border-2 border-white/30 focus:border-white text-gray-900 placeholder-gray-500 shadow-lg transition-all bg-white"
+              className="w-full pl-11 pr-4 py-3 sm:py-4 rounded-xl border-2 border-white/30 focus:border-white text-gray-900 placeholder-gray-500 shadow-md transition-all bg-white text-base"
             />
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Filter Bar */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-white rounded-2xl shadow-lg p-6 mb-8 border border-gray-100">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
@@ -366,75 +316,42 @@ const LessonPlansPage = () => {
           </div>
 
           <div
-            className={`grid md:grid-cols-3 gap-4 ${
+            className={`grid md:grid-cols-3 gap-4 sm:gap-6 ${
               showFilters ? "block" : "hidden lg:grid"
             }`}
           >
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Category
-              </label>
-              <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-500 outline-none transition-colors bg-white"
-              >
-                {CATEGORIES.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Grade Level
-              </label>
-              <select
-                value={selectedGrade}
-                onChange={(e) => setSelectedGrade(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-500 outline-none transition-colors bg-white"
-              >
-                {GRADE_LEVELS.map((level) => (
-                  <option key={level} value={level}>
-                    {level}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Difficulty
-              </label>
-              <select
-                value={selectedDifficulty}
-                onChange={(e) => setSelectedDifficulty(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-500 outline-none transition-colors bg-white"
-              >
-                {DIFFICULTIES.map((diff) => (
-                  <option key={diff} value={diff}>
-                    {diff}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <FilterDropdown
+              label="Category"
+              value={selectedCategory}
+              options={CATEGORIES}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+            />
+            <FilterDropdown
+              label="Grade Level"
+              value={selectedGrade}
+              options={GRADE_LEVELS}
+              onChange={(e) => setSelectedGrade(e.target.value)}
+            />
+            <FilterDropdown
+              label="Difficulty"
+              value={selectedDifficulty}
+              options={DIFFICULTIES}
+              onChange={(e) => setSelectedDifficulty(e.target.value)}
+            />
           </div>
         </div>
 
-        {/* Results */}
         <div className="mb-6 flex items-center justify-between">
           <p className="text-gray-600">
             Showing{" "}
             <span className="font-semibold text-gray-900">
               {filteredLessons.length}
             </span>{" "}
-            lesson plans
+            matching lesson plans
           </p>
           <div className="flex gap-2">
-            <button className="px-4 py-2 bg-white border border-gray-200 rounded-xl font-semibold text-sm hover:bg-gray-50 transition-colors flex items-center gap-2">
-              <Printer className="w-4 h-4" />
+            <button className="px-4 py-2 bg-white border border-gray-200 rounded-xl font-semibold text-sm hover:bg-gray-50 transition-colors flex items-center gap-2 shadow-sm">
+              <Printer className="w-4 h-4 text-emerald-600" />
               Print All
             </button>
           </div>
@@ -442,32 +359,32 @@ const LessonPlansPage = () => {
 
         {filteredLessons.length === 0 ? (
           <div className="text-center py-20">
-            <div className="bg-white rounded-3xl shadow-xl p-12 max-w-md mx-auto">
-              <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <p className="text-2xl text-gray-600 font-bold mb-2">
+            <div className="bg-white rounded-2xl shadow-xl p-10 max-w-sm mx-auto border-2 border-emerald-200">
+              <FileText className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+              <p className="text-xl text-gray-600 font-bold mb-2">
                 No lesson plans found
               </p>
-              <p className="text-gray-500">
+              <p className="text-sm text-gray-500">
                 Try adjusting your search or filters
               </p>
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
             {filteredLessons.map((lesson) => (
               <LessonCard key={lesson.id} lesson={lesson} />
             ))}
           </div>
         )}
 
-        {/* Info Section */}
-        <div className="bg-gradient-to-r from-emerald-600 to-teal-600 rounded-3xl p-12 text-white text-center shadow-2xl mt-16">
-          <h3 className="text-3xl font-bold mb-4">Need Custom Lesson Plans?</h3>
-          <p className="text-emerald-100 mb-6 max-w-2xl mx-auto">
+        <div className="bg-gradient-to-r from-emerald-600 to-teal-600 rounded-2xl p-8 sm:p-10 text-white text-center shadow-lg mt-12">
+          <BookOpen className="w-10 h-10 mx-auto mb-3" />
+          <h3 className="text-2xl font-bold mb-3">Need Custom Lesson Plans?</h3>
+          <p className="text-emerald-100 text-sm mb-4 max-w-xl mx-auto">
             Our team of educators can create customized lesson plans tailored to
             your specific needs and curriculum requirements.
           </p>
-          <button className="px-8 py-4 bg-white text-emerald-700 rounded-xl font-bold hover:bg-emerald-50 transition-colors shadow-lg">
+          <button className="px-6 py-3 bg-white text-emerald-700 rounded-lg font-bold text-sm hover:bg-emerald-50 transition-colors shadow-md">
             Request Custom Plan
           </button>
         </div>

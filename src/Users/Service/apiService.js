@@ -1,8 +1,8 @@
-import apiService, { API_BASE_URL } from "../../Components/Service/apiService";
+import apiService from "../../Components/Service/apiService";
 
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://focus-flow-server-v1.onrender.com";
 const API_BASE = `${API_BASE_URL}/api`;
 
-export { API_BASE_URL };
 export const logout = () => apiService.logout();
 export default apiService;
 

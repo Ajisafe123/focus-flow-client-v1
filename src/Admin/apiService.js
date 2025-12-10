@@ -1,6 +1,6 @@
 // apiService.js
 
-export const API_BASE = "http://localhost:8000";
+export const API_BASE = import.meta.env.VITE_API_BASE_URL || "https://focus-flow-server-v1.onrender.com";
 export const DEFAULT_LIMIT = 10;
 
 const handleError = async (res, defaultMsg) => {
@@ -216,10 +216,10 @@ export const fetchHadithStats = async (categories = []) => {
   const res = await fetch(`${API_BASE}/api/hadiths/stats`);
   if (!res.ok) await handleError(res, "Failed to fetch Hadith statistics.");
   const data = await res.json();
-  
+
   // Transform the API response into the expected array format
   const totalCategories = categories.filter(c => c.id !== "all").length;
-  
+
   return [
     {
       title: "Total Hadiths",
@@ -315,9 +315,8 @@ export const fetchUsers = async (params = {}) => {
   if (params.role) query.append("role", params.role);
   if (params.status) query.append("status", params.status);
 
-  const url = `${API_BASE}/api/admin/users${
-    query.toString() ? `?${query}` : ""
-  }`;
+  const url = `${API_BASE}/api/admin/users${query.toString() ? `?${query}` : ""
+    }`;
   const res = await fetch(url, { headers: getAuthHeaders() });
   if (!res.ok) throw new Error("Failed to fetch users");
   return res.json();
@@ -408,7 +407,7 @@ export const fetchArticles = async (page = 1, limit = 10, query = "", categoryId
   const params = new URLSearchParams({ page, limit, q: query });
   if (categoryId) params.append("category_id", categoryId);
   if (featured !== null) params.append("featured", featured);
-  
+
   const res = await fetch(`${API_BASE}/api/articles/paginated?${params}`, {
     headers: getAuthHeaders(),
   });
@@ -725,7 +724,7 @@ export const exportAnalyticsData = async (format = "json") => {
       csvRows.push(`Total Articles,${data.stats.articles}`);
       csvRows.push(`Total Duas,${data.stats.duas}`);
       csvRows.push(`Engagement Rate,${data.stats.engagementRate}%`);
-      
+
       // Add top content if available
       if (data.topContent && data.topContent.length > 0) {
         csvRows.push("");
@@ -734,7 +733,7 @@ export const exportAnalyticsData = async (format = "json") => {
           csvRows.push(`"${item.title}",${item.views},${item.engagement}`);
         });
       }
-      
+
       const csvContent = csvRows.join("\n");
       const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
       const url = URL.createObjectURL(blob);

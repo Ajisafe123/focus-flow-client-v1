@@ -100,7 +100,7 @@ export default function IslamicUserChat() {
 
   const connectSocket = (convId) => {
     if (!convId) return;
-    const wsUrl = (import.meta.env.VITE_API_BASE_URL || "http://localhost:8000")
+    const wsUrl = (import.meta.env.VITE_API_BASE_URL || "https://focus-flow-server-v1.onrender.com")
       .replace(/^http/, "ws") + `/ws/chat/${convId}`;
     wsRef.current = new WebSocket(wsUrl);
     wsRef.current.onmessage = (event) => {

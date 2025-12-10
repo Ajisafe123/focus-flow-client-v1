@@ -224,9 +224,9 @@ export const ChatWindow = ({
                   <div className="relative order-1 mb-2">
                     <button
                       onClick={(e) => { e.stopPropagation(); setMenuId(menuId === msg.id ? null : msg.id); }}
-                      className={`p-1 rounded-full transition-all ${menuId === msg.id ? 'opacity-100 bg-gray-100' : 'opacity-40 sm:opacity-0 sm:group-hover:opacity-100 hover:bg-gray-100 hover:opacity-100'}`}
+                      className={`p-1.5 rounded-full transition-all duration-200 ${menuId === msg.id ? 'opacity-100 bg-emerald-50 text-emerald-600' : 'opacity-60 hover:opacity-100 hover:bg-gray-100 text-gray-400'}`}
                     >
-                      <MoreVertical className="w-4 h-4 text-gray-400" />
+                      <MoreVertical className="w-4 h-4" />
                     </button>
                     {menuId === msg.id && (
                       <div className="absolute bottom-full mb-1 right-0 w-28 bg-white shadow-xl rounded-xl border border-gray-100 overflow-hidden z-20 flex flex-col animate-scale-in origin-bottom-right">

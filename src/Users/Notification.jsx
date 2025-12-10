@@ -6,12 +6,14 @@ import {
   AlertCircle,
   Info,
   XCircle,
-  Loader2,
+  Trash2,
 } from "lucide-react";
+import LoadingSpinner from "../Components/Common/LoadingSpinner";
 import {
   fetchNotifications,
   markAllNotificationsRead,
   markNotificationRead,
+  deleteNotification,
 } from "./Service/apiService";
 
 const getIcon = (type) => {
@@ -50,7 +52,7 @@ const ago = (ts) => {
   return `${Math.floor(diff / 1440)}d ago`;
 };
 
-const NotificationItem = ({ n, onRead }) => (
+const NotificationItem = ({ n, onRead, onDelete }) => (
   <div
     className={`p-4 border-l-4 ${getBg(
       n.type
@@ -81,6 +83,13 @@ const NotificationItem = ({ n, onRead }) => (
           </a>
         )}
       </div>
+      <button
+        onClick={() => onDelete(n.id)}
+        className="text-gray-400 hover:text-red-500 transition-colors p-1"
+        title="Delete"
+      >
+        <Trash2 className="w-4 h-4" />
+      </button>
     </div>
   </div>
 );
@@ -136,6 +145,17 @@ export default function NotificationCenter() {
     }
   };
 
+  const removeOne = async (id) => {
+    if (!token) return;
+    if (!window.confirm("Delete this notification?")) return;
+    try {
+      await deleteNotification(id, token);
+      setList((l) => l.filter((n) => n.id !== id));
+    } catch (err) {
+      setError(err.message || "Failed to delete notification");
+    }
+  };
+
   return (
     <div className="max-w-xl mx-auto bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden mt-6">
       <style>{`.animate-fadeIn{animation:fadeIn .3s ease-out}@keyframes fadeIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}`}</style>
@@ -166,7 +186,7 @@ export default function NotificationCenter() {
 
       {loading ? (
         <div className="p-6 flex items-center justify-center text-gray-500">
-          <Loader2 className="w-5 h-5 animate-spin mr-2" /> Loading...
+          <LoadingSpinner size="small" />
         </div>
       ) : (
         <div className="max-h-[460px] overflow-y-auto divide-y divide-gray-100">
@@ -177,7 +197,12 @@ export default function NotificationCenter() {
             </div>
           ) : (
             list.map((n) => (
-              <NotificationItem key={n.id} n={n} onRead={markOne} />
+              <NotificationItem
+                key={n.id}
+                n={n}
+                onRead={markOne}
+                onDelete={removeOne}
+              />
             ))
           )}
         </div>

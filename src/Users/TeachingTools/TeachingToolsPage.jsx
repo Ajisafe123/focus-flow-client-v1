@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Lightbulb,
   Search,
@@ -13,65 +13,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 
-const TOOLS = [
-  {
-    id: 1,
-    title: "Interactive Salah Tracker",
-    category: "Prayer Tools",
-    type: "Digital Tool",
-    rating: 4.9,
-    reviews: 342,
-    downloads: 5234,
-    description:
-      "Visual tracker for students to record and monitor their daily prayers with engaging graphics.",
-    features: [
-      "Daily tracking",
-      "Progress charts",
-      "Reminder system",
-      "Rewards badges",
-    ],
-    thumbnail:
-      "https://images.pexels.com/photos/8923569/pexels-photo-8923569.jpeg?auto=compress&cs=tinysrgb&w=400",
-  },
-  {
-    id: 2,
-    title: "Quran Memory Game Cards",
-    category: "Learning Games",
-    type: "Printable",
-    rating: 4.8,
-    reviews: 287,
-    downloads: 4123,
-    description:
-      "Fun memory game cards featuring Arabic letters, Quranic verses, and Islamic concepts.",
-    features: [
-      "Printable cards",
-      "Multiple levels",
-      "Lesson integration",
-      "Answer keys",
-    ],
-    thumbnail:
-      "https://images.pexels.com/photos/4195325/pexels-photo-4195325.jpeg?auto=compress&cs=tinysrgb&w=400",
-  },
-  {
-    id: 3,
-    title: "Islamic Calendar & Planner",
-    category: "Classroom Management",
-    type: "Template",
-    rating: 4.7,
-    reviews: 198,
-    downloads: 3876,
-    description:
-      "Comprehensive Islamic calendar with lesson planning templates and important dates.",
-    features: [
-      "Monthly view",
-      "Lesson planner",
-      "Islamic dates",
-      "Customizable",
-    ],
-    thumbnail:
-      "https://images.pexels.com/photos/3184317/pexels-photo-3184317.jpeg?auto=compress&cs=tinysrgb&w=400",
-  },
-];
+import { fetchTeachingResources } from "../Service/apiService";
 
 const CATEGORIES = [
   "All Categories",
@@ -104,9 +46,8 @@ const ToolCard = ({ tool }) => {
             className="bg-white rounded-full p-2 shadow-lg hover:scale-110 transition-transform"
           >
             <Heart
-              className={`w-5 h-5 ${
-                isFavorite ? "fill-red-500 text-red-500" : "text-gray-400"
-              }`}
+              className={`w-5 h-5 ${isFavorite ? "fill-red-500 text-red-500" : "text-gray-400"
+                }`}
             />
           </button>
           <button className="bg-white rounded-full p-2 shadow-lg hover:scale-110 transition-transform">
@@ -204,10 +145,28 @@ const TeachingToolsPage = () => {
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
   const [selectedType, setSelectedType] = useState("All Types");
 
-  const filteredTools = TOOLS.filter((tool) => {
+  const [tools, setTools] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadTools = async () => {
+      try {
+        setLoading(true);
+        const data = await fetchTeachingResources();
+        setTools(data);
+      } catch (e) {
+        console.error("Failed to load tools", e);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadTools();
+  }, [])
+
+  const filteredTools = tools.filter((tool) => {
     const matchesSearch =
       tool.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      tool.description.toLowerCase().includes(searchTerm.toLowerCase());
+      (tool.description || "").toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory =
       selectedCategory === "All Categories" ||
       tool.category === selectedCategory;

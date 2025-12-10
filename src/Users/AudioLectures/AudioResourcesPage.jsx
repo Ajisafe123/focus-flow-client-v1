@@ -18,15 +18,15 @@ import {
   FileText,
 } from "lucide-react";
 import { fetchAudio } from "../Service/apiService";
+import PageHeader from "../../Components/Common/PageHeader";
 
 const AudioRow = ({ audio, isPlaying, onTogglePlay, isSelected, onSelect }) => {
   const [isFavorite, setIsFavorite] = useState(false);
 
   return (
     <div
-      className={`flex items-center p-4 sm:p-5 border-b border-gray-100 transition-all duration-200 cursor-pointer ${
-        isSelected ? "bg-emerald-50 shadow-inner" : "bg-white hover:bg-gray-50"
-      }`}
+      className={`flex items-center p-4 sm:p-5 border-b border-gray-100 transition-all duration-200 cursor-pointer ${isSelected ? "bg-emerald-50 shadow-inner" : "bg-white hover:bg-gray-50"
+        }`}
       onClick={() => onSelect(audio)}
     >
       <div className="flex-shrink-0 w-12 h-12 flex items-center justify-center mr-4">
@@ -35,11 +35,10 @@ const AudioRow = ({ audio, isPlaying, onTogglePlay, isSelected, onSelect }) => {
             e.stopPropagation();
             onTogglePlay(audio);
           }}
-          className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
-            isPlaying
-              ? "bg-red-500 text-white hover:bg-red-600"
-              : "bg-emerald-600 text-white hover:bg-emerald-700"
-          } shadow-md`}
+          className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${isPlaying
+            ? "bg-red-500 text-white hover:bg-red-600"
+            : "bg-emerald-600 text-white hover:bg-emerald-700"
+            } shadow-md`}
         >
           {isPlaying ? (
             <Pause className="w-5 h-5" />
@@ -51,9 +50,8 @@ const AudioRow = ({ audio, isPlaying, onTogglePlay, isSelected, onSelect }) => {
 
       <div className="flex-1 min-w-0 pr-4">
         <h3
-          className={`text-base font-semibold truncate ${
-            isSelected ? "text-emerald-800" : "text-gray-900"
-          }`}
+          className={`text-base font-semibold truncate ${isSelected ? "text-emerald-800" : "text-gray-900"
+            }`}
         >
           {audio.title}
         </h3>
@@ -84,9 +82,8 @@ const AudioRow = ({ audio, isPlaying, onTogglePlay, isSelected, onSelect }) => {
           className="p-2 rounded-full hover:bg-gray-200 transition-colors"
         >
           <Heart
-            className={`w-5 h-5 ${
-              isFavorite ? "fill-red-500 text-red-500" : "text-gray-400"
-            }`}
+            className={`w-5 h-5 ${isFavorite ? "fill-red-500 text-red-500" : "text-gray-400"
+              }`}
           />
         </button>
         <a
@@ -205,34 +202,15 @@ const AudioResourcesPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-600 text-white py-12 sm:py-16 shadow-xl">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-start gap-4 mb-6">
-            <div className="w-12 h-12 sm:w-14 sm:h-14 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center border-2 border-white flex-shrink-0">
-              <Headphones className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
-            </div>
-            <div>
-              <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
-                Audio Resources Library
-              </h1>
-              <p className="text-emerald-100 text-base sm:text-lg mt-1">
-                Listen and learn with our collection of Islamic audio content
-              </p>
-            </div>
-          </div>
-
-          <div className="relative mt-6 sm:mt-8">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-500 w-5 h-5 sm:w-6 sm:h-6" />
-            <input
-              type="text"
-              placeholder="Search by title, reciter, or topic..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-11 pr-4 py-3 sm:py-4 rounded-xl border-2 border-white/30 focus:border-white text-gray-900 placeholder-gray-500 shadow-md transition-all bg-white text-base"
-            />
-          </div>
-        </div>
-      </div>
+      <PageHeader
+        title="Audio Resources Library"
+        subtitle="Listen and learn with our collection of Islamic audio content"
+        icon={Headphones}
+        showSearch={true}
+        searchTerm={searchTerm}
+        onSearchChange={(e) => setSearchTerm(e.target.value)}
+        placeholder="Search by title, reciter, or topic..."
+      />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-white rounded-2xl shadow-lg p-6 mb-8 border border-gray-100">
@@ -249,17 +227,15 @@ const AudioResourcesPage = () => {
             >
               {showFilters ? "Hide" : "Show"} Filters
               <ChevronDown
-                className={`w-4 h-4 transition-transform ${
-                  showFilters ? "rotate-180" : ""
-                }`}
+                className={`w-4 h-4 transition-transform ${showFilters ? "rotate-180" : ""
+                  }`}
               />
             </button>
           </div>
 
           <div
-            className={`grid md:grid-cols-2 gap-4 sm:gap-6 ${
-              showFilters ? "block" : "hidden lg:grid"
-            }`}
+            className={`grid md:grid-cols-2 gap-4 sm:gap-6 ${showFilters ? "block" : "hidden lg:grid"
+              }`}
           >
             <FilterDropdown
               label="Category"
@@ -329,11 +305,10 @@ const AudioResourcesPage = () => {
               <div className="flex items-center min-w-0 pr-4">
                 <button
                   onClick={() => handleTogglePlay(currentAudio)}
-                  className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors mr-4 ${
-                    isPlaying
-                      ? "bg-red-500 text-white hover:bg-red-600"
-                      : "bg-emerald-600 text-white hover:bg-emerald-700"
-                  } shadow-lg`}
+                  className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors mr-4 ${isPlaying
+                    ? "bg-red-500 text-white hover:bg-red-600"
+                    : "bg-emerald-600 text-white hover:bg-emerald-700"
+                    } shadow-lg`}
                 >
                   {isPlaying ? (
                     <Pause className="w-6 h-6" />

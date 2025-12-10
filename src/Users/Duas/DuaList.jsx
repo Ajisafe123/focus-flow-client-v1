@@ -12,7 +12,6 @@ import {
   Volume2,
   X,
   ArrowLeft,
-  Lightbulb,
 } from "lucide-react";
 import LoadingSpinner from "../../Common/LoadingSpinner.jsx";
 import { API_BASE_URL } from "../../Components/Service/apiService.js";
@@ -189,11 +188,10 @@ const DuaItem = ({
           <div className="pb-3 pt-1 px-2 animate-fadeIn">
             {key !== "audio" ? (
               <p
-                className={`text-sm leading-relaxed ${
-                  key === "transliteration"
-                    ? "italic text-gray-600"
-                    : "text-gray-800"
-                }`}
+                className={`text-sm leading-relaxed ${key === "transliteration"
+                  ? "italic text-gray-600"
+                  : "text-gray-800"
+                  }`}
               >
                 {displayContent}
               </p>
@@ -223,11 +221,10 @@ const DuaItem = ({
               <div className="w-5 h-5 loader" />
             ) : (
               <Share2
-                className={`w-5 h-5 ${
-                  shareUrl
-                    ? "text-emerald-500 fill-emerald-100"
-                    : "text-gray-400 hover:text-emerald-500"
-                }`}
+                className={`w-5 h-5 ${shareUrl
+                  ? "text-emerald-500 fill-emerald-100"
+                  : "text-gray-400 hover:text-emerald-500"
+                  }`}
               />
             )}
           </button>
@@ -240,11 +237,10 @@ const DuaItem = ({
             }
           >
             <Heart
-              className={`w-5 h-5 ${
-                isFavorite
-                  ? "fill-red-500 text-red-500"
-                  : "text-gray-400 hover:text-red-500"
-              }`}
+              className={`w-5 h-5 ${isFavorite
+                ? "fill-red-500 text-red-500"
+                : "text-gray-400 hover:text-red-500"
+                }`}
             />
           </button>
         </div>
@@ -334,9 +330,8 @@ const CategoryDescription = ({ description }) => {
   return (
     <div className="mx-auto max-w-3xl leading-relaxed text-center mt-3">
       <p
-        className={`text-lg text-gray-600 font-light mx-auto whitespace-pre-line transition-all duration-300 ${
-          isExpanded ? "" : "line-clamp-3"
-        }`}
+        className={`text-lg text-gray-600 font-light mx-auto whitespace-pre-line transition-all duration-300 ${isExpanded ? "" : "line-clamp-3"
+          }`}
       >
         {description}
       </p>
@@ -581,8 +576,8 @@ const DuaCategoryPage = ({ categoryId }) => {
 
   const currentCategory = selectedCategoryId
     ? categories.find(
-        (cat) => cat.id.toString() === selectedCategoryId.toString()
-      )
+      (cat) => cat.id.toString() === selectedCategoryId.toString()
+    )
     : null;
 
   const pageTitle = currentCategory?.name || "All Duas & Adhkar";
@@ -676,7 +671,7 @@ const DuaCategoryPage = ({ categoryId }) => {
       <div className="max-w-7xl mx-auto py-10 px-4">
         {loading ? (
           <div className="text-center py-20">
-            <LoadingSpinner size="large" message="Loading search results..." />
+            <LoadingSpinner size="large" />
           </div>
         ) : showCategories ? (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">

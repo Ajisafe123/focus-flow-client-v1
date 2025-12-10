@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Search, X, MessageSquare, ArrowLeft } from "lucide-react";
 
 const Sidebar = ({
@@ -13,7 +13,17 @@ const Sidebar = ({
   setIsMobileSidebarOpen,
   setActivePage,
 }) => {
-  const filteredChats = chats.filter((chat) => {
+  const uniqueChats = useMemo(() => {
+    const seen = new Set();
+    return chats.filter(chat => {
+      const id = String(chat.id);
+      if (seen.has(id)) return false;
+      seen.add(id);
+      return true;
+    });
+  }, [chats]);
+
+  const filteredChats = uniqueChats.filter((chat) => {
     const matchesSearch =
       chat.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       chat.email.toLowerCase().includes(searchTerm.toLowerCase());
@@ -22,117 +32,69 @@ const Sidebar = ({
     return matchesSearch && matchesFilter;
   });
 
-  const activeChats = chats.filter((c) => c.status === "active").length;
-  const waitingChats = chats.filter((c) => c.status === "waiting").length;
-  const resolvedChats = chats.filter((c) => c.status === "resolved").length;
+  const activeChats = uniqueChats.filter((c) => c.status === "active").length;
+  const waitingChats = uniqueChats.filter((c) => c.status === "waiting").length;
+  const resolvedChats = uniqueChats.filter((c) => c.status === "resolved").length;
 
   return (
     <div
-      className={`fixed lg:relative inset-y-0 left-0 z-30 w-full sm:w-96 lg:w-80 xl:w-96 bg-white border-r border-gray-100 flex flex-col shadow-xl lg:shadow-none transition-transform duration-300 ${
-        isMobileSidebarOpen
-          ? "translate-x-0"
-          : "-translate-x-full lg:translate-x-0"
-      }`}
+      className={`fixed lg:relative inset-y-0 left-0 z-30 w-full sm:w-96 lg:w-80 xl:w-96 bg-white border-r border-gray-100 flex flex-col shadow-xl lg:shadow-none transition-transform duration-300 ${isMobileSidebarOpen
+        ? "translate-x-0"
+        : "-translate-x-full lg:translate-x-0"
+        }`}
     >
-      <div className="p-5 sm:p-6 border-b border-gray-100 bg-gradient-to-br from-emerald-500 via-emerald-600 to-green-600 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-48 h-48 sm:w-64 sm:h-64 bg-white/10 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-0 left-0 w-32 h-32 sm:w-48 sm:h-48 bg-white/10 rounded-full blur-3xl"></div>
-
-        <div className="relative z-10">
-          <div className="flex items-center justify-between mb-4">
+      <div className="p-4 border-b border-gray-100 bg-white">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-gray-800 font-bold text-xl flex items-center gap-2">
             <button
               onClick={() => setActivePage("dashboard")}
-              className="p-2 hover:bg-white/20 rounded-lg transition-all flex items-center gap-2 text-white"
+              className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors mr-1 border border-transparent hover:border-gray-200"
+              title="Back to Dashboard"
             >
-              <ArrowLeft className="w-5 h-5" />
-              <span className="text-sm font-semibold">Back</span>
+              <ArrowLeft className="w-5 h-5 text-gray-600" />
             </button>
-            <button
-              onClick={() => setIsMobileSidebarOpen(false)}
-              className="lg:hidden p-2 hover:bg-white/20 rounded-lg transition-all"
-            >
-              <X className="w-5 h-5 text-white" />
-            </button>
-          </div>
-
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-2.5 bg-white/20 backdrop-blur-xl rounded-lg shadow-lg">
-              <MessageSquare className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-white">Live Chat</h1>
-              <p className="text-xs text-emerald-50">Support Center</p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-3 gap-3">
-            <div className="bg-white/20 backdrop-blur-xl rounded-lg p-3 text-center">
-              <p className="text-2xl font-bold text-white">{activeChats}</p>
-              <p className="text-xs text-emerald-50 font-medium">Active</p>
-            </div>
-            <div className="bg-white/20 backdrop-blur-xl rounded-lg p-3 text-center">
-              <p className="text-2xl font-bold text-white">{waitingChats}</p>
-              <p className="text-xs text-emerald-50 font-medium">Waiting</p>
-            </div>
-            <div className="bg-white/20 backdrop-blur-xl rounded-lg p-3 text-center">
-              <p className="text-2xl font-bold text-white">{resolvedChats}</p>
-              <p className="text-xs text-emerald-50 font-medium">Resolved</p>
-            </div>
-          </div>
+            <span className="bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent">Messages</span>
+          </h2>
+          <button
+            onClick={() => setIsMobileSidebarOpen(false)}
+            className="lg:hidden p-2 hover:bg-gray-100 rounded-lg transition-all"
+          >
+            <X className="w-5 h-5 text-gray-500" />
+          </button>
         </div>
-      </div>
 
-      <div className="p-4 border-b border-gray-100 space-y-3 bg-gray-50">
-        <div className="relative">
+        <div className="relative mb-3">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
           <input
             type="text"
             placeholder="Search conversations..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm transition-all"
+            className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-sm transition-all"
           />
         </div>
 
-        <div className="flex gap-2">
-          <button
-            onClick={() => setFilterStatus("all")}
-            className={`flex-1 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
-              filterStatus === "all"
-                ? "bg-gradient-to-br from-emerald-500 to-green-600 text-white shadow-sm"
-                : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-50"
-            }`}
-          >
-            All ({chats.length})
-          </button>
-          <button
-            onClick={() => setFilterStatus("active")}
-            className={`flex-1 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
-              filterStatus === "active"
-                ? "bg-gradient-to-br from-emerald-500 to-green-600 text-white shadow-sm"
-                : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-50"
-            }`}
-          >
-            Active
-          </button>
-          <button
-            onClick={() => setFilterStatus("waiting")}
-            className={`flex-1 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
-              filterStatus === "waiting"
-                ? "bg-gradient-to-br from-emerald-500 to-green-600 text-white shadow-sm"
-                : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-50"
-            }`}
-          >
-            Waiting
-          </button>
+        <div className="flex gap-1.5 p-1 bg-gray-50 rounded-xl border border-gray-100">
+          {['all', 'active', 'waiting', 'resolved'].map((status) => (
+            <button
+              key={status}
+              onClick={() => setFilterStatus(status)}
+              className={`flex-1 py-1.5 rounded-lg text-xs font-semibold capitalize transition-all duration-200 ${filterStatus === status
+                ? "bg-white text-emerald-600 shadow-sm border border-gray-100"
+                : "text-gray-500 hover:text-gray-700 hover:bg-gray-100/50"
+                }`}
+            >
+              {status}
+            </button>
+          ))}
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto custom-scrollbar">
         {filteredChats.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full p-8 text-center">
-            <MessageSquare className="w-16 h-16 text-gray-300 mb-4" />
-            <p className="text-gray-500 text-sm">No conversations found</p>
+          <div className="flex flex-col items-center justify-center h-full p-8 text-center text-gray-400">
+            <Search className="w-12 h-12 mb-3 opacity-10" />
+            <p className="text-sm font-medium">No results found</p>
           </div>
         ) : (
           filteredChats.map((chat) => (
@@ -142,46 +104,44 @@ const Sidebar = ({
                 setSelectedChat(chat);
                 setIsMobileSidebarOpen(false);
               }}
-              className={`p-4 border-b border-gray-100 cursor-pointer transition-all ${
-                selectedChat.id === chat.id
-                  ? "bg-emerald-50 border-l-4 border-l-emerald-600"
-                  : "hover:bg-gray-50 border-l-4 border-l-transparent"
-              }`}
+              className={`px-4 py-3.5 border-b border-gray-50 cursor-pointer transition-all hover:bg-gray-50/50 group relative ${selectedChat?.id === chat.id
+                ? "bg-emerald-50/60"
+                : ""
+                }`}
             >
+              {selectedChat?.id === chat.id && (
+                <div className="absolute left-0 top-0 bottom-0 w-1 bg-emerald-500 rounded-r-full" />
+              )}
+
               <div className="flex items-start gap-3">
                 <div className="relative flex-shrink-0">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center text-white font-bold text-lg shadow-md">
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-sm transition-transform group-hover:scale-105 ${selectedChat?.id === chat.id
+                    ? "bg-gradient-to-br from-emerald-500 to-teal-600"
+                    : "bg-gradient-to-br from-gray-200 to-gray-300 text-gray-500"
+                    }`}>
                     {chat.avatar}
                   </div>
+                  {chat.isOnline && (
+                    <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full"></span>
+                  )}
                   {chat.unread > 0 && (
-                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold shadow-lg">
+                    <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-rose-500 text-white text-[10px] rounded-full flex items-center justify-center font-bold shadow-sm ring-2 ring-white">
                       {chat.unread}
                     </span>
                   )}
                 </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between mb-1">
-                    <h3 className="font-semibold text-gray-900 text-sm truncate">
+                <div className="flex-1 min-w-0 pt-0.5">
+                  <div className="flex items-center justify-between mb-0.5">
+                    <h3 className={`font-semibold text-[15px] truncate ${selectedChat?.id === chat.id ? "text-gray-900" : "text-gray-700"}`}>
                       {chat.name}
                     </h3>
-                    <span className="text-xs text-gray-500 flex-shrink-0 ml-2">
+                    <span className="text-[11px] text-gray-400 flex-shrink-0 ml-2">
                       {chat.time}
                     </span>
                   </div>
-                  <p className="text-xs text-gray-600 truncate mb-2">
-                    {chat.lastMessage}
+                  <p className={`text-xs truncate ${selectedChat?.id === chat.id ? "text-emerald-600 font-medium" : "text-gray-500"}`}>
+                    {chat.lastMessage || "No messages yet"}
                   </p>
-                  <span
-                    className={`text-xs px-2.5 py-1 rounded-full font-semibold ${
-                      chat.status === "active"
-                        ? "bg-green-100 text-green-700"
-                        : chat.status === "waiting"
-                        ? "bg-yellow-100 text-yellow-700"
-                        : "bg-gray-100 text-gray-700"
-                    }`}
-                  >
-                    {chat.status}
-                  </span>
                 </div>
               </div>
             </div>

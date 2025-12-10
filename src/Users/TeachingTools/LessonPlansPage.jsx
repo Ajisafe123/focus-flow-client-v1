@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   FileText,
   Search,
@@ -17,80 +17,7 @@ import {
   Tag,
 } from "lucide-react";
 
-const LESSON_PLANS = [
-  {
-    id: 1,
-    title: "Interactive Salah Tracker",
-    category: "Fiqh & Jurisprudence",
-    gradeLevel: "Elementary (6-10 years)",
-    duration: "45 minutes",
-    difficulty: "Beginner",
-    downloads: 1234,
-    rating: 4.9,
-    reviews: 89,
-    description:
-      "Comprehensive lesson plan teaching children the basics of Islamic prayer including wudu, positions, and recitations.",
-    objectives: [
-      "Understand the importance of Salah",
-      "Learn the five daily prayers",
-      "Practice prayer positions",
-    ],
-    materials: ["Prayer mat", "Visual aids", "Worksheets"],
-    tags: ["Prayer", "Basics", "Interactive"],
-    author: "Dr. Fatima Ahmed",
-    lastUpdated: "2024-11-10",
-    thumbnail:
-      "https://images.pexels.com/photos/8923569/pexels-photo-8923569.jpeg?auto=compress&cs=tinysrgb&w=400",
-  },
-  {
-    id: 2,
-    title: "Quran Memory Game Cards",
-    category: "Quran Studies",
-    gradeLevel: "Middle School (11-14 years)",
-    duration: "60 minutes",
-    difficulty: "Intermediate",
-    downloads: 987,
-    rating: 4.8,
-    reviews: 67,
-    description:
-      "Effective strategies and methods for memorizing Quranic verses with proper tajweed and understanding.",
-    objectives: [
-      "Learn memorization techniques",
-      "Apply tajweed rules",
-      "Build consistent practice habits",
-    ],
-    materials: ["Quran", "Audio recordings", "Practice sheets"],
-    tags: ["Memorization", "Tajweed", "Study Skills"],
-    author: "Sheikh Mohammed Ali",
-    lastUpdated: "2024-11-08",
-    thumbnail:
-      "https://images.pexels.com/photos/4195325/pexels-photo-4195325.jpeg?auto=compress&cs=tinysrgb&w=400",
-  },
-  {
-    id: 3,
-    title: "Islamic Calendar & Planner",
-    category: "Islamic History",
-    gradeLevel: "High School (15-18 years)",
-    duration: "90 minutes",
-    difficulty: "Advanced",
-    downloads: 756,
-    rating: 4.9,
-    reviews: 54,
-    description:
-      "Explore the Islamic Golden Age, its scientific achievements, and cultural contributions to world civilization.",
-    objectives: [
-      "Understand historical context",
-      "Learn about key figures",
-      "Analyze cultural impact",
-    ],
-    materials: ["Timeline charts", "Primary sources", "Discussion prompts"],
-    tags: ["History", "Science", "Culture"],
-    author: "Prof. Aisha Rahman",
-    lastUpdated: "2024-11-05",
-    thumbnail:
-      "https://images.pexels.com/photos/256546/pexels-photo-256546.jpeg?auto=compress&cs=tinysrgb&w=400",
-  },
-];
+import { fetchLessons } from "../Service/apiService";
 
 const CATEGORIES = [
   "All Categories",
@@ -106,6 +33,7 @@ const GRADE_LEVELS = [
   "Elementary (6-10 years)",
   "Middle School (11-14 years)",
   "High School (15-18 years)",
+  "Adults", // Backend might have different values, assuming frontend consistency or permissive
 ];
 const DIFFICULTIES = [
   "All Difficulties",
@@ -121,7 +49,7 @@ const LessonCard = ({ lesson }) => {
     <div className="bg-white rounded-2xl shadow-2xl hover:shadow-emerald-500/50 transition-all duration-500 overflow-hidden transform hover:-translate-y-2 group">
       <div className="relative h-44 sm:h-48 overflow-hidden bg-gray-100">
         <img
-          src={lesson.thumbnail}
+          src={lesson.thumbnail || lesson.image_url || "https://images.pexels.com/photos/8923569/pexels-photo-8923569.jpeg?auto=compress&cs=tinysrgb&w=400"}
           alt={lesson.title}
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
         />
@@ -133,9 +61,8 @@ const LessonCard = ({ lesson }) => {
             className="bg-white rounded-full p-2 shadow-lg hover:scale-110 transition-transform"
           >
             <Heart
-              className={`w-5 h-5 ${
-                isFavorite ? "fill-red-500 text-red-500" : "text-gray-400"
-              }`}
+              className={`w-5 h-5 ${isFavorite ? "fill-red-500 text-red-500" : "text-gray-400"
+                }`}
             />
           </button>
           <button className="bg-white rounded-full p-2 shadow-lg hover:scale-110 transition-transform">
@@ -149,7 +76,7 @@ const LessonCard = ({ lesson }) => {
           </span>
           <span className="px-3 py-1 bg-white text-gray-900 text-xs font-bold rounded-full flex items-center gap-1 shadow-lg opacity-90">
             <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
-            {lesson.rating}
+            {lesson.rating || 0}
           </span>
         </div>
       </div>
@@ -178,19 +105,19 @@ const LessonCard = ({ lesson }) => {
           <div className="flex items-center gap-2 text-gray-700">
             <Users className="w-4 h-4 text-teal-500" />
             <span className="font-semibold">
-              {lesson.gradeLevel.split(" ")[0]}
+              {(lesson.gradeLevel || "").split(" ")[0]}
             </span>
           </div>
           <div className="flex items-center gap-2 text-gray-700">
             <Download className="w-4 h-4 text-teal-500" />
             <span className="font-semibold">
-              {lesson.downloads.toLocaleString()}
+              {(lesson.downloads || 0).toLocaleString()}
             </span>
           </div>
           <div className="flex items-center gap-2 text-gray-700">
             <Calendar className="w-4 h-4 text-teal-500" />
             <span className="font-semibold">
-              {new Date(lesson.lastUpdated).toLocaleDateString()}
+              {new Date(lesson.created_at || Date.now()).toLocaleDateString()}
             </span>
           </div>
         </div>
@@ -243,11 +170,28 @@ const LessonPlansPage = () => {
   const [selectedDifficulty, setSelectedDifficulty] =
     useState("All Difficulties");
   const [showFilters, setShowFilters] = useState(false);
+  const [lessons, setLessons] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const filteredLessons = LESSON_PLANS.filter((lesson) => {
+  useEffect(() => {
+    const loadLessons = async () => {
+      try {
+        setLoading(true);
+        const data = await fetchLessons();
+        setLessons(data);
+      } catch (e) {
+        console.error("Failed to load lessons", e);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadLessons();
+  }, []);
+
+  const filteredLessons = lessons.filter((lesson) => {
     const matchesSearch =
       lesson.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      lesson.description.toLowerCase().includes(searchTerm.toLowerCase());
+      (lesson.description || "").toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory =
       selectedCategory === "All Categories" ||
       lesson.category === selectedCategory;
@@ -308,17 +252,15 @@ const LessonPlansPage = () => {
             >
               {showFilters ? "Hide" : "Show"} Filters
               <ChevronDown
-                className={`w-4 h-4 transition-transform ${
-                  showFilters ? "rotate-180" : ""
-                }`}
+                className={`w-4 h-4 transition-transform ${showFilters ? "rotate-180" : ""
+                  }`}
               />
             </button>
           </div>
 
           <div
-            className={`grid md:grid-cols-3 gap-4 sm:gap-6 ${
-              showFilters ? "block" : "hidden lg:grid"
-            }`}
+            className={`grid md:grid-cols-3 gap-4 sm:gap-6 ${showFilters ? "block" : "hidden lg:grid"
+              }`}
           >
             <FilterDropdown
               label="Category"

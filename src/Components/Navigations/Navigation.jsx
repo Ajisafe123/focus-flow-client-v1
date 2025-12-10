@@ -155,7 +155,7 @@ export default function Navigation({ setShowLogoutModal }) {
     else if (action === "settings") navigate("/settings");
     else if (action === "notifications" && token) {
       navigate("/notifications");
-      markAllNotificationsRead(token).catch(() => {});
+      markAllNotificationsRead(token).catch(() => { });
     } else if (action === "logout") setShowLogoutModal(true);
     setIsUserDropdownOpen(false);
   };
@@ -301,6 +301,7 @@ export default function Navigation({ setShowLogoutModal }) {
         DhikrDuaCardDropdown={DhikrDuaCardDropdown}
         TeachingResourceDropdown={TeachingResourceDropdown}
         ArticleDropdown={ArticleDropdown}
+        onLogout={() => setShowLogoutModal(true)}
       />
 
       <div className="md:pt-28 pt-16" />

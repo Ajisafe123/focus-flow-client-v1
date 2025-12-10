@@ -82,7 +82,7 @@ const Chat = ({
     clearInterval(recordingInterval);
     setRecordingInterval(null);
     setRecordingTime(0);
-    
+
   };
 
   const toggleRecording = () => {
@@ -102,24 +102,20 @@ const Chat = ({
   };
 
   return (
-    <div className="flex-1 flex flex-col bg-white">
+    <div className="flex-1 flex flex-col bg-white h-full min-h-0 overflow-hidden">
       <div className="bg-white border-b border-gray-100 p-4 sm:p-5 shadow-sm flex-shrink-0">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0 flex-1">
             {onBack && (
               <button
                 onClick={onBack}
-                className="p-2 hover:bg-gray-50 rounded-lg transition-all flex-shrink-0"
+                className="p-2 hover:bg-gray-100/80 rounded-full transition-all flex-shrink-0 mr-2 border border-gray-100 shadow-sm"
               >
-                <ArrowLeft className="w-5 h-5 text-gray-600" />
+                <ArrowLeft className="w-5 h-5 text-gray-700" />
               </button>
             )}
-            <button
-              onClick={() => setIsMobileSidebarOpen(true)}
-              className="lg:hidden p-2 hover:bg-gray-50 rounded-lg transition-all flex-shrink-0"
-            >
-              <Menu className="w-5 h-5 text-gray-600" />
-            </button>
+
+
 
             <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center text-white font-bold text-lg shadow-md flex-shrink-0">
               {selectedChat.avatar || "?"}
@@ -168,14 +164,12 @@ const Chat = ({
         {selectedChat.messages.map((msg) => (
           <div
             key={msg.id}
-            className={`flex ${
-              msg.sender === "admin" ? "justify-end" : "justify-start"
-            } animate-fade-in`}
+            className={`flex ${msg.sender === "admin" ? "justify-end" : "justify-start"
+              } animate-fade-in`}
           >
             <div
-              className={`max-w-[85%] sm:max-w-md ${
-                msg.sender === "admin" ? "order-2" : "order-1"
-              }`}
+              className={`max-w-[85%] sm:max-w-md ${msg.sender === "admin" ? "order-2" : "order-1"
+                }`}
             >
               {msg.sender === "user" && (
                 <div className="flex items-center gap-2 mb-1.5">
@@ -188,22 +182,20 @@ const Chat = ({
                 </div>
               )}
               <div
-                className={`rounded-2xl px-4 py-3 shadow-sm ${
-                  msg.sender === "admin"
-                    ? "bg-gradient-to-br from-emerald-500 to-green-600 text-white rounded-br-sm"
-                    : "bg-white text-gray-900 rounded-bl-sm border border-gray-200"
-                }`}
+                className={`rounded-2xl px-5 py-3.5 shadow-sm max-w-full ${msg.sender === "admin"
+                  ? "bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-br-none"
+                  : "bg-white text-gray-800 rounded-bl-none border border-gray-100 shadow-[0_2px_8px_rgba(0,0,0,0.04)]"
+                  }`}
               >
-                <p className="text-sm leading-relaxed break-words">
+                <p className="text-[15px] leading-relaxed break-words font-medium">
                   {msg.text}
                 </p>
               </div>
               <div
-                className={`flex items-center gap-1.5 mt-1.5 text-xs ${
-                  msg.sender === "admin"
-                    ? "justify-end text-gray-500"
-                    : "justify-start text-gray-500"
-                }`}
+                className={`flex items-center gap-1.5 mt-1.5 text-xs ${msg.sender === "admin"
+                  ? "justify-end text-gray-500"
+                  : "justify-start text-gray-500"
+                  }`}
               >
                 <span>{msg.time}</span>
                 {msg.sender === "admin" &&
@@ -279,11 +271,10 @@ const Chat = ({
         <div className="flex items-end gap-2">
           <button
             onClick={() => setShowQuickReplies(!showQuickReplies)}
-            className={`p-2.5 rounded-lg transition-all flex-shrink-0 ${
-              showQuickReplies
-                ? "bg-emerald-500 text-white"
-                : "hover:bg-gray-100 text-gray-600"
-            }`}
+            className={`p-2.5 rounded-lg transition-all flex-shrink-0 ${showQuickReplies
+              ? "bg-emerald-500 text-white"
+              : "hover:bg-gray-100 text-gray-600"
+              }`}
             title="Quick replies"
           >
             <AlertCircle className="w-5 h-5" />
@@ -331,11 +322,10 @@ const Chat = ({
 
           <button
             onClick={toggleRecording}
-            className={`hidden sm:flex p-2.5 rounded-lg transition-all flex-shrink-0 ${
-              isRecording
-                ? "bg-red-500 text-white hover:bg-red-600"
-                : "hover:bg-gray-100 text-gray-600"
-            }`}
+            className={`hidden sm:flex p-2.5 rounded-lg transition-all flex-shrink-0 ${isRecording
+              ? "bg-red-500 text-white hover:bg-red-600"
+              : "hover:bg-gray-100 text-gray-600"
+              }`}
           >
             {isRecording ? (
               <Square className="w-5 h-5" />

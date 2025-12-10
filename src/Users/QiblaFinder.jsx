@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Navigation, Compass, MapPin } from "lucide-react";
+import LoadingSpinner from "../Components/Common/LoadingSpinner";
 import { fetchQiblaDirection } from "./Service/apiService";
 
 export default function QiblaCompass() {
@@ -155,7 +156,7 @@ export default function QiblaCompass() {
         >
           {isCalculating ? (
             <span className="flex items-center justify-center gap-2">
-              <div className="w-5 h-5 border-3 border-white border-t-transparent rounded-full animate-spin"></div>
+              <LoadingSpinner size="small" colorClass="border-white/30 border-t-white" />
               Locating...
             </span>
           ) : (

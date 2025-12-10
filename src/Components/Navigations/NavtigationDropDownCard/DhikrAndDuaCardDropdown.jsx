@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
-import { ChevronRight, ImageIcon } from "lucide-react";
+import { ChevronRight, ImageIcon, BookOpen, Compass, Smartphone, Heart } from "lucide-react";
 import LoadingSpinner from "../../../Common/LoadingSpinner";
-import apiService from "../../Service/apiService";
+import apiService, { API_BASE_URL } from "../../Service/apiService";
 
-const IMAGE_BASE = "http://localhost:8000";
+const IMAGE_BASE = API_BASE_URL;
 
 const getFullImageUrl = (relativePath) => {
   if (!relativePath) return null;
@@ -88,16 +88,16 @@ export default function DhikrDuaCardDropdown({
   const duaGuideHref = getCategoryHrefByName("Du'a Guide");
 
   const quickLinks = [
-    { name: "Read Adhkar", href: "/dua" },
-    { name: "Dhikr Guide", href: dhikrGuideHref },
-    { name: "Du'a Guide", href: duaGuideHref },
-    { name: "Dhikr & Du'a App", href: "/app" },
+    { name: "Read Adhkar", href: "/dua", icon: BookOpen },
+    { name: "Dhikr Guide", href: dhikrGuideHref, icon: Compass },
+    { name: "Du'a Guide", href: duaGuideHref, icon: Heart },
+    { name: "Dhikr & Du'a App", href: "/app", icon: Smartphone },
   ];
 
   if (loading) {
     return (
       <div className="absolute z-[80] top-full left-1/2 -translate-x-1/2 mt-3 w-[720px] bg-white rounded-md shadow-2xl border border-gray-100 p-8 flex items-center justify-center h-56 pointer-events-auto">
-        <LoadingSpinner size="medium" message="Loading categories..." />
+        <LoadingSpinner size="medium" />
       </div>
     );
   }
@@ -105,7 +105,7 @@ export default function DhikrDuaCardDropdown({
   if (quickLinksOnly) {
     return (
       <div className="space-y-1">
-        {quickLinks.map(({ name, href }) => (
+        {quickLinks.map(({ name, href, icon: Icon }) => (
           <button
             key={name}
             onClick={() => {
@@ -114,7 +114,7 @@ export default function DhikrDuaCardDropdown({
             }}
             className="w-full text-left flex items-center pl-10 py-2 text-base text-gray-600 hover:bg-emerald-50 hover:text-emerald-700 rounded-md transition-colors"
           >
-            <ChevronRight className="w-4 h-4 mr-3 text-emerald-500" />
+            {Icon && <Icon className="w-4 h-4 mr-3 text-emerald-500" />}
             {name}
           </button>
         ))}
@@ -124,7 +124,7 @@ export default function DhikrDuaCardDropdown({
 
   return (
     <div className="absolute z-[80] top-full left-1/2 -translate-x-1/2 mt-3 w-[720px] bg-white rounded-md shadow-2xl border border-emerald-100 pointer-events-auto">
-      <div className="bg-gradient-to-br from-emerald-50 via-white to-teal-50 p-6">
+      <div className="bg-white p-6">
         <div className="flex items-center justify-between mb-5">
           <div>
             <h3 className="text-xl font-bold text-emerald-600">Dhikr & Du'a</h3>
@@ -158,13 +158,16 @@ export default function DhikrDuaCardDropdown({
             Quick Links
           </h4>
           <div className="grid grid-cols-2 gap-2">
-            {quickLinks.map(({ name, href }) => (
+            {quickLinks.map(({ name, href, icon: Icon }) => (
               <Link
                 key={name}
                 to={href}
                 onClick={() => setIsDhikrDuaDropdownOpen(false)}
                 className="flex items-center gap-3 p-3 rounded-md hover:bg-gradient-to-r hover:from-emerald-50 hover:to-teal-50 transition-all duration-200 text-left border border-transparent hover:border-emerald-200 group"
               >
+                <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-emerald-100 to-teal-200 flex items-center justify-center group-hover:scale-110 transition-transform duration-200 shadow-sm">
+                  {Icon && <Icon className="w-4 h-4 text-emerald-700" />}
+                </div>
                 <span className="text-gray-800 font-medium text-sm flex-1">
                   {name}
                 </span>

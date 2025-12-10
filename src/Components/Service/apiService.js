@@ -1,5 +1,5 @@
 // src/services/api.js
-export const API_BASE_URL = "http://localhost:8000";
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://focus-flow-server-v1.onrender.com";
 
 class ApiService {
   getToken() {
@@ -22,11 +22,19 @@ class ApiService {
   async handleResponse(res) {
     if (!res.ok) {
       let msg = "Error";
+      let data = {};
       try {
-        const d = await res.json();
-        msg = d.detail || d.message || msg;
-      } catch {}
-      throw new Error(msg);
+        data = await res.json();
+        msg = data.detail || data.message || msg;
+        // If msg is array/object (e.g. validation errors), stringify it or extract message
+        if (typeof msg === "object") {
+          msg = JSON.stringify(msg);
+        }
+      } catch { }
+      const error = new Error(msg);
+      error.status = res.status;
+      error.data = data;
+      throw error;
     }
     return res.headers.get("content-type")?.includes("json")
       ? await res.json()
@@ -71,6 +79,15 @@ class ApiService {
       localStorage.setItem("role", normalizedRole);
     }
     return json;
+  }
+
+  async resendVerificationCode(email) {
+    const res = await fetch(`${API_BASE_URL}/auth/resend-verification`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
+    });
+    return this.handleResponse(res);
   }
 
   async forgotPassword(email) {
@@ -179,8 +196,8 @@ class ApiService {
     } catch {
       // ignore network errors; still clear client state
     } finally {
-    localStorage.removeItem("token");
-    localStorage.removeItem("role");
+      localStorage.removeItem("token");
+      localStorage.removeItem("role");
     }
   }
 }

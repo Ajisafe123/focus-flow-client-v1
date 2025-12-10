@@ -186,11 +186,10 @@ const HadithItem = ({
               <div className="w-5 h-5 loader" />
             ) : (
               <Share2
-                className={`w-5 h-5 ${
-                  shareUrl
+                className={`w-5 h-5 ${shareUrl
                     ? "text-emerald-500 fill-emerald-100"
                     : "text-gray-400 hover:text-emerald-500"
-                }`}
+                  }`}
               />
             )}
           </button>
@@ -201,11 +200,10 @@ const HadithItem = ({
             aria-label={isFavorite ? "Remove favorite" : "Add favorite"}
           >
             <Heart
-              className={`w-5 h-5 ${
-                isFavorite
+              className={`w-5 h-5 ${isFavorite
                   ? "fill-red-500 text-red-500"
                   : "text-gray-400 hover:text-red-500"
-              }`}
+                }`}
             />
           </button>
         </div>
@@ -278,9 +276,8 @@ const CategoryDescription = ({ description }) => {
   return (
     <div className="mx-auto max-w-3xl leading-relaxed text-center mt-3">
       <p
-        className={`text-lg text-gray-600 font-light mx-auto whitespace-pre-line transition-all duration-300 ${
-          expanded ? "" : "line-clamp-3"
-        }`}
+        className={`text-lg text-gray-600 font-light mx-auto whitespace-pre-line transition-all duration-300 ${expanded ? "" : "line-clamp-3"
+          }`}
       >
         {description}
       </p>
@@ -575,7 +572,7 @@ export default function HadithViewer() {
       <div className="max-w-7xl mx-auto py-10 px-4">
         {loading ? (
           <div className="text-center py-20">
-            <LoadingSpinner size="large" message="Loading..." />
+            <LoadingSpinner size="large" />
           </div>
         ) : showCategories ? (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">

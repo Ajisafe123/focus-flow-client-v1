@@ -58,6 +58,8 @@ const SummaryRow = ({ label, value, color = "text-gray-800" }) => (
   </div>
 );
 
+import { createDonation } from "../Service/apiService";
+
 const DonationForm = ({ cause, onBackToCauses }) => {
   const [amount, setAmount] = useState(100);
   const [customAmount, setCustomAmount] = useState("");
@@ -77,6 +79,8 @@ const DonationForm = ({ cause, onBackToCauses }) => {
     cvv: "",
     nameOnCard: "",
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState(null);
 
   const Icon = cause.icon;
 
@@ -92,8 +96,29 @@ const DonationForm = ({ cause, onBackToCauses }) => {
     else setAmount(0);
   };
 
-  const handleSubmit = () => {
-    setStep(4);
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
+    setError(null);
+    try {
+      const payload = {
+        donor_name: donorInfo.anonymous ? "Anonymous" : donorInfo.name,
+        donor_email: donorInfo.email,
+        amount: currentAmount,
+        currency: "USD",
+        message: `Donation for ${cause.title}`,
+        payment_method: paymentMethod,
+        is_recurring: isRecurring,
+        frequency: isRecurring ? frequency : null,
+      };
+
+      await createDonation(payload);
+      setStep(4);
+    } catch (err) {
+      console.error(err);
+      setError("Payment failed. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const currentAmount = useMemo(
@@ -111,16 +136,14 @@ const DonationForm = ({ cause, onBackToCauses }) => {
 
   const StepHeader = ({ stepNum, title, isCurrent }) => (
     <div
-      className={`flex items-center gap-2 ${
-        isCurrent ? "font-bold" : "font-medium text-white/70"
-      }`}
+      className={`flex items-center gap-2 ${isCurrent ? "font-bold" : "font-medium text-white/70"
+        }`}
     >
       <div
-        className={`w-6 h-6 rounded-full flex items-center justify-center border transition-all text-xs ${
-          isCurrent
-            ? "bg-white text-emerald-600 border-white"
-            : "bg-transparent text-white border-white/50"
-        }`}
+        className={`w-6 h-6 rounded-full flex items-center justify-center border transition-all text-xs ${isCurrent
+          ? "bg-white text-emerald-600 border-white"
+          : "bg-transparent text-white border-white/50"
+          }`}
       >
         {isCurrent ? stepNum : stepNum}
       </div>
@@ -152,15 +175,13 @@ const DonationForm = ({ cause, onBackToCauses }) => {
         <div className="mt-4 flex justify-between items-center w-full">
           <StepHeader stepNum={1} title="Amount" isCurrent={step === 1} />
           <div
-            className={`h-1 flex-1 mx-2 rounded-full transition-all ${
-              step > 1 ? "bg-white" : "bg-white/30"
-            }`}
+            className={`h-1 flex-1 mx-2 rounded-full transition-all ${step > 1 ? "bg-white" : "bg-white/30"
+              }`}
           ></div>
           <StepHeader stepNum={2} title="Details" isCurrent={step === 2} />
           <div
-            className={`h-1 flex-1 mx-2 rounded-full transition-all ${
-              step > 2 ? "bg-white" : "bg-white/30"
-            }`}
+            className={`h-1 flex-1 mx-2 rounded-full transition-all ${step > 2 ? "bg-white" : "bg-white/30"
+              }`}
           ></div>
           <StepHeader
             stepNum={<Check className="w-4 h-4" />}
@@ -168,9 +189,8 @@ const DonationForm = ({ cause, onBackToCauses }) => {
             isCurrent={step === 3}
           />
           <div
-            className={`h-1 flex-1 mx-2 rounded-full transition-all ${
-              step > 3 ? "bg-white" : "bg-white/30"
-            }`}
+            className={`h-1 flex-1 mx-2 rounded-full transition-all ${step > 3 ? "bg-white" : "bg-white/30"
+              }`}
           ></div>
           <StepHeader
             stepNum={<Check className="w-4 h-4" />}
@@ -190,11 +210,10 @@ const DonationForm = ({ cause, onBackToCauses }) => {
                   <button
                     key={preset}
                     onClick={() => handleAmountSelect(preset)}
-                    className={`py-3 px-1 rounded-lg text-sm font-semibold transition-all duration-200 active:scale-[.98] focus:ring-2 focus:ring-emerald-200 ${
-                      amount === preset && !customAmount
-                        ? "bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-md"
-                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                    }`}
+                    className={`py-3 px-1 rounded-lg text-sm font-semibold transition-all duration-200 active:scale-[.98] focus:ring-2 focus:ring-emerald-200 ${amount === preset && !customAmount
+                      ? "bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-md"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                      }`}
                   >
                     ${preset}
                   </button>
@@ -233,11 +252,10 @@ const DonationForm = ({ cause, onBackToCauses }) => {
                     <button
                       key={freq}
                       onClick={() => setFrequency(freq)}
-                      className={`py-2 px-1 rounded-md text-xs font-medium capitalize transition-all active:scale-[.98] focus:ring-2 focus:ring-emerald-200 ${
-                        frequency === freq
-                          ? "bg-emerald-600 text-white shadow-sm"
-                          : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-200"
-                      }`}
+                      className={`py-2 px-1 rounded-md text-xs font-medium capitalize transition-all active:scale-[.98] focus:ring-2 focus:ring-emerald-200 ${frequency === freq
+                        ? "bg-emerald-600 text-white shadow-sm"
+                        : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-200"
+                        }`}
                     >
                       {freq}
                     </button>
@@ -356,23 +374,20 @@ const DonationForm = ({ cause, onBackToCauses }) => {
                   <button
                     key={method.id}
                     onClick={() => setPaymentMethod(method.id)}
-                    className={`p-3 rounded-lg border-2 flex flex-col items-center justify-center gap-1 transition-all h-full text-center hover:border-emerald-500 hover:bg-emerald-50 active:scale-[.98] focus:ring-2 focus:ring-emerald-200 ${
-                      isSelected
-                        ? "border-emerald-600 bg-emerald-50 shadow-sm"
-                        : "border-gray-200 bg-white"
-                    }`}
+                    className={`p-3 rounded-lg border-2 flex flex-col items-center justify-center gap-1 transition-all h-full text-center hover:border-emerald-500 hover:bg-emerald-50 active:scale-[.98] focus:ring-2 focus:ring-emerald-200 ${isSelected
+                      ? "border-emerald-600 bg-emerald-50 shadow-sm"
+                      : "border-gray-200 bg-white"
+                      }`}
                   >
                     <MethodIcon
-                      className={`w-5 h-5 flex-shrink-0 transition-colors ${
-                        isSelected ? "text-emerald-700" : "text-gray-500"
-                      }`}
+                      className={`w-5 h-5 flex-shrink-0 transition-colors ${isSelected ? "text-emerald-700" : "text-gray-500"
+                        }`}
                     />
                     <p
-                      className={`text-xs font-medium ${
-                        isSelected
-                          ? "text-emerald-800 font-bold"
-                          : "text-gray-700"
-                      }`}
+                      className={`text-xs font-medium ${isSelected
+                        ? "text-emerald-800 font-bold"
+                        : "text-gray-700"
+                        }`}
                     >
                       {method.name}
                     </p>

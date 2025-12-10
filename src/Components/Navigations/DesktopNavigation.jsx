@@ -10,6 +10,7 @@ import {
   Settings,
   LogOut,
   Globe,
+  ChevronRight,
 } from "lucide-react";
 import CartDropdown from "./NavtigationDropDownCard/CartDropdown";
 import NotificationCenter from "../../Users/Notification";
@@ -159,11 +160,10 @@ const DesktopNavigation = ({
       </div>
 
       <nav
-        className={`hidden md:block fixed left-0 right-0 z-40 transition-all duration-300 ${
-          isScrolled
-            ? "top-12 bg-gradient-to-r from-emerald-900/95 to-teal-900/95 backdrop-blur-md shadow-2xl"
-            : "top-12 bg-gradient-to-r from-emerald-800 to-teal-800 shadow-xl"
-        }`}
+        className={`hidden md:block fixed left-0 right-0 z-40 transition-all duration-300 ${isScrolled
+          ? "top-12 bg-gradient-to-r from-emerald-900/95 to-teal-900/95 backdrop-blur-md shadow-2xl"
+          : "top-12 bg-gradient-to-r from-emerald-800 to-teal-800 shadow-xl"
+          }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-14">
@@ -205,32 +205,28 @@ const DesktopNavigation = ({
                           handleNavItemClick(item.href, item.name);
                           item.setState(false);
                         }}
-                        className={`flex items-center text-white hover:text-amber-300 transition-colors relative group px-2 py-1 text-sm whitespace-nowrap ${
-                          isBold ? "font-bold" : "font-medium"
-                        } ${
-                          item.state || activeLink === item.name
+                        className={`flex items-center text-white hover:text-amber-300 transition-colors relative group px-2 py-1 text-sm whitespace-nowrap ${isBold ? "font-bold" : "font-medium"
+                          } ${item.state || activeLink === item.name
                             ? "text-amber-300"
                             : ""
-                        }`}
+                          }`}
                       >
                         {item.name}
                         <ChevronDown
-                          className={`w-3.5 h-3.5 ml-0.5 transition-transform duration-200 ${
-                            item.state ? "rotate-180" : ""
-                          }`}
+                          className={`w-3.5 h-3.5 ml-0.5 transition-transform duration-200 ${item.state ? "rotate-180" : ""
+                            }`}
                         />
                         <div
-                          className={`h-0.5 bg-amber-300 absolute inset-x-0 bottom-0 transition-all duration-300 ${
-                            activeLink === item.name
-                              ? "w-full"
-                              : "w-0 group-hover:w-full"
-                          }`}
+                          className={`h-0.5 bg-amber-300 absolute inset-x-0 bottom-0 transition-all duration-300 ${activeLink === item.name
+                            ? "w-full"
+                            : "w-0 group-hover:w-full"
+                            }`}
                         />
                       </button>
 
                       {item.state && (
                         <div
-                          className="absolute top-full mt-1.5 left-1/2 transform -translate-x-1/2 z-50 w-60 rounded-lg shadow-xl bg-white"
+                          className="absolute top-full mt-2 left-1/2 transform -translate-x-1/2 z-[100]"
                           onMouseEnter={() =>
                             handleDropdownEnter(item.name, item.setState)
                           }
@@ -246,7 +242,7 @@ const DesktopNavigation = ({
                               }}
                             />
                           ) : (
-                            <div className="p-1.5">
+                            <div className="w-64 rounded-2xl shadow-xl bg-white border border-emerald-100 ring-1 ring-black/5 overflow-hidden p-2">
                               {item.items.map((subItem) => (
                                 <button
                                   key={subItem.name}
@@ -257,9 +253,11 @@ const DesktopNavigation = ({
                                     );
                                     item.setState(false);
                                   }}
-                                  className="w-full text-left flex items-center p-1.5 text-xs text-gray-700 hover:bg-emerald-100 hover:text-emerald-700 rounded-md transition-colors"
+                                  className="w-full text-left flex items-center p-2.5 text-sm text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 rounded-xl transition-all font-medium group"
                                 >
-                                  <subItem.icon className="w-3.5 h-3.5 mr-2" />
+                                  <div className="w-8 h-8 rounded-full bg-emerald-100/50 flex items-center justify-center mr-3 group-hover:bg-emerald-200/50 transition-colors">
+                                    <subItem.icon className="w-4 h-4 text-emerald-600" />
+                                  </div>
                                   {subItem.name}
                                 </button>
                               ))}
@@ -275,17 +273,15 @@ const DesktopNavigation = ({
                   <button
                     key={item.name}
                     onClick={() => handleNavItemClick(item.href, item.name)}
-                    className={`text-white hover:text-amber-300 transition-colors relative group px-2 py-1 text-sm whitespace-nowrap ${
-                      isBold ? "font-bold" : "font-medium"
-                    } ${activeLink === item.name ? "text-amber-300" : ""}`}
+                    className={`text-white hover:text-amber-300 transition-colors relative group px-2 py-1 text-sm whitespace-nowrap ${isBold ? "font-bold" : "font-medium"
+                      } ${activeLink === item.name ? "text-amber-300" : ""}`}
                   >
                     {item.name}
                     <div
-                      className={`h-0.5 bg-amber-300 absolute inset-x-0 bottom-0 transition-all duration-300 ${
-                        activeLink === item.name
-                          ? "w-full"
-                          : "w-0 group-hover:w-full"
-                      }`}
+                      className={`h-0.5 bg-amber-300 absolute inset-x-0 bottom-0 transition-all duration-300 ${activeLink === item.name
+                        ? "w-full"
+                        : "w-0 group-hover:w-full"
+                        }`}
                     />
                   </button>
                 );
@@ -296,22 +292,20 @@ const DesktopNavigation = ({
               <div className="relative hidden sm:block">
                 <button
                   onClick={() => setIsLangDropdownOpen((prev) => !prev)}
-                  className={`flex items-center px-2 py-1 text-sm font-medium text-white hover:text-amber-300 transition-colors ${
-                    isLangDropdownOpen ? "text-amber-300" : ""
-                  }`}
+                  className={`flex items-center px-2 py-1 text-sm font-medium text-white hover:text-amber-300 transition-colors ${isLangDropdownOpen ? "text-amber-300" : ""
+                    }`}
                 >
                   <Globe className="w-4 h-4 mr-1" />
                   {flagEmoji(activeLanguage.flag)} {activeLanguage.code.toUpperCase()}
                   <ChevronDown
-                    className={`w-3.5 h-3.5 ml-1 transition-transform duration-200 ${
-                      isLangDropdownOpen ? "rotate-180" : ""
-                    }`}
+                    className={`w-3.5 h-3.5 ml-1 transition-transform duration-200 ${isLangDropdownOpen ? "rotate-180" : ""
+                      }`}
                   />
                 </button>
 
                 {isLangDropdownOpen && (
-                  <div className="absolute top-full mt-1.5 right-0 z-50 w-52 rounded-lg shadow-xl bg-white">
-                    <div className="p-1.5 max-h-56 overflow-y-auto">
+                  <div className="absolute top-full mt-2 right-0 z-50 w-56 rounded-2xl shadow-xl bg-white border border-emerald-100 ring-1 ring-black/5 overflow-hidden">
+                    <div className="p-2 max-h-64 overflow-y-auto">
                       {languages.map((lang) => (
                         <button
                           key={lang.code}
@@ -319,14 +313,14 @@ const DesktopNavigation = ({
                             onLanguageChange(lang.code);
                             setIsLangDropdownOpen(false);
                           }}
-                          className="w-full text-left flex items-center px-2.5 py-1.5 text-xs text-gray-700 hover:bg-emerald-100 hover:text-emerald-700 rounded-md transition-colors"
+                          className="w-full text-left flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 rounded-xl transition-all"
                         >
-                          <span className="mr-2 text-base">
+                          <span className="mr-3 text-lg">
                             {flagEmoji(lang.flag)}
                           </span>
-                          {lang.name}
+                          <span className="font-medium">{lang.name}</span>
                           {lang.code === activeLanguage.code && (
-                            <span className="ml-auto text-[10px] text-emerald-600 font-semibold">
+                            <span className="ml-auto text-xs text-emerald-600 font-bold bg-emerald-100 px-2 py-0.5 rounded-full">
                               Active
                             </span>
                           )}
@@ -352,14 +346,16 @@ const DesktopNavigation = ({
                 </button>
 
                 {isCartHovered && (
-                  <div className="absolute right-0 mt-1.5 w-72 z-100">
-                    <CartDropdown
-                      cart={cart}
-                      onClose={() => setIsCartHovered(false)}
-                      onViewCart={goToShop}
-                      onUpdateQty={onUpdateQty}
-                      onRemove={onRemove}
-                    />
+                  <div className="absolute right-0 mt-2 w-80 z-100">
+                    <div className="rounded-2xl shadow-xl bg-white border border-emerald-100 ring-1 ring-black/5 overflow-hidden">
+                      <CartDropdown
+                        cart={cart}
+                        onClose={() => setIsCartHovered(false)}
+                        onViewCart={goToShop}
+                        onUpdateQty={onUpdateQty}
+                        onRemove={onRemove}
+                      />
+                    </div>
                   </div>
                 )}
               </div>
@@ -379,60 +375,101 @@ const DesktopNavigation = ({
                 </button>
 
                 {isNotifHovered && (
-                  <div className="absolute right-0 mt-1.5 w-72 z-100">
-                    <NotificationCenter notificationCount={notificationCount} />
+                  <div className="absolute right-0 mt-2 w-80 z-100">
+                    <div className="rounded-2xl shadow-xl bg-white border border-emerald-100 ring-1 ring-black/5 overflow-hidden">
+                      <NotificationCenter notificationCount={notificationCount} />
+                    </div>
                   </div>
                 )}
               </div>
 
-              <div className="relative">
+              <div
+                className="relative"
+                onMouseEnter={() => {
+                  if (hoverTimers.current["user"]) clearTimeout(hoverTimers.current["user"]);
+                  setIsUserDropdownOpen(true);
+                }}
+                onMouseLeave={() => {
+                  hoverTimers.current["user"] = setTimeout(() => setIsUserDropdownOpen(false), 300);
+                }}
+              >
                 <button
-                  onClick={() => setIsUserDropdownOpen((prev) => !prev)}
-                  className={`p-1.5 rounded-full transition-colors ${
-                    isUserDropdownOpen || activeLink === "Mine"
-                      ? "bg-amber-300 text-emerald-800"
-                      : "text-white hover:text-amber-300 hover:bg-emerald-700"
-                  }`}
+                  onClick={() => handleUserAction(token ? "profile" : "login")}
+                  className={`p-1.5 rounded-full transition-colors ${isUserDropdownOpen || activeLink === "Mine"
+                    ? "bg-amber-300 text-emerald-800"
+                    : "text-white hover:text-amber-300 hover:bg-emerald-700"
+                    }`}
                 >
                   <User className="w-4.5 h-4.5" />
                 </button>
                 {isUserDropdownOpen && (
-                  <div className="absolute right-0 mt-1.5 w-44 rounded-md shadow-lg bg-white z-50">
-                    <div className="py-1">
-                      {token ? (
-                        <>
-                          <button
-                            onClick={() => handleUserAction("profile")}
-                            className="w-full text-left flex items-center px-3 py-1.5 text-xs text-gray-700 hover:bg-emerald-100 hover:text-emerald-700 transition-colors"
-                          >
-                            <User className="w-3.5 h-3.5 mr-2" />
-                            Profile
-                          </button>
-                          <button
-                            onClick={() => handleUserAction("settings")}
-                            className="w-full text-left flex items-center px-3 py-1.5 text-xs text-gray-700 hover:bg-emerald-100 hover:text-emerald-700 transition-colors"
-                          >
-                            <Settings className="w-3.5 h-3.5 mr-2" />
-                            Settings
-                          </button>
-                          <div className="border-t border-gray-100 mx-2" />
-                          <button
-                            onClick={() => handleUserAction("logout")}
-                            className="w-full text-left flex items-center px-3 py-1.5 text-xs text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors"
-                          >
-                            <LogOut className="w-3.5 h-3.5 mr-2" />
-                            Logout
-                          </button>
-                        </>
-                      ) : (
-                        <button
-                          onClick={() => handleNavItemClick("/login", "Mine")}
-                          className="w-full text-left flex items-center px-3 py-1.5 text-xs text-emerald-700 hover:bg-emerald-100 hover:text-emerald-900 transition-colors"
-                        >
-                          <LogOut className="w-3.5 h-3.5 mr-2 transform rotate-180" />
-                          Login / Register
-                        </button>
-                      )}
+                  <div
+                    className="absolute right-0 mt-2 w-64 rounded-xl shadow-2xl bg-white border border-emerald-100 ring-1 ring-black/5 z-50 overflow-hidden pointer-events-auto"
+                    onMouseEnter={() => {
+                      if (hoverTimers.current["user"]) clearTimeout(hoverTimers.current["user"]);
+                    }}
+                    onMouseLeave={() => {
+                      hoverTimers.current["user"] = setTimeout(() => setIsUserDropdownOpen(false), 300);
+                    }}
+                  >
+                    <div className="bg-white p-3">
+                      <div className="space-y-1">
+                        {token ? (
+                          <>
+                            <button
+                              onClick={() => handleUserAction("profile")}
+                              className="w-full text-left flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 transition-all rounded-lg font-medium group"
+                            >
+                              <div className="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center group-hover:bg-emerald-200 transition-colors">
+                                <User className="w-4 h-4 text-emerald-700" />
+                              </div>
+                              <span className="flex-1">Profile</span>
+                              <ChevronRight className="w-4 h-4 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                            </button>
+                            <button
+                              onClick={() => handleUserAction("settings")}
+                              className="w-full text-left flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 transition-all rounded-lg font-medium group"
+                            >
+                              <div className="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center group-hover:bg-emerald-200 transition-colors">
+                                <Settings className="w-4 h-4 text-emerald-700" />
+                              </div>
+                              <span className="flex-1">Settings</span>
+                              <ChevronRight className="w-4 h-4 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                            </button>
+                            <div className="border-t border-gray-100 my-1" />
+                            <button
+                              onClick={() => handleUserAction("logout")}
+                              className="w-full text-left flex items-center gap-3 px-3 py-2 text-sm text-red-600 hover:bg-red-50 transition-all rounded-lg font-medium group"
+                            >
+                              <div className="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center group-hover:bg-red-100 transition-colors">
+                                <LogOut className="w-4 h-4 text-red-600" />
+                              </div>
+                              <span className="flex-1">Logout</span>
+                            </button>
+                          </>
+                        ) : (
+                          <div className="p-1">
+                            <div className="text-center mb-3">
+                              <h3 className="text-sm font-bold text-gray-800">Welcome to Nibras</h3>
+                              <p className="text-xs text-gray-500 mt-0.5">Please sign in to continue</p>
+                            </div>
+                            <div className="grid grid-cols-2 gap-2">
+                              <button
+                                onClick={() => handleNavItemClick("/login", "Mine")}
+                                className="flex items-center justify-center px-4 py-2 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-colors shadow-sm"
+                              >
+                                Login
+                              </button>
+                              <button
+                                onClick={() => handleNavItemClick("/register", "Mine")}
+                                className="flex items-center justify-center px-4 py-2 text-sm font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg transition-colors"
+                              >
+                                Sign Up
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 )}

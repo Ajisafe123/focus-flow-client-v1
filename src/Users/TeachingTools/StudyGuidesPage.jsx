@@ -15,6 +15,17 @@ import {
 } from "lucide-react";
 
 import { fetchStudyGuides } from "../Service/apiService";
+import LoadingSpinner from "../../Components/Common/LoadingSpinner";
+
+const CATEGORIES = [
+  "All Categories",
+  "Theology (Aqeedah)",
+  "Jurisprudence (Fiqh)",
+  "History (Seerah)",
+  "Quranic Studies",
+  "Hadith Studies",
+  "Spirituality (Tazkiyah)",
+];
 
 const DIFFICULTIES = ["All Levels", "Beginner", "Intermediate", "Advanced"];
 
@@ -43,9 +54,8 @@ const StudyGuideCard = ({ guide }) => {
           className="absolute top-3 right-3 bg-white rounded-full p-2 shadow-lg hover:scale-110 transition-transform"
         >
           <Heart
-            className={`w-5 h-5 ${
-              isFavorite ? "fill-red-500 text-red-500" : "text-gray-400"
-            }`}
+            className={`w-5 h-5 ${isFavorite ? "fill-red-500 text-red-500" : "text-gray-400"
+              }`}
           />
         </button>
       </div>
@@ -190,17 +200,15 @@ const StudyGuidesPage = () => {
             >
               {showFilters ? "Hide" : "Show"} Filters
               <ChevronDown
-                className={`w-4 h-4 transition-transform ${
-                  showFilters ? "rotate-180" : ""
-                }`}
+                className={`w-4 h-4 transition-transform ${showFilters ? "rotate-180" : ""
+                  }`}
               />
             </button>
           </div>
 
           <div
-            className={`grid md:grid-cols-2 gap-4 ${
-              showFilters ? "block" : "hidden lg:grid"
-            }`}
+            className={`grid md:grid-cols-2 gap-4 ${showFilters ? "block" : "hidden lg:grid"
+              }`}
           >
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -249,8 +257,8 @@ const StudyGuidesPage = () => {
         </div>
 
         {loading ? (
-          <div className="text-center py-10 text-emerald-700 font-semibold">
-            Loading...
+          <div className="flex justify-center py-10">
+            <LoadingSpinner size="large" />
           </div>
         ) : error ? (
           <div className="text-center py-10 text-red-600 font-semibold">

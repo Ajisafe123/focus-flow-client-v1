@@ -14,6 +14,7 @@ import {
   BookMarked,
   Calendar,
   LogOut,
+  Mail,
 } from "lucide-react";
 
 const MainSidebar = ({
@@ -33,6 +34,7 @@ const MainSidebar = ({
     { id: "duas", icon: Heart, label: "Duas & Adhkar" },
     { id: "users", icon: Users, label: "Users" },
     { id: "hadith", icon: MessageSquare, label: "Hadith" },
+    { id: "contacts", icon: Mail, label: "Contact Messages" },
     { id: "chat", icon: MessageCircle, label: "Live Chat" },
     { id: "analytics", icon: BarChart3, label: "Analytics" },
     { id: "settings", icon: Settings, label: "Settings" },
@@ -148,20 +150,19 @@ const MainSidebar = ({
             {menuItems.map((item) => (
               <button
                 key={item.id}
-            onClick={() => {
-              if (item.action === "logout") {
-                onLogout?.();
-                setIsMobileSidebarOpen(false);
-                return;
-              }
-              setActivePage(item.id);
-              setIsMobileSidebarOpen(false);
-            }}
+                onClick={() => {
+                  if (item.action === "logout") {
+                    onLogout?.();
+                    setIsMobileSidebarOpen(false);
+                    return;
+                  }
+                  setActivePage(item.id);
+                  setIsMobileSidebarOpen(false);
+                }}
                 className={`relative w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all duration-300 group overflow-hidden
-                  ${
-                    activePage === item.id
-                      ? "bg-gradient-to-r from-emerald-500 to-green-500 text-white shadow-lg shadow-emerald-500/30"
-                      : "text-gray-700 hover:bg-gray-50"
+                  ${activePage === item.id
+                    ? "bg-gradient-to-r from-emerald-500 to-green-500 text-white shadow-lg shadow-emerald-500/30"
+                    : "text-gray-700 hover:bg-gray-50"
                   }
                 `}
               >
@@ -185,11 +186,10 @@ const MainSidebar = ({
                   </div>
                 )}
                 <div
-                  className={`relative flex-shrink-0 transition-all duration-300 ${
-                    activePage === item.id
-                      ? "scale-110"
-                      : "group-hover:scale-110 group-hover:text-emerald-600"
-                  }`}
+                  className={`relative flex-shrink-0 transition-all duration-300 ${activePage === item.id
+                    ? "scale-110"
+                    : "group-hover:scale-110 group-hover:text-emerald-600"
+                    }`}
                 >
                   {activePage === item.id && (
                     <div className="absolute -inset-1.5 bg-white/20 rounded-xl blur-sm"></div>
@@ -200,11 +200,10 @@ const MainSidebar = ({
                   />
                 </div>
                 <span
-                  className={`font-semibold text-sm relative z-10 transition-all duration-300 ${
-                    activePage === item.id
-                      ? "translate-x-1"
-                      : "group-hover:translate-x-1 group-hover:text-emerald-700"
-                  }`}
+                  className={`font-semibold text-sm relative z-10 transition-all duration-300 ${activePage === item.id
+                    ? "translate-x-1"
+                    : "group-hover:translate-x-1 group-hover:text-emerald-700"
+                    }`}
                 >
                   {item.label}
                 </span>

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   X,
   Send,
@@ -18,6 +18,7 @@ import {
   Camera,
   Trash2,
   MessageCircle,
+  Edit2,
 } from "lucide-react";
 
 export const ChatWindow = ({
@@ -52,7 +53,25 @@ export const ChatWindow = ({
   quickQuestions,
   chatError,
   isSending,
+  onEditMessage,
+  onDeleteMessage,
 }) => {
+  const [editingId, setEditingId] = useState(null);
+  const [editText, setEditText] = useState("");
+  const [menuId, setMenuId] = useState(null);
+
+  const handleStartEdit = (msg) => {
+    setEditingId(msg.id);
+    setEditText(msg.text);
+    setMenuId(null);
+  };
+
+  const handleSaveEdit = () => {
+    if (editText.trim()) {
+      onEditMessage(editingId, editText);
+    }
+    setEditingId(null);
+  };
   const emojis = [
     "😊",
     "👍",
@@ -78,18 +97,20 @@ export const ChatWindow = ({
 
   return (
     <div
-      className={`bg-white rounded-3xl shadow-2xl flex flex-col transition-all duration-500 overflow-hidden ${
-        isMinimized
-          ? "w-[90vw] max-w-[320px] sm:max-w-[360px] h-16"
-          : "w-[95vw] max-w-[400px] sm:max-w-[440px] h-[85vh] max-h-[650px]"
-      }`}
+      className={`fixed transition-all duration-300 ease-in-out z-[9999] overflow-hidden flex flex-col bg-white shadow-2xl
+        ${isMinimized
+          ? "bottom-4 right-4 w-[min(90vw,360px)] h-16 rounded-2xl cursor-pointer"
+          : "inset-0 sm:inset-auto sm:bottom-4 sm:right-4 sm:w-[400px] sm:h-[600px] sm:max-h-[80vh] sm:rounded-2xl"
+        }
+      `}
+      onClick={() => isMinimized && setIsMinimized(false)}
     >
       <div className="bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-600 text-white p-4 flex items-center justify-between flex-shrink-0 relative overflow-hidden">
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-0 left-0 w-32 h-32 bg-white rounded-full -translate-x-16 -translate-y-16"></div>
           <div className="absolute bottom-0 right-0 w-40 h-40 bg-white rounded-full translate-x-20 translate-y-20"></div>
         </div>
-        
+
         <div className="flex items-center gap-3 min-w-0 relative z-10">
           <div className="w-10 h-10 sm:w-11 sm:h-11 bg-white/20 backdrop-blur-xl rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg">
             <MessageCircle className="w-5 h-5 sm:w-6 sm:h-6" />
@@ -108,7 +129,7 @@ export const ChatWindow = ({
             </div>
           )}
         </div>
-        
+
         <div className="flex items-center gap-1 flex-shrink-0 relative z-10">
           <button
             onClick={() => setIsMinimized(!isMinimized)}
@@ -139,7 +160,7 @@ export const ChatWindow = ({
                 <p className="text-[10px] text-gray-500 truncate">{currentUser.email}</p>
               </div>
             </div>
-            
+
             <div className="relative flex-shrink-0">
               <button
                 onClick={() => setShowMenu(!showMenu)}
@@ -147,25 +168,25 @@ export const ChatWindow = ({
               >
                 <MoreVertical className="w-4 h-4 text-emerald-700" />
               </button>
-              
+
               {showMenu && (
                 <>
                   <div className="fixed inset-0 z-20" onClick={() => setShowMenu(false)}></div>
                   <div className="absolute right-0 top-full mt-2 bg-white rounded-2xl shadow-2xl border border-emerald-100 py-2 w-52 z-30 animate-scale-in">
                     <button onClick={downloadChat} className="w-full px-4 py-3 text-left text-sm hover:bg-emerald-50 flex items-center gap-3 transition-colors">
-                      <Download className="w-4 h-4 text-emerald-600" /> 
+                      <Download className="w-4 h-4 text-emerald-600" />
                       <span className="font-medium">Download Chat</span>
                     </button>
                     <button onClick={() => { setShowRating(true); setShowMenu(false); }} className="w-full px-4 py-3 text-left text-sm hover:bg-emerald-50 flex items-center gap-3 transition-colors">
-                      <Star className="w-4 h-4 text-yellow-500" /> 
+                      <Star className="w-4 h-4 text-yellow-500" />
                       <span className="font-medium">Rate Support</span>
                     </button>
                     <button onClick={() => setSoundEnabled(!soundEnabled)} className="w-full px-4 py-3 text-left text-sm hover:bg-emerald-50 flex items-center gap-3 transition-colors">
-                      {soundEnabled ? <Volume2 className="w-4 h-4 text-emerald-600" /> : <VolumeX className="w-4 h-4 text-gray-400" />} 
+                      {soundEnabled ? <Volume2 className="w-4 h-4 text-emerald-600" /> : <VolumeX className="w-4 h-4 text-gray-400" />}
                       <span className="font-medium">{soundEnabled ? 'Mute Sounds' : 'Unmute Sounds'}</span>
                     </button>
                     <button className="w-full px-4 py-3 text-left text-sm hover:bg-emerald-50 flex items-center gap-3 transition-colors">
-                      <Archive className="w-4 h-4 text-emerald-600" /> 
+                      <Archive className="w-4 h-4 text-emerald-600" />
                       <span className="font-medium">Archive Chat</span>
                     </button>
                   </div>
@@ -197,8 +218,40 @@ export const ChatWindow = ({
             )}
 
             {messages.map((msg) => (
-              <div key={msg.id} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in`}>
-                <div className={`max-w-[85%] sm:max-w-[75%] ${msg.sender === 'user' ? 'order-2' : 'order-1'}`}>
+              <div key={msg.id} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in group mb-3 relative items-end gap-2`}>
+
+                {msg.sender === 'user' && !editingId && (
+                  <div className="relative order-1 mb-2">
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setMenuId(menuId === msg.id ? null : msg.id); }}
+                      className={`p-1 rounded-full transition-all ${menuId === msg.id ? 'opacity-100 bg-gray-100' : 'opacity-40 sm:opacity-0 sm:group-hover:opacity-100 hover:bg-gray-100 hover:opacity-100'}`}
+                    >
+                      <MoreVertical className="w-4 h-4 text-gray-400" />
+                    </button>
+                    {menuId === msg.id && (
+                      <div className="absolute bottom-full mb-1 right-0 w-28 bg-white shadow-xl rounded-xl border border-gray-100 overflow-hidden z-20 flex flex-col animate-scale-in origin-bottom-right">
+                        <button
+                          onClick={() => handleStartEdit(msg)}
+                          className="flex items-center gap-2 px-3 py-2.5 hover:bg-emerald-50 text-xs font-medium text-gray-700 text-left transition-colors"
+                        >
+                          <Edit2 className="w-3.5 h-3.5" /> Edit
+                        </button>
+                        <button
+                          onClick={() => { setMenuId(null); onDeleteMessage(msg.id); }}
+                          className="flex items-center gap-2 px-3 py-2.5 hover:bg-red-50 text-xs font-medium text-red-500 text-left transition-colors"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" /> Delete
+                        </button>
+                      </div>
+                    )}
+                    {/* Backdrop for menu */}
+                    {menuId === msg.id && (
+                      <div className="fixed inset-0 z-10" onClick={() => setMenuId(null)} />
+                    )}
+                  </div>
+                )}
+
+                <div className={`max-w-[85%] sm:max-w-[75%] ${msg.sender === 'user' ? 'order-2' : 'order-1'} w-full`}>
                   {msg.sender === 'admin' && (
                     <div className="flex items-center gap-2 mb-1.5">
                       <div className="w-6 h-6 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white text-xs font-bold shadow-md ring-2 ring-white">
@@ -207,23 +260,44 @@ export const ChatWindow = ({
                       <span className="text-xs text-gray-500 font-semibold">Support Team</span>
                     </div>
                   )}
-                  <div className={`rounded-2xl px-4 py-3 shadow-sm ${
-                    msg.sender === 'user'
-                      ? 'bg-gradient-to-br from-emerald-600 to-teal-600 text-white rounded-br-sm'
-                      : 'bg-white border border-emerald-100/50 text-gray-800 rounded-bl-sm'
-                  }`}>
-                    <p className="text-sm leading-relaxed break-words">{msg.text}</p>
-                  </div>
-                  <div className={`flex items-center gap-1.5 mt-1.5 text-xs ${
-                    msg.sender === 'user' ? 'justify-end text-gray-400' : 'justify-start text-gray-400'
-                  }`}>
-                    <span>{msg.time}</span>
-                    {msg.sender === 'user' && (
-                      msg.status === 'read' ? <CheckCheck className="w-3.5 h-3.5 text-emerald-500" /> :
-                      msg.status === 'delivered' ? <CheckCheck className="w-3.5 h-3.5" /> :
-                      <Check className="w-3.5 h-3.5" />
-                    )}
-                  </div>
+
+                  {editingId === msg.id ? (
+                    <div className="bg-white border border-emerald-300 rounded-2xl p-2 shadow-md">
+                      <textarea
+                        value={editText}
+                        onChange={(e) => setEditText(e.target.value)}
+                        className="w-full text-sm p-2 border border-gray-100 rounded-lg focus:outline-none focus:bg-gray-50 resize-none"
+                        rows={2}
+                        autoFocus
+                      />
+                      <div className="flex justify-end gap-2 mt-2">
+                        <button onClick={() => setEditingId(null)} className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg">
+                          <X className="w-4 h-4" />
+                        </button>
+                        <button onClick={handleSaveEdit} className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg">
+                          <Check className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <div className={`rounded-2xl px-4 py-3 shadow-sm ${msg.sender === 'user'
+                        ? 'bg-gradient-to-br from-emerald-600 to-teal-600 text-white rounded-br-sm'
+                        : 'bg-white border border-emerald-100/50 text-gray-800 rounded-bl-sm'
+                        }`}>
+                        <p className="text-sm leading-relaxed break-words">{msg.text}</p>
+                      </div>
+                      <div className={`flex items-center gap-1.5 mt-1.5 text-xs ${msg.sender === 'user' ? 'justify-end text-gray-400' : 'justify-start text-gray-400'
+                        }`}>
+                        <span>{msg.time}</span>
+                        {msg.sender === 'user' && (
+                          msg.status === 'read' ? <CheckCheck className="w-3.5 h-3.5 text-emerald-500" /> :
+                            msg.status === 'delivered' ? <CheckCheck className="w-3.5 h-3.5" /> :
+                              <Check className="w-3.5 h-3.5" />
+                        )}
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             ))}
@@ -237,8 +311,8 @@ export const ChatWindow = ({
                   <div className="bg-white border border-emerald-100/50 rounded-2xl rounded-bl-sm px-4 py-3 shadow-sm">
                     <div className="flex gap-1.5">
                       <span className="w-2 h-2 bg-emerald-400 rounded-full animate-bounce"></span>
-                      <span className="w-2 h-2 bg-emerald-400 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></span>
-                      <span className="w-2 h-2 bg-emerald-400 rounded-full animate-bounce" style={{animationDelay: '0.4s'}}></span>
+                      <span className="w-2 h-2 bg-emerald-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></span>
+                      <span className="w-2 h-2 bg-emerald-400 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></span>
                     </div>
                   </div>
                 </div>
@@ -315,7 +389,7 @@ export const ChatWindow = ({
           <div className="bg-white border-t border-emerald-100/50 p-3 flex-shrink-0">
             {isRecording ? (
               <div className="flex flex-col gap-3 bg-gradient-to-br from-emerald-50 to-teal-50 rounded-2xl p-4 border-2 border-emerald-300 animate-pulse-subtle">
-         
+
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="relative">
@@ -338,7 +412,7 @@ export const ChatWindow = ({
                     <Trash2 className="w-5 h-5 text-red-500" />
                   </button>
                 </div>
-                
+
                 <div className="flex items-center justify-center gap-1 h-12">
                   {[...Array(20)].map((_, i) => (
                     <div
@@ -353,7 +427,7 @@ export const ChatWindow = ({
                     ></div>
                   ))}
                 </div>
-                
+
                 <button
                   onClick={() => setIsRecording(false)}
                   className="w-full px-4 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl text-sm font-bold hover:from-emerald-700 hover:to-teal-700 transition-all duration-300 shadow-lg hover:shadow-xl active:scale-95 flex items-center justify-center gap-2"
@@ -364,7 +438,7 @@ export const ChatWindow = ({
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                <button 
+                <button
                   onClick={() => {
                     const input = document.createElement('input');
                     input.type = 'file';
@@ -379,8 +453,8 @@ export const ChatWindow = ({
                 >
                   <Paperclip className="w-5 h-5 text-emerald-600 group-hover:text-emerald-700" />
                 </button>
-                
-                <button 
+
+                <button
                   onClick={() => {
                     const input = document.createElement('input');
                     input.type = 'file';
@@ -396,15 +470,15 @@ export const ChatWindow = ({
                 >
                   <Camera className="w-5 h-5 text-emerald-600 group-hover:text-emerald-700" />
                 </button>
-                
-                <button 
+
+                <button
                   onClick={() => setShowEmojiPicker(!showEmojiPicker)}
                   className="p-2.5 hover:bg-emerald-50 rounded-xl transition-all duration-300 hover:scale-110 active:scale-95 group flex-shrink-0"
                   title="Add emoji"
                 >
                   <Smile className="w-5 h-5 text-emerald-600 group-hover:text-emerald-700" />
                 </button>
-                
+
                 <input
                   type="text"
                   value={message}
@@ -413,14 +487,13 @@ export const ChatWindow = ({
                   placeholder="Type your message..."
                   className="flex-1 px-4 py-3 border-2 border-emerald-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent text-sm transition-all duration-300 min-w-0"
                 />
-                
+
                 {message.trim() ? (
                   <button
                     onClick={() => sendMessage()}
                     disabled={isSending}
-                    className={`p-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-110 active:scale-95 flex-shrink-0 ${
-                      isSending ? "opacity-70 cursor-not-allowed" : "hover:from-emerald-700 hover:to-teal-700"
-                    }`}
+                    className={`p-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-110 active:scale-95 flex-shrink-0 ${isSending ? "opacity-70 cursor-not-allowed" : "hover:from-emerald-700 hover:to-teal-700"
+                      }`}
                     title="Send message"
                   >
                     <Send className="w-5 h-5" />

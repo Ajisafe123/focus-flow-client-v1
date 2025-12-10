@@ -9,8 +9,8 @@ export default apiService;
 const withAuth = (token) =>
   token
     ? {
-        Authorization: `Bearer ${token}`,
-      }
+      Authorization: `Bearer ${token}`,
+    }
     : {};
 
 const handleJson = async (res) => {
@@ -112,6 +112,7 @@ export const sendChatMessage = async ({
   senderType = "user",
   messageType = "text",
   fileUrl = null,
+  tempId,
 }) =>
   handleJson(
     await fetch(`${API_BASE}/messages`, {
@@ -124,7 +125,33 @@ export const sendChatMessage = async ({
         senderType,
         messageType,
         fileUrl,
+        tempId,
       }),
+    })
+  );
+
+export const updateMessage = async (messageId, text) => {
+  const fd = new FormData();
+  fd.append("text", text);
+  return handleJson(
+    await fetch(`${API_BASE}/messages/${messageId}`, {
+      method: "PUT",
+      body: fd,
+    })
+  );
+};
+
+export const deleteMessage = async (messageId) =>
+  handleJson(
+    await fetch(`${API_BASE}/messages/${messageId}`, {
+      method: "DELETE",
+    })
+  );
+
+export const markMessagesRead = async (conversationId) =>
+  handleJson(
+    await fetch(`${API_BASE}/messages/${conversationId}/read`, {
+      method: "POST",
     })
   );
 
@@ -428,6 +455,9 @@ export const fetchStudyGuides = async (category, difficulty) => {
   );
 };
 
+
+
+/* ======================== SHOP ======================== */
 export const fetchTeachingResources = async (category, type) => {
   const params = new URLSearchParams();
   if (category) params.append("category", category);
@@ -437,3 +467,60 @@ export const fetchTeachingResources = async (category, type) => {
     await fetch(`${API_BASE}/teaching-resources${qs ? `?${qs}` : ""}`)
   );
 };
+
+/* ======================== SHOP ======================== */
+export const fetchProducts = async (params = {}) => {
+  const qs = new URLSearchParams(
+    Object.entries(params).filter(([, v]) => v !== undefined && v !== null && v !== "")
+  );
+  return handleJson(await fetch(`${API_BASE}/products${qs.size ? `?${qs}` : ""}`));
+};
+
+export const fetchProduct = async (productId) =>
+  handleJson(await fetch(`${API_BASE}/products/${productId}`));
+
+export const createOrder = async (payload, token) =>
+  handleJson(
+    await fetch(`${API_BASE}/orders`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...withAuth(token),
+      },
+      body: JSON.stringify(payload),
+    })
+  );
+
+/* ======================== DONATIONS ======================== */
+export const createDonation = async (payload) =>
+  handleJson(
+    await fetch(`${API_BASE}/donations`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    })
+  );
+
+export const fetchDonations = async (token, params = {}) => {
+  const qs = new URLSearchParams(
+    Object.entries(params).filter(([, v]) => v !== undefined && v !== null && v !== "")
+  );
+  return handleJson(
+    await fetch(`${API_BASE}/donations?${qs}`, {
+      headers: { ...withAuth(token) },
+    })
+  );
+};
+
+export const deleteNotification = async (notificationId, token) =>
+  handleJson(
+    await fetch(`${API_BASE}/notifications/${notificationId}`, {
+      method: "DELETE",
+      headers: {
+        ...withAuth(token),
+      },
+    })
+  );
+
+
+

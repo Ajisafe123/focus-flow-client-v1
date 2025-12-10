@@ -49,22 +49,19 @@ const Navbar = ({
     <header className="bg-white shadow-sm sticky top-0 z-40 border-b border-gray-200">
       <div className="flex items-center justify-between px-4 py-3.5 sm:px-8 sm:py-4">
         <div
-          className={`flex items-center gap-3 sm:gap-4 flex-1 transition-all duration-300 ${
-            isSearchOpen ? "w-full" : ""
-          }`}
+          className={`flex items-center gap-3 sm:gap-4 flex-1 transition-all duration-300 ${isSearchOpen ? "w-full" : ""
+            }`}
         >
           <button
             onClick={handleMenuClick}
-            className={`lg:hidden p-2.5 rounded-xl transition-all duration-200 hover:bg-gray-100 active:scale-95 ${
-              isSearchOpen ? "hidden" : "block"
-            }`}
+            className={`lg:hidden p-2.5 rounded-xl transition-all duration-200 hover:bg-gray-100 active:scale-95 ${isSearchOpen ? "hidden" : "block"
+              }`}
           >
             <Menu className="w-5 h-5 text-gray-700" />
           </button>
           <div
-            className={`flex-1 max-w-full lg:max-w-2xl transition-all duration-300 ${
-              isSearchOpen ? "block" : "hidden lg:block"
-            }`}
+            className={`flex-1 max-w-full lg:max-w-2xl transition-all duration-300 ${isSearchOpen ? "block" : "hidden lg:block"
+              }`}
           >
             <div className="relative group">
               <Search className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 transition-colors duration-200 group-focus-within:text-emerald-500" />
@@ -85,9 +82,8 @@ const Navbar = ({
           </div>
         </div>
         <div
-          className={`flex items-center gap-2 sm:gap-3 transition-all duration-300 ${
-            isSearchOpen ? "hidden" : "flex"
-          }`}
+          className={`flex items-center gap-2 sm:gap-3 transition-all duration-300 ${isSearchOpen ? "hidden" : "flex"
+            }`}
         >
           <button
             onClick={() => setIsSearchOpen(!isSearchOpen)}
@@ -95,7 +91,10 @@ const Navbar = ({
           >
             <Search className="w-5 h-5 text-gray-700" />
           </button>
-          <button className="relative p-2.5 rounded-xl transition-all duration-200 hidden lg:flex hover:bg-gray-100 active:scale-95 group">
+          <button
+            onClick={() => setActivePage("notifications")}
+            className="relative p-2.5 rounded-xl transition-all duration-200 hidden lg:flex hover:bg-gray-100 active:scale-95 group"
+          >
             <Bell className="w-5 h-5 text-gray-700 group-hover:text-emerald-600 transition-colors duration-200" />
             {notificationCount > 0 && (
               <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-emerald-500 rounded-full ring-2 ring-white"></span>
@@ -110,9 +109,8 @@ const Navbar = ({
                 <User className="w-5 h-5 text-white" />
               </div>
               <ChevronDown
-                className={`w-4 h-4 text-gray-600 hidden sm:block transition-transform duration-200 ${
-                  showProfileMenu ? "rotate-180" : ""
-                }`}
+                className={`w-4 h-4 text-gray-600 hidden sm:block transition-transform duration-200 ${showProfileMenu ? "rotate-180" : ""
+                  }`}
               />
             </button>
 
@@ -181,10 +179,10 @@ const Navbar = ({
                   <div className="my-2 border-t border-gray-100"></div>
 
                   <button
-                  onClick={() => {
-                    setShowProfileMenu(false);
-                    onLogout?.();
-                  }}
+                    onClick={() => {
+                      setShowProfileMenu(false);
+                      onLogout?.();
+                    }}
                     className="w-full flex items-center gap-3 px-4 py-3 hover:bg-red-50 text-gray-700 hover:text-red-600 transition-all duration-200 group"
                   >
                     <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center group-hover:bg-red-200 transition-colors duration-200">

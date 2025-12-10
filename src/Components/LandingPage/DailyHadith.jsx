@@ -1,17 +1,10 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { BookOpen, BookOpenCheck, ArrowRight } from "lucide-react";
-import apiService from "../Service/apiService";
+import { fetchHadithCategories, API_BASE_URL } from "../../Users/Service/apiService";
+import apiService from "../../Components/Service/apiService"; // Keep for getDailyHadith if needed or switch to functional
+import LoadingSpinner from "../../Common/LoadingSpinner";
 
-const DEMO_CATEGORIES = [
-  { id: 1, name: "Worship (Salah, Fasting)", image_url: "worship.jpg" },
-  { id: 2, name: "Daily Life (Eating, Sleeping)", image_url: "daily_life.jpg" },
-  { id: 3, name: "Aqidah (Creed)", image_url: "aqidah.jpg" },
-  { id: 4, name: "Manners (Adab)", image_url: "manners.jpg" },
-  { id: 7, name: "Rulings (Fiqh)", image_url: "rulings.jpg" },
-  { id: 8, name: "Prophet's Biography (Seerah)", image_url: "seerah.jpg" },
-];
-
-const STATIC_BASE_URL = "http://localhost:8000";
+const IMAGE_BASE = API_BASE_URL;
 
 const getFullImageUrl = (relativePath) => {
   if (!relativePath) return null;
@@ -23,43 +16,42 @@ const getFullImageUrl = (relativePath) => {
   if (path.startsWith("//")) {
     path = path.replace(/^\/+/, "/");
   }
-  return `${STATIC_BASE_URL}${path}`;
+  return `${IMAGE_BASE}${path}`;
 };
 
 export default function DailyHadith() {
   const [hadith, setHadith] = useState(null);
-  const [categories] = useState(DEMO_CATEGORIES);
+  const [categories, setCategories] = useState([]);
 
-  const fetchHadith = async () => {
+  const loadData = useCallback(async () => {
     try {
-      const data = await apiService.getDailyHadith();
-      setHadith(data);
+      const [dailyData, catsData] = await Promise.all([
+        apiService.getDailyHadith(),
+        fetchHadithCategories()
+      ]);
+      setHadith(dailyData);
+      setCategories(catsData || []);
     } catch (err) {
       console.error(err);
     }
-  };
-
-  useEffect(() => {
-    fetchHadith();
   }, []);
 
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
   const handleCategoryClick = useCallback((categoryId) => {
-    // This action would now link to a page showing hadith by category
-    console.log(`Navigating to /hadith?category=${categoryId}`);
+    window.location.href = `/hadith?category_id=${categoryId}`;
   }, []);
 
   const handleViewAllHadithClick = useCallback(() => {
-    console.log("Navigating to /hadith");
+    window.location.href = "/hadiths";
   }, []);
 
   if (!hadith) {
     return (
-      <div className="bg-gradient-to-b from-teal-50 to-emerald-50 py-12 px-4 min-h-screen">
-        <div className="max-w-4xl mx-auto">
-          <div className="bg-white rounded-2xl shadow-xl p-8 border-t-4 border-emerald-600">
-            <p className="text-center text-gray-500">Loading Hadith...</p>
-          </div>
-        </div>
+      <div className="bg-gradient-to-b from-teal-50 to-emerald-50 py-12 px-4 min-h-screen flex items-center justify-center">
+        <LoadingSpinner size="large" />
       </div>
     );
   }
@@ -87,14 +79,14 @@ export default function DailyHadith() {
             </div>
 
             <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl p-6 mb-4">
-              <p className="text-gray-800 text-lg leading-relaxed mb-4 italic text-right">
+              <p className="text-gray-800 text-lg leading-relaxed mb-4 italic text-right font-amiri" dir="rtl">
                 "{hadith.arabic}"
               </p>
               <p className="text-gray-700 text-md leading-relaxed mb-4">
                 "{hadith.translation}"
               </p>
               {hadith.benefit && (
-                <p className="text-green-700 text-sm leading-relaxed mb-4 font-medium">
+                <p className="text-emerald-700 text-sm leading-relaxed mb-4 font-medium">
                   Benefit: {hadith.benefit}
                 </p>
               )}

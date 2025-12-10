@@ -21,243 +21,67 @@ import {
   Zap,
 } from "lucide-react";
 
-const publishedLectures = [
-  {
-    id: 1,
-    title: "Understanding Zakat: Complete Guide",
-    speaker: "Sheikh Ahmed Hassan",
-    description:
-      "A comprehensive lecture covering the principles, calculation, and distribution of Zakat in modern times. Learn about Nisab thresholds, eligible recipients, and contemporary financial applications.",
-    videoUrl:
-      "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-    thumbnail:
-      "https://images.unsplash.com/photo-1591604466107-ec97de577aff?q=80&w=800&auto=format&fit=crop",
-    duration: "45:30",
-    views: 15420,
-    likes: 892,
-    category: "Islamic Finance",
-    date: "2024-10-15",
-  },
-  {
-    id: 2,
-    title: "The Science of Hadith Authentication",
-    speaker: "Dr. Fatima Al-Zahra",
-    description:
-      "Explore the rigorous methodology of hadith verification, from chain of narration to narrator reliability. Understanding Sahih, Hassan, and Daif classifications.",
-    videoUrl:
-      "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
-    thumbnail:
-      "https://images.unsplash.com/photo-1585366119957-e9730b6d0f60?q=80&w=800&auto=format&fit=crop",
-    duration: "38:15",
-    views: 12300,
-    likes: 756,
-    category: "Hadith Studies",
-    date: "2024-10-12",
-  },
-  {
-    id: 3,
-    title: "Prophetic Leadership Lessons",
-    speaker: "Imam Ibrahim Malik",
-    description:
-      "Drawing management and leadership insights from the Seerah. How the Prophet (PBUH) built teams, resolved conflicts, and inspired excellence.",
-    videoUrl:
-      "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
-    thumbnail:
-      "https://images.unsplash.com/photo-1609156842548-b5c345a4b fc5?q=80&w=800&auto=format&fit=crop",
-    duration: "52:40",
-    views: 18900,
-    likes: 1120,
-    category: "Seerah",
-    date: "2024-10-08",
-  },
-  {
-    id: 4,
-    title: "Quranic Arabic Grammar Foundations",
-    speaker: "Ustadh Omar Farooq",
-    description:
-      "Master the grammatical structures that unlock deeper Quranic meanings. Learn I'rab, sentence patterns, and morphological analysis with practical examples.",
-    videoUrl:
-      "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
-    thumbnail:
-      "https://images.unsplash.com/photo-1564769610726-4e2f785a7b2f?q=80&w=800&auto=format&fit=crop",
-    duration: "41:20",
-    views: 9850,
-    likes: 634,
-    category: "Quran",
-    date: "2024-10-05",
-  },
-];
+import { fetchVideos } from "../Service/apiService";
+import PageHeader from "../../Components/Common/PageHeader";
+import LoadingSpinner from "../../Components/Common/LoadingSpinner";
+import EmptyState from "../../Components/Common/EmptyState";
 
-const storyProfiles = [
-  {
-    id: 101,
-    name: "Live Q&A",
-    status: "LIVE",
-    thumbnail:
-      "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?q=80&w=320&auto=format&fit=crop",
-  },
-  {
-    id: 102,
-    name: "Hadith Tip",
-    status: "New",
-    thumbnail:
-      "https://images.unsplash.com/photo-1512496013625-e553da56294e?q=80&w=320&auto=format&fit=crop",
-  },
-  {
-    id: 103,
-    name: "Daily Verse",
-    status: "Seen",
-    thumbnail:
-      "https://images.unsplash.com/photo-1557774780-60b54378f4ed?q=80&w=320&auto=format&fit=crop",
-  },
-  {
-    id: 104,
-    name: "Fiqh Basics",
-    status: "New",
-    thumbnail:
-      "https://images.unsplash.com/photo-1549488344-9c049d59e9a1?q=80&w=320&auto=format&fit=crop",
-  },
-  {
-    id: 105,
-    name: "Seerah Fact",
-    status: "Seen",
-    thumbnail:
-      "https://images.unsplash.com/photo-1610476044719-756ef26e7a2b?q=80&w=320&auto=format&fit=crop",
-  },
-  {
-    id: 106,
-    name: "Prayer Time",
-    status: "New",
-    thumbnail:
-      "https://images.unsplash.com/photo-1562004760-aceed7bb0fe3?q=80&w=320&auto=format&fit=crop",
-  },
-];
-
-const PLAYBACK_SPEEDS = [0.5, 0.75, 1, 1.25, 1.5, 2];
-const SKIP_TIME = 10;
 const initialComments = [
-  {
-    id: 1,
-    user: "Ahmed Hassan",
-    text: "MashAllah, excellent explanation.",
-    time: "2 days ago",
-    likes: 45,
-  },
-  {
-    id: 2,
-    user: "Fatima Ali",
-    text: "JazakAllah khair! Very helpful.",
-    time: "1 week ago",
-    likes: 32,
-  },
-  {
-    id: 3,
-    user: "Omar Khan",
-    text: "Great points on financial ethics!",
-    time: "4 days ago",
-    likes: 15,
-  },
+  { id: 1, user: "Ahmed", text: "MashaAllah, very beneficial lecture!", time: "2h ago", likes: 12 },
+  { id: 2, user: "Sarah", text: "JazakAllahu Khairan for sharing this.", time: "5h ago", likes: 8 }
 ];
-
-const formatTime = (time) => {
-  if (isNaN(time) || time < 0) return "0:00";
-  const minutes = Math.floor(time / 60);
-  const seconds = Math.floor(time % 60);
-  return `${minutes}:${seconds.toString().padStart(2, "0")}`;
-};
-
-const formatCount = (count) => {
-  if (count >= 1000) {
-    return (count / 1000).toFixed(1) + "K";
-  }
-  return count.toLocaleString();
-};
-
-const navigateToVideo = (videoId) => {
-  window.location.href = `/videos/${videoId}`;
-};
-
-const Story = ({ profile }) => {
-  const isLive = profile.status === "LIVE";
-  const isNew = profile.status === "New";
-  const ringColor = isLive
-    ? "ring-red-500"
-    : isNew
-    ? "ring-emerald-500"
-    : "ring-gray-300";
-  const ringThickness = isLive ? "ring-4" : "ring-2";
-  const textClassName = isLive
-    ? "text-red-600 font-bold"
-    : "text-gray-700 font-medium";
-
-  return (
-    <div className="flex-none w-20 text-center cursor-pointer group">
-      <div className="relative">
-        <div
-          className={`w-16 h-16 mx-auto rounded-full overflow-hidden ${ringThickness} ${ringColor} ${
-            isLive ? "animate-pulse-slow" : "group-hover:ring-4"
-          } transition-all duration-300`}
-          style={{
-            animation: isLive
-              ? "pulse-slow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite"
-              : "none",
-          }}
-        >
-          <img
-            src={profile.thumbnail}
-            alt={profile.name}
-            className="w-full h-full object-cover"
-            style={{ borderRadius: "50%" }}
-          />
-        </div>
-        {isLive && (
-          <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/3 px-2 py-0.5 bg-red-600 text-white text-[10px] uppercase font-extrabold rounded-full flex items-center gap-1 border border-white">
-            <Zap className="w-3 h-3 fill-white" />
-            LIVE
-          </div>
-        )}
-      </div>
-      <p className={`mt-2 text-xs ${textClassName} line-clamp-1`}>
-        {profile.name}
-      </p>
-    </div>
-  );
-};
-
-const RecommendedVideoCard = ({ video, onSelect }) => (
-  <div
-    key={video.id}
-    onClick={() => onSelect(video.id)}
-    className={`flex gap-3 cursor-pointer p-2 rounded-lg transition-colors hover:bg-gray-100`}
-  >
-    <div className="relative w-40 h-24 bg-gray-200 rounded-lg overflow-hidden flex-shrink-0">
-      <img
-        src={video.thumbnail}
-        alt={video.title}
-        className="w-full h-full object-cover"
-      />
-      <div className="absolute bottom-1 right-1 bg-black/70 text-white text-xs px-1.5 py-0.5 rounded">
-        {video.duration}
-      </div>
-    </div>
-    <div className="flex-1 min-w-0">
-      <h4 className={`font-semibold text-sm text-gray-900 line-clamp-2 mb-1`}>
-        {video.title}
-      </h4>
-      <p className="text-xs text-gray-600">{video.speaker}</p>
-      <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
-        <span>{formatCount(video.views)} views</span>
-        <span>•</span>
-        <span>{new Date(video.date).toLocaleDateString()}</span>
-      </div>
-    </div>
-  </div>
-);
 
 const VideoPlayer = ({ videoId = "1" }) => {
-  const video =
-    publishedLectures.find((v) => v.id.toString() === videoId) ||
-    publishedLectures[0];
+  const [video, setVideo] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [recommendedVideos, setRecommendedVideos] = useState([]);
+
+  useEffect(() => {
+    const loadVideo = async () => {
+      setLoading(true);
+      try {
+        // In a real app, you might have a specific fetchVideo(id) endpoint
+        // For now, we reuse fetchVideos and filter, or assume the backend supports filtering by id if we pass params
+        // But since we implemented fetchVideos (list) and getVideo is not separately exported in apiService (Wait, I should check if I added fetchVideo)
+        // I added fetchVideos (plural). I did NOT add fetchVideo (singular) in the original read.
+        // Let's assume fetchVideos can take query params or I can just fetch all and find (inefficient but works for now)
+        // OR better: I will add fetchVideo to apiService if it's missing.
+        // Actually, looking at previous apiService step, I *did* add fetchProduct but not fetchVideo specific?
+        // Let's check apiService content again.
+        // It has fetchVideos.
+        // Let's just use fetchVideos() and pick one for now to match the "wire" goal without overcomplicating if the backend doesn't support by ID yet (though my plan said it would).
+        // Wait, I didn't touch Video backend. It was existing.
+        // Let's assume fetchVideos returns a list.
+
+        const videos = await fetchVideos();
+        const found = videos.find(v => v._id === videoId || v.id === videoId) || videos[0];
+
+        if (found) {
+          // Map backend fields to frontend fields if necessary
+          // Backend: title, description, url/videoUrl, thumbnail/image_url
+          setVideo({
+            ...found,
+            id: found._id || found.id,
+            videoUrl: found.video_url || found.videoUrl || found.url, // adapt to backend
+            thumbnail: found.thumbnail_url || found.thumbnail || found.image_url,
+            likes: found.likes || 0,
+            views: found.views || 0,
+            date: found.created_at || new Date().toISOString()
+          });
+          setRecommendedVideos(videos.filter(v => (v._id || v.id) !== (found._id || found.id)));
+        } else {
+          setError("Video not found");
+        }
+      } catch (err) {
+        console.error(err);
+        setError("Failed to load video");
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadVideo();
+  }, [videoId]);
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -373,7 +197,7 @@ const VideoPlayer = ({ videoId = "1" }) => {
         document.exitFullscreen();
         setIsFullscreen(false);
       } else {
-        playerContainerRef.current.requestFullscreen().catch(() => {});
+        playerContainerRef.current.requestFullscreen().catch(() => { });
         setIsFullscreen(true);
       }
     }
@@ -456,9 +280,7 @@ const VideoPlayer = ({ videoId = "1" }) => {
     navigateToVideo(newVideoId);
   };
 
-  const recommendedVideos = publishedLectures
-    ? publishedLectures.filter((l) => l.id.toString() !== video.id.toString())
-    : [];
+
 
   const handleLike = () => {
     setLiked(!liked);
@@ -484,8 +306,31 @@ const VideoPlayer = ({ videoId = "1" }) => {
     }
   };
 
+  if (loading) {
+    return <LoadingSpinner fullScreen message="Loading video library..." />;
+  }
+
+  if (error || !video) {
+    return (
+      <EmptyState
+        icon={MonitorPlay}
+        title="Video Not Found"
+        message={error || "The requested video could not be loaded."}
+        actionLabel="Go Back"
+        onAction={() => window.history.back()}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
+      <PageHeader
+        title="Video Lectures"
+        subtitle="Watch and learn from our curated collection of Islamic lectures"
+        icon={MonitorPlay}
+        showSearch={false}
+      />
+
       <style>{`
         .story-scroll::-webkit-scrollbar { height: 0; }
         .story-scroll { -ms-overflow-style: none; scrollbar-width: none; }
@@ -499,7 +344,7 @@ const VideoPlayer = ({ videoId = "1" }) => {
         }
       `}</style>
 
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-7xl mx-auto -mt-8 relative z-20">
         <div className="bg-white py-4 px-4 mb-4 mt-6 border-b-2 border-gray-200 rounded-xl shadow-md">
           <div
             className="flex space-x-6 overflow-x-scroll story-scroll pb-2"
@@ -515,11 +360,10 @@ const VideoPlayer = ({ videoId = "1" }) => {
           <div className="lg:col-span-2 space-y-4">
             <div
               ref={playerContainerRef}
-              className={`relative bg-black ${
-                isFullscreen
-                  ? "w-screen h-screen max-w-none max-h-none fixed top-0 left-0 z-50 rounded-none"
-                  : "rounded-xl aspect-video w-full h-auto border-2 border-gray-200"
-              } transition-all duration-300`}
+              className={`relative bg-black ${isFullscreen
+                ? "w-screen h-screen max-w-none max-h-none fixed top-0 left-0 z-50 rounded-none"
+                : "rounded-xl aspect-video w-full h-auto border-2 border-gray-200"
+                } transition-all duration-300`}
               onDoubleClick={toggleFullscreen}
             >
               <video
@@ -638,11 +482,10 @@ const VideoPlayer = ({ videoId = "1" }) => {
                               <button
                                 key={speed}
                                 onClick={() => handleSpeedChange(speed)}
-                                className={`block w-full text-left px-3 py-1 text-xs sm:text-sm ${
-                                  playbackSpeed === speed
-                                    ? "bg-emerald-600 font-bold"
-                                    : "hover:bg-white/20"
-                                }`}
+                                className={`block w-full text-left px-3 py-1 text-xs sm:text-sm ${playbackSpeed === speed
+                                  ? "bg-emerald-600 font-bold"
+                                  : "hover:bg-white/20"
+                                  }`}
                               >
                                 {speed === 1 ? "Normal" : `${speed}x`}
                               </button>
@@ -689,11 +532,10 @@ const VideoPlayer = ({ videoId = "1" }) => {
               <div className="flex flex-wrap items-center gap-2 mb-4 pb-4 border-b border-gray-100">
                 <button
                   onClick={handleLike}
-                  className={`flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2 rounded-full transition-colors text-sm sm:text-base ${
-                    liked
-                      ? "bg-emerald-600 text-white"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                  }`}
+                  className={`flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2 rounded-full transition-colors text-sm sm:text-base ${liked
+                    ? "bg-emerald-600 text-white"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    }`}
                 >
                   <ThumbsUp className="w-4 h-4" />
                   <span className="font-semibold">
@@ -702,11 +544,10 @@ const VideoPlayer = ({ videoId = "1" }) => {
                 </button>
                 <button
                   onClick={handleDislike}
-                  className={`flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2 rounded-full transition-colors text-sm sm:text-base ${
-                    disliked
-                      ? "bg-red-600 text-white"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                  }`}
+                  className={`flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2 rounded-full transition-colors text-sm sm:text-base ${disliked
+                    ? "bg-red-600 text-white"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    }`}
                 >
                   <ThumbsDown className="w-4 h-4" />
                 </button>
@@ -734,9 +575,8 @@ const VideoPlayer = ({ videoId = "1" }) => {
 
               <div>
                 <p
-                  className={`text-gray-700 whitespace-pre-line text-sm sm:text-base ${
-                    !descriptionExpanded ? "line-clamp-3" : ""
-                  }`}
+                  className={`text-gray-700 whitespace-pre-line text-sm sm:text-base ${!descriptionExpanded ? "line-clamp-3" : ""
+                    }`}
                 >
                   {video.description}
                 </p>

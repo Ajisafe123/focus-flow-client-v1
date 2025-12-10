@@ -1,13 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ShoppingCart, Search, Package, X } from "lucide-react";
 import {
-  PRODUCTS,
   WHY_SHOP_WITH_US,
   ProductCard,
   CartSidebar,
   WhyShopAccordion,
 } from "./ProductCard.jsx";
-import { CheckoutPage, OrderSuccess } from "./Checkpage.jsx";
+import { CheckoutPage, OrderSuccess } from "./CheckoutPage.jsx";
+import { fetchProducts } from "../Service/apiService";
 
 const ShopPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -16,8 +16,25 @@ const ShopPage = () => {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [isOrderSuccessful, setIsOrderSuccessful] = useState(false);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const filteredProducts = PRODUCTS.filter(
+  useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        setLoading(true);
+        const data = await fetchProducts();
+        setProducts(data);
+      } catch (e) {
+        console.error("Failed to fetch products", e);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadProducts();
+  }, []);
+
+  const filteredProducts = products.filter(
     (product) =>
       product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       product.description.toLowerCase().includes(searchTerm.toLowerCase())

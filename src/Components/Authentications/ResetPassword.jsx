@@ -7,8 +7,12 @@ import {
   KeyRound,
   ShieldCheck,
   CheckCircle,
+  ArrowRight
 } from "lucide-react";
+import LoadingSpinner from "../Common/LoadingSpinner";
+import { motion, AnimatePresence } from "framer-motion";
 import apiService from "../Service/apiService";
+import AuthLayout from "./AuthLayout";
 
 function ResetPassword() {
   const [code, setCode] = useState("");
@@ -16,13 +20,11 @@ function ResetPassword() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [errors, setErrors] = useState({});
+  const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [success, setSuccess] = useState(false);
-  const [verifiedMessage, setVerifiedMessage] = useState("");
-  const [noToken, setNoToken] = useState(false);
   const [step, setStep] = useState(1);
-  const [verified, setVerified] = useState(false);
+  const [noToken, setNoToken] = useState(false);
 
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -32,37 +34,20 @@ function ResetPassword() {
     if (!email) setNoToken(true);
   }, [email]);
 
-  const validatePasswords = () => {
-    const errs = {};
-    if (!newPassword) errs.newPassword = "New password is required";
-    else if (newPassword.length < 6)
-      errs.newPassword = "Password must be at least 6 characters";
-    if (!confirmPassword) errs.confirmPassword = "Please confirm your password";
-    if (newPassword && confirmPassword && newPassword !== confirmPassword)
-      errs.confirmPassword = "Passwords do not match";
-    return errs;
-  };
-
   const handleVerifyCode = async (e) => {
     e.preventDefault();
     if (!code.trim()) {
-      setErrors({ code: "Verification code is required" });
+      setError("Verification code is required");
       return;
     }
 
     setIsLoading(true);
-    setErrors({});
+    setError("");
     try {
       await apiService.verifyCode({ email, code });
-
-      setVerified(true);
-      setVerifiedMessage("Code verified successfully!");
-      setTimeout(() => {
-        setStep(2);
-        setVerifiedMessage("");
-      }, 1500);
+      setStep(2);
     } catch (err) {
-      setErrors({ api: err.message });
+      setError(err.message || "Invalid or expired code.");
     } finally {
       setIsLoading(false);
     }
@@ -70,12 +55,18 @@ function ResetPassword() {
 
   const handleResetPassword = async (e) => {
     e.preventDefault();
-    const validationErrors = validatePasswords();
-    setErrors(validationErrors);
-    if (Object.keys(validationErrors).length > 0) return;
+    setError("");
+
+    if (!newPassword || newPassword.length < 6) {
+      setError("Password must be at least 6 characters");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
 
     setIsLoading(true);
-    setErrors({});
     try {
       await apiService.resetPassword({
         email,
@@ -84,210 +75,142 @@ function ResetPassword() {
       });
 
       setSuccess(true);
-      setTimeout(() => navigate("/login"), 2000);
-    } catch (error) {
-      setErrors({ api: error.message });
+      setTimeout(() => navigate("/login"), 3000);
+    } catch (err) {
+      setError(err.message || "Failed to reset password");
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div
-      className="min-h-screen flex items-center justify-center px-4 py-10 bg-emerald-50"
+    <AuthLayout
+      title={step === 1 ? "Verify Code" : "Set New Password"}
+      subtitle={
+        noToken
+          ? "Invalid reset link."
+          : step === 1
+            ? "Enter the code sent to your email."
+            : "Create a strong password for your account."
+      }
+      maxWidth="max-w-sm"
+      image="https://images.unsplash.com/photo-1584551246679-0daf3d275d0f?q=80&w=2128&auto=format&fit=crop"
     >
-      <div className="flex flex-col w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden relative z-10 p-6 border border-emerald-100">
-        <div className="text-center mb-6">
-          <div className="inline-flex items-center justify-center w-14 h-14 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-full mb-3 shadow-lg">
-            <ShieldCheck className="w-7 h-7 text-white" />
-          </div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-1">
-            Reset Password
-          </h2>
-          <p className="text-gray-500 text-sm">
-            {noToken
-              ? "Please click the link in your email to reset your password."
-              : step === 1
-              ? "Enter your verification code to continue"
-              : "Enter your new password below"}
-          </p>
-        </div>
+      {!noToken && (
+        <form onSubmit={step === 1 ? handleVerifyCode : handleResetPassword} className="space-y-6">
+          {/* Errors */}
+          <AnimatePresence>
+            {error && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="p-4 bg-red-50 text-red-600 text-sm rounded-xl border border-red-100 flex items-center gap-3 overflow-hidden"
+              >
+                <div className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" />
+                {error}
+              </motion.div>
+            )}
+            {success && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                className="p-4 bg-emerald-50 text-emerald-700 text-sm rounded-xl border border-emerald-100 flex items-center gap-3 overflow-hidden"
+              >
+                <CheckCircle className="w-5 h-5 text-emerald-500 shrink-0" />
+                Password reset successful! Redirecting...
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-        {!noToken && (
-          <form
-            onSubmit={step === 1 ? handleVerifyCode : handleResetPassword}
-            className="space-y-4"
-          >
-            {step === 1 && (
-              <div className="relative group">
-                <KeyRound
-                  className="absolute left-3 top-3.5 text-emerald-400 group-focus-within:text-emerald-600 transition-colors"
-                  size={18}
-                />
+          {step === 1 && (
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-slate-700">Verification Code</label>
+              <div className="relative">
+                <KeyRound className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
                 <input
                   type="text"
-                  placeholder="Verification Code"
+                  placeholder="EX: 123456"
                   value={code}
                   onChange={(e) => {
-                    setCode(e.target.value);
-                    if (errors.code) setErrors({});
+                    setCode(e.target.value.toUpperCase());
+                    setError("");
                   }}
-                  className={`w-full pl-10 pr-3 py-3.5 text-gray-800 bg-white border-2 rounded-xl focus:outline-none focus:ring-4 transition-all duration-300 shadow-sm hover:shadow-md text-sm tracking-widest ${
-                    errors.code
-                      ? "border-red-500 focus:ring-red-200"
-                      : "border-emerald-200 focus:ring-emerald-200 focus:border-emerald-400"
-                  }`}
+                  className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all placeholder:text-slate-400 font-medium text-slate-800 tracking-wider focus:bg-white"
                 />
-                {errors.code && (
-                  <p className="text-red-500 text-xs mt-1.5 ml-1">
-                    {errors.code}
-                  </p>
-                )}
               </div>
-            )}
+            </div>
+          )}
 
-            {verifiedMessage && (
-              <div className="bg-green-50 border-l-4 border-green-500 text-green-700 px-3 py-2.5 rounded-lg text-xs font-medium shadow-sm animate-slideIn flex items-center gap-2">
-                <CheckCircle size={14} /> {verifiedMessage}
-              </div>
-            )}
-
-            {step === 2 && (
-              <>
-                <div className="relative group">
-                  <Lock
-                    className="absolute left-3 top-3.5 text-emerald-400 group-focus-within:text-emerald-600 transition-colors"
-                    size={18}
-                  />
+          {step === 2 && (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-slate-700">New Password</label>
+                <div className="relative">
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
                   <input
                     type={showNewPassword ? "text" : "password"}
-                    placeholder="New Password"
                     value={newPassword}
                     onChange={(e) => {
                       setNewPassword(e.target.value);
-                      if (errors.newPassword) setErrors({});
+                      setError("");
                     }}
-                    className={`w-full pl-10 pr-10 py-3.5 text-gray-800 bg-white border-2 rounded-xl focus:outline-none focus:ring-4 transition-all duration-300 shadow-sm hover:shadow-md text-sm ${
-                      errors.newPassword
-                        ? "border-red-500 focus:ring-red-200"
-                        : "border-emerald-200 focus:ring-emerald-200 focus:border-emerald-400"
-                    }`}
+                    className="w-full pl-12 pr-10 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all placeholder:text-slate-400 font-medium text-slate-800 focus:bg-white"
+                    placeholder="Min. 6 characters"
                   />
                   <button
                     type="button"
                     onClick={() => setShowNewPassword(!showNewPassword)}
-                    className="absolute right-3 top-3.5 text-gray-400 hover:text-emerald-600 transition-colors"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-emerald-600 transition-colors p-1"
                   >
                     {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
-                  {errors.newPassword && (
-                    <p className="text-red-500 text-xs mt-1.5 ml-1">
-                      {errors.newPassword}
-                    </p>
-                  )}
                 </div>
+              </div>
 
-                <div className="relative group">
-                  <Lock
-                    className="absolute left-3 top-3.5 text-emerald-400 group-focus-within:text-emerald-600 transition-colors"
-                    size={18}
-                  />
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-slate-700">Confirm Password</label>
+                <div className="relative">
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
                   <input
                     type={showConfirmPassword ? "text" : "password"}
-                    placeholder="Confirm Password"
                     value={confirmPassword}
                     onChange={(e) => {
                       setConfirmPassword(e.target.value);
-                      if (errors.confirmPassword) setErrors({});
+                      setError("");
                     }}
-                    className={`w-full pl-10 pr-10 py-3.5 text-gray-800 bg-white border-2 rounded-xl focus:outline-none focus:ring-4 transition-all duration-300 shadow-sm hover:shadow-md text-sm ${
-                      errors.confirmPassword
-                        ? "border-red-500 focus:ring-red-200"
-                        : "border-emerald-200 focus:ring-emerald-200 focus:border-emerald-400"
-                    }`}
+                    className="w-full pl-12 pr-10 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all placeholder:text-slate-400 font-medium text-slate-800 focus:bg-white"
+                    placeholder="Repeat password"
                   />
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3 top-3.5 text-gray-400 hover:text-emerald-600 transition-colors"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-emerald-600 transition-colors p-1"
                   >
-                    {showConfirmPassword ? (
-                      <EyeOff size={18} />
-                    ) : (
-                      <Eye size={18} />
-                    )}
+                    {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
-                  {errors.confirmPassword && (
-                    <p className="text-red-500 text-xs mt-1.5 ml-1">
-                      {errors.confirmPassword}
-                    </p>
-                  )}
                 </div>
+              </div>
+            </div>
+          )}
+
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="w-full py-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold shadow-lg shadow-emerald-200 transition-all transform hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          >
+            {isLoading ? (
+              <LoadingSpinner size="small" />
+            ) : (
+              <>
+                {step === 1 ? "Verify Code" : "Reset Password"}
+                <ArrowRight className="w-5 h-5" />
               </>
             )}
-
-            {errors.api && (
-              <div className="bg-red-50 border-l-4 border-red-500 text-red-700 px-3 py-2.5 rounded-lg text-xs font-medium shadow-sm animate-shake">
-                {errors.api}
-              </div>
-            )}
-
-            {success && (
-              <div className="bg-green-50 border-l-4 border-green-500 text-green-700 px-3 py-2.5 rounded-lg text-xs font-medium shadow-sm animate-slideIn flex items-center gap-2">
-                <CheckCircle size={14} /> Password successfully reset!
-                Redirecting...
-              </div>
-            )}
-
-            <button
-              type="submit"
-              disabled={isLoading}
-              className={`relative w-full px-4 py-3.5 text-white font-bold bg-gradient-to-r from-emerald-600 via-emerald-700 to-teal-600 rounded-xl transition-all duration-300 text-sm shadow-lg hover:shadow-xl flex justify-center items-center gap-2 transform hover:-translate-y-0.5 hover:scale-[1.02] overflow-hidden ${
-                isLoading
-                  ? "opacity-90 cursor-not-allowed hover:translate-y-0 hover:scale-100"
-                  : ""
-              }`}
-            >
-              {isLoading ? (
-                <div className="flex items-center gap-2">
-                  <div className="flex space-x-1">
-                    <div className="w-2 h-2 bg-white rounded-full animate-bounce" />
-                    <div
-                      className="w-2 h-2 bg-white rounded-full animate-bounce"
-                      style={{ animationDelay: "150ms" }}
-                    />
-                    <div
-                      className="w-2 h-2 bg-white rounded-full animate-bounce"
-                      style={{ animationDelay: "300ms" }}
-                    />
-                  </div>
-                  <span className="animate-pulse">
-                    {step === 1 ? "Verifying..." : "Resetting..."}
-                  </span>
-                </div>
-              ) : (
-                <>
-                  <Lock className="w-4 h-4" />
-                  <span>{step === 1 ? "Verify Code" : "Reset Password"}</span>
-                </>
-              )}
-            </button>
-          </form>
-        )}
-      </div>
-
-      <style>{`
-        @keyframes slideIn {
-          from { opacity: 0; transform: translateY(-10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes shake {
-          0%, 100% { transform: translateX(0); }
-          25% { transform: translateX(-5px); }
-          75% { transform: translateX(5px); }
-        }
-      `}</style>
-    </div>
+          </button>
+        </form>
+      )}
+    </AuthLayout>
   );
 }
 

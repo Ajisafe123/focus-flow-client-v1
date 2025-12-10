@@ -1,115 +1,93 @@
 import React, { useState } from "react";
 import apiService from "../Service/apiService";
-import { LogOut, CheckCircle, XCircle, Loader } from "lucide-react"; 
+import { LogOut, AlertCircle } from "lucide-react";
+import LoadingSpinner from "../Common/LoadingSpinner";
+import { motion, AnimatePresence } from "framer-motion";
 
 const LogoutModal = ({ isOpen, onClose, onConfirm }) => {
   const [isLoading, setIsLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const [error, setError] = useState(null);
 
   const handleLogout = async () => {
     setIsLoading(true);
-    setError(null);
-
     try {
       await apiService.logout();
-
-      setSuccess(true);
-
+      // Wait a brief moment for visual feedback
       setTimeout(async () => {
         setIsLoading(false);
-        setSuccess(false);
-
         try {
           await onConfirm();
-        } catch (parentError) {
-          console.error("Parent cleanup failed:", parentError);
+        } catch (error) {
+          console.error("Cleanup failed:", error);
           onClose();
         }
-      }, 1000);
+      }, 800);
     } catch (err) {
       console.error("Logout failed:", err);
-      setError("Logout failed. Please check your connection or try again.");
+      // Force logout anyway on error to prevent being stuck
+      onConfirm();
       setIsLoading(false);
-
-      setTimeout(() => {
-        setError(null);
-      }, 3000);
     }
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-gray-900 bg-opacity-80 flex items-center justify-center z-50 backdrop-blur-sm">
-      
-      <div className="bg-white border border-emerald-700 p-8 w-80 text-white shadow-2xl shadow-emerald-900/50 relative transform transition-all duration-300">
-      
-        <div className="flex items-center justify-center mb-4 text-emerald-500">
-          <LogOut className="w-7 h-7 mr-3" />
-          <h2 className="text-xl font-semibold tracking-wide">
-            CONFIRM LOGOUT
-          </h2>
-        </div>
-        <div className="w-full h-px bg-emerald-700/50 mb-6"></div>{" "}
+    <AnimatePresence>
+      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+          onClick={onClose}
+        />
 
-        {!isLoading && !success && !error && (
-          <>
-            <p className="mb-8 text-black">
-              Are you sure you want to end your current session?
+        <motion.div
+          initial={{ scale: 0.95, opacity: 0, y: 10 }}
+          animate={{ scale: 1, opacity: 1, y: 0 }}
+          exit={{ scale: 0.95, opacity: 0, y: 10 }}
+          className="relative w-full max-w-sm bg-white rounded-2xl shadow-2xl overflow-hidden border border-slate-100"
+        >
+          <div className="p-6 text-center">
+            <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
+              <LogOut className="w-8 h-8 text-red-500 ml-1" />
+            </div>
+
+            <h3 className="text-xl font-bold text-slate-900 mb-2">
+              Sign Out?
+            </h3>
+
+            <p className="text-slate-500 mb-6 leading-relaxed">
+              Are you sure you want to end your current session? You'll need to sign in again to access your account.
             </p>
 
-            <div className="flex justify-between gap-4">
-            
+            <div className="grid grid-cols-2 gap-3">
               <button
                 onClick={onClose}
-                className="flex-1 px-4 py-2 bg-white text-green-900 font-medium hover:bg-green-800 transition-colors border border-black hover:text-white"
+                disabled={isLoading}
+                className="px-4 py-3 rounded-xl border border-slate-200 text-slate-700 font-semibold hover:bg-slate-50 transition-colors disabled:opacity-50"
               >
                 Cancel
               </button>
-             
+
               <button
                 onClick={handleLogout}
-                className="flex-1 px-4 py-2 bg-red-800 text-white font-semibold hover:bg-red-700 transition-colors border border-red-800 hover:border-red-700"
+                disabled={isLoading}
+                className="px-4 py-3 rounded-xl bg-red-600 text-white font-semibold hover:bg-red-700 transition-colors shadow-lg shadow-red-200 disabled:opacity-70 flex items-center justify-center gap-2"
               >
-                Log Out
+                {isLoading ? (
+                  <>
+                    <LoadingSpinner size="small" />
+                  </>
+                ) : (
+                  "Sign Out"
+                )}
               </button>
             </div>
-          </>
-        )}
-        {isLoading && (
-          <div className="flex flex-col items-center justify-center py-4">
-           
-            <Loader className="animate-spin h-10 w-10 text-emerald-900 mb-4" />
-            <span className="text-lg font-medium text-emerald-900">
-              Processing logout...
-            </span>
           </div>
-        )}
-        {success && (
-          <div className="py-4">
-            <CheckCircle className="h-10 w-10 text-green-800 mx-auto mb-3" />
-            <h2 className="text-xl font-bold text-green-800">Session Ended</h2>
-            <p className="text-sm text-black mt-2">
-              Logged out successfully. Redirecting...
-            </p>
-          </div>
-        )}
-        {error && (
-          <div className="py-4">
-            <XCircle className="h-10 w-10 text-red-500 mx-auto mb-3" />
-            <h2 className="text-xl font-bold text-red-500 mb-2">Error</h2>
-            <p className="text-sm text-gray-300 mb-4">{error}</p>
-            <button
-              onClick={handleLogout}
-              className="mt-2 px-4 py-2 bg-red-700 text-white font-medium hover:bg-red-600 transition border border-red-700"
-            >
-              Retry Log Out
-            </button>
-          </div>
-        )}
+        </motion.div>
       </div>
-    </div>
+    </AnimatePresence>
   );
 };
 

@@ -8,8 +8,10 @@ import {
   BookmarkCheck,
   ChevronLeft,
   Volume2,
+  BookOpen,
 } from "lucide-react";
 import SurahList from "./SurahList";
+import PageHeader from "../../Components/Common/PageHeader";
 import LoadingSpinner from "../../Common/LoadingSpinner";
 import {
   API_BASE_URL,
@@ -35,10 +37,9 @@ const QuranWord = ({ word, currentWordIndex }) => {
         leading-[2.5] 
         rtl
         mx-1 sm:mx-2
-        ${
-          isHighlighted
-            ? "text-emerald-500 font-bold transition-colors duration-100"
-            : "text-emerald-900"
+        ${isHighlighted
+          ? "text-emerald-500 font-bold transition-colors duration-100"
+          : "text-emerald-900"
         }
       `}
     >
@@ -76,8 +77,8 @@ const QuranVerse = ({
   const bookmarkColor = isBookmarked
     ? "text-emerald-500"
     : canBookmark
-    ? "text-emerald-700 hover:text-emerald-500"
-    : "text-emerald-800 cursor-default";
+      ? "text-emerald-700 hover:text-emerald-500"
+      : "text-emerald-800 cursor-default";
 
   const handleToggle = () => {
     if (canBookmark) {
@@ -150,11 +151,10 @@ const QuranVerse = ({
           </div>
           <div className="flex items-center space-x-1 sm:space-x-2">
             <button
-              className={`transition p-1 hover:bg-emerald-100 ${
-                isCurrentVerse
-                  ? "text-emerald-500"
-                  : "text-emerald-700 hover:text-emerald-500"
-              }`}
+              className={`transition p-1 hover:bg-emerald-100 ${isCurrentVerse
+                ? "text-emerald-500"
+                : "text-emerald-700 hover:text-emerald-500"
+                }`}
               title="Play Recitation"
               onClick={() => onPlayClicked(verse.verse_key)}
             >
@@ -515,22 +515,20 @@ const SurahDetail = ({ initialPage, onBackToList }) => {
       <div className="flex justify-center mb-6 space-x-2 bg-gray-50 p-1 rounded-lg border border-gray-200 w-fit mx-auto">
         <button
           onClick={() => setViewMode("translation")}
-          className={`px-6 py-2 rounded-lg transition flex items-center space-x-2 font-medium text-sm ${
-            viewMode === "translation"
-              ? "bg-white text-emerald-900 shadow-md border border-emerald-300"
-              : "text-emerald-700 hover:text-emerald-900 hover:bg-emerald-50"
-          }`}
+          className={`px-6 py-2 rounded-lg transition flex items-center space-x-2 font-medium text-sm ${viewMode === "translation"
+            ? "bg-white text-emerald-900 shadow-md border border-emerald-300"
+            : "text-emerald-700 hover:text-emerald-900 hover:bg-emerald-50"
+            }`}
         >
           <BookmarkCheck size={16} />
           <span>Translation</span>
         </button>
         <button
           onClick={() => setViewMode("reading")}
-          className={`px-6 py-2 rounded-lg transition flex items-center space-x-2 font-medium text-sm ${
-            viewMode === "reading"
-              ? "bg-white text-emerald-900 shadow-md border border-emerald-300"
-              : "text-emerald-700 hover:text-emerald-900 hover:bg-emerald-50"
-          }`}
+          className={`px-6 py-2 rounded-lg transition flex items-center space-x-2 font-medium text-sm ${viewMode === "reading"
+            ? "bg-white text-emerald-900 shadow-md border border-emerald-300"
+            : "text-emerald-700 hover:text-emerald-900 hover:bg-emerald-50"
+            }`}
         >
           <BookmarkCheck size={16} />
           <span>Reading</span>
@@ -543,7 +541,7 @@ const SurahDetail = ({ initialPage, onBackToList }) => {
         </h2>
 
         <h3 className="text-lg sm:text-xl font-medium text-emerald-700 mb-3">
-          {pageData?.surah_name_simple || "Loading Surah..."}
+          {pageData?.surah_name_simple}
         </h3>
       </div>
 
@@ -610,22 +608,20 @@ const SurahDetail = ({ initialPage, onBackToList }) => {
         <button
           onClick={goToPreviousSurah}
           disabled={currentPage <= 1}
-          className={`px-4 py-2 rounded-lg border transition text-sm ${
-            currentPage <= 1
-              ? "bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed"
-              : "bg-white border-emerald-300 text-emerald-900 hover:bg-emerald-50"
-          }`}
+          className={`px-4 py-2 rounded-lg border transition text-sm ${currentPage <= 1
+            ? "bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed"
+            : "bg-white border-emerald-300 text-emerald-900 hover:bg-emerald-50"
+            }`}
         >
           ← Previous Page
         </button>
         <button
           onClick={goToNextSurah}
           disabled={currentPage >= QURAN_TOTAL_PAGES}
-          className={`px-4 py-2 rounded-lg border transition text-sm ${
-            currentPage >= QURAN_TOTAL_PAGES
-              ? "bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed"
-              : "bg-white border-emerald-300 text-emerald-900 hover:bg-emerald-50"
-          }`}
+          className={`px-4 py-2 rounded-lg border transition text-sm ${currentPage >= QURAN_TOTAL_PAGES
+            ? "bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed"
+            : "bg-white border-emerald-300 text-emerald-900 hover:bg-emerald-50"
+            }`}
         >
           Next Page →
         </button>
@@ -711,35 +707,20 @@ const QuranPage = () => {
   return (
     <div className="min-h-screen">
       {showList && (
-        <div className="py-12 sm:py-16 text-center bg-emerald-50 border-b border-emerald-200">
-          <h1
-            className="text-4xl sm:text-5xl font-extrabold text-emerald-900 mb-2"
-            style={{ fontFamily: "serif" }}
-          >
-            Al-Qur'an Al-Kareem
-          </h1>
-          <p className="text-xl text-emerald-700 mb-8">The Noble Qur'an</p>
-
-          <div className="max-w-xl mx-auto px-4">
-            <form
-              onSubmit={handleSearchSubmit}
-              className="relative shadow-lg rounded-xl"
-            >
-              <input
-                ref={searchInputRef}
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search Surahs or Verses (e.g., God, Paradise)..."
-                className="w-full pl-14 pr-6 py-4 text-emerald-900 bg-white border border-emerald-300 rounded-xl focus:outline-none focus:ring-4 focus:ring-emerald-200 transition placeholder-gray-500 text-base"
-              />
-              <Search
-                className="absolute left-5 top-1/2 transform -translate-y-1/2 text-emerald-500"
-                size={20}
-              />
-            </form>
-          </div>
-        </div>
+        <PageHeader
+          title="Al-Qur'an Al-Kareem"
+          subtitle="The Noble Qur'an"
+          icon={BookOpen}
+          showSearch={true}
+          searchTerm={searchTerm}
+          onSearchChange={(e) => setSearchTerm(e.target.value)}
+          onSearchSubmit={(val) => {
+            if (val.trim()) {
+              navigate(`/search-results?q=${encodeURIComponent(val)}`);
+            }
+          }}
+          placeholder="Search Surahs or Verses (e.g., God, Paradise)..."
+        />
       )}
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

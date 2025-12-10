@@ -12,6 +12,7 @@ import {
   Package,
   ShoppingCart,
 } from "lucide-react";
+import LoadingSpinner from "../../Components/Common/LoadingSpinner";
 
 const StepIndicator = ({ step, num, label, icon: Icon }) => {
   const isActive = step === num;
@@ -25,13 +26,12 @@ const StepIndicator = ({ step, num, label, icon: Icon }) => {
   return (
     <div className="flex flex-col items-center flex-1">
       <div
-        className={`${baseClasses} ${
-          isComplete
-            ? completeClasses
-            : isActive
+        className={`${baseClasses} ${isComplete
+          ? completeClasses
+          : isActive
             ? activeClasses
             : incompleteClasses
-        }`}
+          }`}
       >
         {isComplete ? (
           <Check className="w-4 h-4 md:w-5 md:h-5" />
@@ -40,9 +40,8 @@ const StepIndicator = ({ step, num, label, icon: Icon }) => {
         )}
       </div>
       <span
-        className={`mt-1 text-xs font-semibold text-center ${
-          isComplete || isActive ? "text-emerald-700" : "text-gray-500"
-        }`}
+        className={`mt-1 text-xs font-semibold text-center ${isComplete || isActive ? "text-emerald-700" : "text-gray-500"
+          }`}
       >
         {label}
       </span>
@@ -50,26 +49,52 @@ const StepIndicator = ({ step, num, label, icon: Icon }) => {
   );
 };
 
+import { createOrder } from "../Service/apiService";
+
 export const CheckoutPage = ({ cart, onClose, onComplete, onBackToCart }) => {
   const [step, setStep] = useState(1);
   const [paymentMethod, setPaymentMethod] = useState("card");
   const [processing, setProcessing] = useState(false);
-  const [formData, setFormData] = useState({});
+  const [formData, setFormData] = useState({
+    email: "",
+    name: "",
+    address: "",
+    city: "",
+    state: "",
+    zip: "",
+    country: "",
+  });
+  const [error, setError] = useState("");
 
   const subtotal = cart.reduce(
-    (sum, item) => sum + item.price * item.quantity,
+    (sum, item) => sum + (item.price || 0) * (item.quantity || 1),
     0
   );
   const shipping = subtotal > 50 ? 0 : 5.99;
   const tax = subtotal * 0.08;
   const total = subtotal + shipping + tax;
 
-  const handleSubmitPayment = () => {
+  const handleInputChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmitPayment = async () => {
     setProcessing(true);
-    setTimeout(() => {
-      setProcessing(false);
+    setError("");
+    try {
+      const payload = {
+        items: cart.map(item => ({ product_id: item.id || item._id, quantity: item.quantity })),
+        shipping_address: formData,
+        payment_info: { method: paymentMethod }
+      };
+      await createOrder(payload);
       onComplete();
-    }, 2000);
+    } catch (err) {
+      console.error(err);
+      setError("Failed to create order. Please try again.");
+    } finally {
+      setProcessing(false);
+    }
   };
 
   const steps = [
@@ -103,9 +128,8 @@ export const CheckoutPage = ({ cart, onClose, onComplete, onBackToCart }) => {
               <React.Fragment key={s.num}>
                 {index > 0 && (
                   <div
-                    className={`h-1 w-full mt-4 mx-2 ${
-                      step > s.num - 1 ? "bg-emerald-500" : "bg-gray-200"
-                    }`}
+                    className={`h-1 w-full mt-4 mx-2 ${step > s.num - 1 ? "bg-emerald-500" : "bg-gray-200"
+                      }`}
                   ></div>
                 )}
                 <StepIndicator {...s} step={step} />
@@ -122,41 +146,62 @@ export const CheckoutPage = ({ cart, onClose, onComplete, onBackToCart }) => {
                   </h2>
                   <div className="space-y-3">
                     <input
+                      name="email"
                       type="email"
                       placeholder="Email Address"
+                      value={formData.email}
+                      onChange={handleInputChange}
                       className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:border-emerald-500 outline-none text-sm"
                     />
                     <input
+                      name="name"
                       type="text"
                       placeholder="Full Name"
+                      value={formData.name}
+                      onChange={handleInputChange}
                       className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:border-emerald-500 outline-none text-sm"
                     />
                     <div className="grid sm:grid-cols-2 gap-3">
                       <input
+                        name="address"
                         type="text"
                         placeholder="Street Address"
+                        value={formData.address}
+                        onChange={handleInputChange}
                         className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:border-emerald-500 outline-none text-sm"
                       />
                       <input
+                        name="city"
                         type="text"
                         placeholder="City"
+                        value={formData.city}
+                        onChange={handleInputChange}
                         className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:border-emerald-500 outline-none text-sm"
                       />
                     </div>
                     <div className="grid sm:grid-cols-3 gap-3">
                       <input
+                        name="state"
                         type="text"
                         placeholder="State / Region"
+                        value={formData.state}
+                        onChange={handleInputChange}
                         className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:border-emerald-500 outline-none text-sm"
                       />
                       <input
+                        name="zip"
                         type="text"
                         placeholder="ZIP Code"
+                        value={formData.zip}
+                        onChange={handleInputChange}
                         className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:border-emerald-500 outline-none text-sm"
                       />
                       <input
+                        name="country"
                         type="text"
                         placeholder="Country"
+                        value={formData.country}
+                        onChange={handleInputChange}
                         className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:border-emerald-500 outline-none text-sm"
                       />
                     </div>
@@ -181,45 +226,40 @@ export const CheckoutPage = ({ cart, onClose, onComplete, onBackToCart }) => {
                       <button
                         key={id}
                         onClick={() => setPaymentMethod(id)}
-                        className={`p-3 rounded-lg border-2 transition-all text-center ${
-                          paymentMethod === id
-                            ? "border-emerald-500 bg-emerald-50 shadow-inner"
-                            : "border-gray-200 hover:border-gray-300"
-                        }`}
+                        className={`p-3 rounded-lg border-2 transition-all text-center ${paymentMethod === id
+                          ? "border-emerald-500 bg-emerald-50 shadow-inner"
+                          : "border-gray-200 hover:border-gray-300"
+                          }`}
                       >
                         {id === "card" && (
                           <CreditCard
-                            className={`w-5 h-5 mx-auto mb-1 ${
-                              paymentMethod === id
-                                ? "text-emerald-600"
-                                : "text-gray-400"
-                            }`}
+                            className={`w-5 h-5 mx-auto mb-1 ${paymentMethod === id
+                              ? "text-emerald-600"
+                              : "text-gray-400"
+                              }`}
                           />
                         )}
                         {id === "paypal" && (
                           <DollarSign
-                            className={`w-5 h-5 mx-auto mb-1 ${
-                              paymentMethod === id
-                                ? "text-blue-600"
-                                : "text-gray-400"
-                            }`}
+                            className={`w-5 h-5 mx-auto mb-1 ${paymentMethod === id
+                              ? "text-blue-600"
+                              : "text-gray-400"
+                              }`}
                           />
                         )}
                         {id === "crypto" && (
                           <Package
-                            className={`w-5 h-5 mx-auto mb-1 ${
-                              paymentMethod === id
-                                ? "text-amber-600"
-                                : "text-gray-400"
-                            }`}
+                            className={`w-5 h-5 mx-auto mb-1 ${paymentMethod === id
+                              ? "text-amber-600"
+                              : "text-gray-400"
+                              }`}
                           />
                         )}
                         <span
-                          className={`text-xs font-semibold ${
-                            paymentMethod === id
-                              ? "text-emerald-600"
-                              : "text-gray-600"
-                          }`}
+                          className={`text-xs font-semibold ${paymentMethod === id
+                            ? "text-emerald-600"
+                            : "text-gray-600"
+                            }`}
                         >
                           {id.charAt(0).toUpperCase() + id.slice(1)}
                         </span>
@@ -280,7 +320,7 @@ export const CheckoutPage = ({ cart, onClose, onComplete, onBackToCart }) => {
                     >
                       {processing ? (
                         <>
-                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                          <LoadingSpinner size="small" colorClass="border-white/30 border-t-white" />
                           Processing...
                         </>
                       ) : (
@@ -328,9 +368,8 @@ export const CheckoutPage = ({ cart, onClose, onComplete, onBackToCart }) => {
                   <div className="flex justify-between">
                     <span className="text-gray-600">Shipping</span>
                     <span
-                      className={`font-semibold ${
-                        shipping === 0 ? "text-emerald-600" : ""
-                      }`}
+                      className={`font-semibold ${shipping === 0 ? "text-emerald-600" : ""
+                        }`}
                     >
                       {shipping === 0 ? "FREE" : `$${shipping.toFixed(2)}`}
                     </span>

@@ -1,151 +1,119 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Mail, ArrowLeft, CheckCircle } from "lucide-react";
+import { useNavigate, Link } from "react-router-dom";
+import { Mail, ArrowLeft, CheckCircle, ArrowRight } from "lucide-react";
+import LoadingSpinner from "../Common/LoadingSpinner";
+import { motion } from "framer-motion";
 import apiService from "../Service/apiService";
+import AuthLayout from "./AuthLayout";
 
 function ForgotPassword() {
   const [email, setEmail] = useState("");
-  const [errors, setErrors] = useState({});
+  const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const navigate = useNavigate();
-  const MIN_LOADING_TIME = 2000;
 
   const validate = () => {
-    const errs = {};
     if (!email.trim()) {
-      errs.email = "Email is required";
+      setError("Email is required");
+      return false;
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      errs.email = "Please enter a valid email";
+      setError("Please enter a valid email");
+      return false;
     }
-    return errs;
+    return true;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const validationErrors = validate();
-    setErrors(validationErrors);
-    if (Object.keys(validationErrors).length > 0) return;
+    if (!validate()) return;
 
     setIsLoading(true);
-    const startTime = Date.now();
+    setError("");
 
     try {
       await apiService.forgotPassword(email);
-      const elapsed = Date.now() - startTime;
-      await new Promise((resolve) =>
-        setTimeout(resolve, Math.max(0, MIN_LOADING_TIME - elapsed))
-      );
-
       setSuccess(true);
       setTimeout(() => navigate(`/reset-password?email=${email}`), 2000);
-    } catch (error) {
-      setErrors({ api: error.message });
+    } catch (err) {
+      setError(err.message || "Failed to send reset code");
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div
-      className="min-h-screen flex items-center justify-center px-4 py-10 bg-emerald-50"
+    <AuthLayout
+      title="Forgot Password?"
+      subtitle="No worries, we'll send you reset instructions."
+      maxWidth="max-w-sm"
+      image="https://images.unsplash.com/photo-1584551246679-0daf3d275d0f?q=80&w=2128&auto=format&fit=crop"
     >
-      <div className="w-full max-w-md">
-        <button
-          onClick={() => navigate(-1)}
-          className="mb-4 inline-flex items-center gap-2 text-emerald-700 hover:text-emerald-800 font-semibold transition-colors duration-200"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back
-        </button>
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="p-4 bg-red-50 text-red-600 text-sm rounded-xl border border-red-100 flex items-center gap-3"
+          >
+            <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
+            {error}
+          </motion.div>
+        )}
 
-        <div className="bg-white border border-emerald-100 rounded-2xl shadow-xl p-6 sm:p-7">
-          {isLoading && (
-            <div className="absolute inset-0 bg-white/70 backdrop-blur-sm z-10 flex items-center justify-center rounded-2xl">
-              <div className="flex items-center gap-3 text-emerald-700 font-semibold">
-                <Mail className="w-5 h-5 animate-pulse" />
-                Sending reset code...
-              </div>
-            </div>
-          )}
+        {success && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="p-4 bg-emerald-50 text-emerald-700 text-sm rounded-xl border border-emerald-100 flex items-center gap-3"
+          >
+            <CheckCircle className="w-5 h-5 text-emerald-500" />
+            Reset code sent! Redirecting...
+          </motion.div>
+        )}
 
-          <div className="text-center mb-6">
-            <div className="inline-flex items-center justify-center w-14 h-14 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-full mb-3 shadow-md">
-              <Mail className="w-7 h-7 text-white" />
-            </div>
-            <h2 className="text-2xl font-bold text-gray-800">Forgot password</h2>
-            <p className="text-sm text-gray-500 mt-1">
-              Enter your email and we&apos;ll email you a reset code.
-            </p>
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div>
-              <label className="block text-emerald-800 font-semibold mb-2 text-xs uppercase tracking-wide">
-                Email address
-              </label>
-              <div className="relative group">
-                <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-emerald-400 group-focus-within:text-emerald-600 transition-colors duration-200">
-                  <Mail className="w-4 h-4" />
-                </div>
-                <input
-                  type="email"
-                  placeholder="you@email.com"
-                  value={email}
-                  onChange={(e) => {
-                    setEmail(e.target.value);
-                    if (errors.email) setErrors({});
-                  }}
-                  className={`w-full pl-10 pr-3 py-3 text-gray-800 bg-white border rounded-xl focus:outline-none focus:ring-2 transition-all duration-200 shadow-sm ${
-                    errors.email
-                      ? "border-red-500 focus:ring-red-200"
-                      : "border-emerald-200 focus:ring-emerald-200 focus:border-emerald-400"
-                  }`}
-                />
-                {errors.email && (
-                  <p className="text-red-500 text-xs mt-2 ml-1 flex items-center gap-1">
-                    {errors.email}
-                  </p>
-                )}
-              </div>
-            </div>
-
-            {errors.api && (
-              <div className="bg-red-50 border-l-4 border-red-500 text-red-700 px-4 py-3 rounded-xl text-sm font-medium shadow-sm">
-                {errors.api}
-              </div>
-            )}
-
-            {success && (
-              <div className="bg-green-50 border-l-4 border-green-500 text-green-700 px-4 py-3 rounded-xl text-sm font-medium shadow-sm flex items-center gap-2">
-                <CheckCircle className="w-4 h-4" />
-                Reset code sent! Redirecting...
-              </div>
-            )}
-
-            <button
-              type="submit"
-              disabled={isLoading}
-              className={`w-full px-4 py-3 text-white font-semibold bg-gradient-to-r from-emerald-600 via-emerald-700 to-teal-600 rounded-xl transition-all duration-200 text-base shadow-md hover:shadow-lg flex justify-center items-center gap-2 ${
-                isLoading ? "opacity-80 cursor-not-allowed" : ""
-              }`}
-            >
-              <Mail className="w-5 h-5" />
-              Send reset code
-            </button>
-          </form>
-
-          <div className="mt-5 text-center">
-            <button
-              onClick={() => navigate("/login")}
-              className="text-sm text-emerald-600 hover:text-emerald-700 font-semibold underline"
-            >
-              Remember your password? Sign in
-            </button>
+        <div className="space-y-2">
+          <label className="text-sm font-semibold text-slate-700">Email</label>
+          <div className="relative">
+            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
+            <input
+              type="email"
+              placeholder="Enter your email"
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                setError("");
+              }}
+              className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all placeholder:text-slate-400 font-medium text-slate-800 focus:bg-white"
+            />
           </div>
         </div>
+
+        <button
+          type="submit"
+          disabled={isLoading}
+          className="w-full py-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold shadow-lg shadow-emerald-200 transition-all transform hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+        >
+          {isLoading ? (
+            <LoadingSpinner size="small" />
+          ) : (
+            <>
+              Send Reset Code
+              <ArrowRight className="w-5 h-5" />
+            </>
+          )}
+        </button>
+      </form>
+
+      <div className="text-center mt-6">
+        <p className="text-slate-500 text-sm">
+          Remember your password?{" "}
+          <Link to="/login" className="text-emerald-600 font-bold hover:text-emerald-700 hover:underline">
+            Sign in
+          </Link>
+        </p>
       </div>
-    </div>
+    </AuthLayout>
   );
 }
 

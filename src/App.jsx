@@ -17,7 +17,7 @@ import About from "./Components/LandingPage/About";
 import Contact from "./Components/LandingPage/Contact";
 import DonationPage from "./Users/Donations/DonationPage";
 import Footer from "./Components/LandingPage/Footer";
-import AuthForm from "./Components/Authentications/AuthForm";
+import LoginPage from "./Components/Authentications/LoginPage";
 import RegisterPage from "./Components/Authentications/RegisterPage";
 import ForgotPassword from "./Components/Authentications/ForgotPassword";
 import ResetPassword from "./Components/Authentications/ResetPassword";
@@ -47,6 +47,9 @@ import PrivacyPolicy from "./Components/PrivacyPolicy";
 import AppShowcase from "./Components/AppShowCase";
 import NotificationCenter from "./Users/Notification";
 import RamadanPage from "./Users/Ramadan";
+import AdminMessagesPage from "./Admin/Contact/AdminMessagesPage";
+import NotFound from "./Components/Common/NotFound";
+import NetworkStatus from "./Components/Common/NetworkStatus";
 const pageVariants = {
   initial: { opacity: 0, y: 10 },
   in: { opacity: 1, y: 0 },
@@ -319,7 +322,7 @@ function AppContent({
             path="/login"
             element={
               <PageWrapper>
-                <AuthForm isLogin />
+                <LoginPage />
               </PageWrapper>
             }
           />
@@ -393,9 +396,17 @@ function AppContent({
                   </PageWrapper>
                 }
               />
+              <Route
+                path="/admin/messages"
+                element={
+                  <PageWrapper>
+                    <AdminMessagesPage />
+                  </PageWrapper>
+                }
+              />
             </>
           )}
-          <Route path="*" element={<Navigate to="/" />} />
+          <Route path="*" element={<PageWrapper><NotFound /></PageWrapper>} />
         </Routes>
       </AnimatePresence>
 
@@ -409,6 +420,7 @@ function AppContent({
 
       {shouldShowFooter && <Footer />}
       {showLiveChat && <LiveChat />}
+      <NetworkStatus />
     </>
   );
 }

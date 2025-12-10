@@ -1,7 +1,10 @@
 import { useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, Link } from "react-router-dom";
 import apiService from "../Service/apiService";
-import { Mail, CheckCircle, KeyRound } from "lucide-react";
+import { CheckCircle, ArrowRight, RotateCcw } from "lucide-react";
+import AuthLayout from "./AuthLayout";
+import LoadingSpinner from "../Common/LoadingSpinner";
+import { motion } from "framer-motion";
 
 export default function VerifyEmail() {
   const [code, setCode] = useState("");
@@ -11,6 +14,22 @@ export default function VerifyEmail() {
   const { search } = useLocation();
   const navigate = useNavigate();
   const email = new URLSearchParams(search).get("email") || "";
+  const [resending, setResending] = useState(false);
+
+  const handleResend = async () => {
+    if (resending || !email) return;
+    setResending(true);
+    setError("");
+    try {
+      await apiService.resendVerificationCode(email);
+      // Show success feedback - maybe a temporary success msg
+      alert("Verification code resent! Please check your email.");
+    } catch (err) {
+      setError(err.message || "Failed to resend code");
+    } finally {
+      setResending(false);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -18,9 +37,24 @@ export default function VerifyEmail() {
     setLoading(true);
     setError("");
     try {
-      await apiService.verifyEmail({ email, code });
+      const res = await apiService.verifyEmail({ email, code });
       setSuccess(true);
-      setTimeout(() => navigate("/login"), 2000);
+
+      // Dispatch event to update app state if token was received
+      if (res.token) {
+        window.dispatchEvent(new Event("loginStatusChanged"));
+      }
+
+      setTimeout(() => {
+        const role = localStorage.getItem("role");
+        if (role === "admin") {
+          navigate("/admin");
+        } else if (res.token) {
+          navigate("/");
+        } else {
+          navigate("/login");
+        }
+      }, 2000);
     } catch (err) {
       setError(err.message || "Verification failed");
     } finally {
@@ -29,50 +63,102 @@ export default function VerifyEmail() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-emerald-50 to-teal-100">
-      <div className="w-full max-w-xs bg-white rounded-xl shadow-lg p-6">
-        <div className="text-center mb-6">
-          <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-full mb-3">
-            <Mail className="w-6 h-6 text-white" />
-          </div>
-          <h2 className="text-2xl font-semibold">Verify Email</h2>
-          <p className="text-gray-600 text-sm mt-1 break-words">
-            Code sent to {email}
-          </p>
-        </div>
+    <AuthLayout
+      title="Verify Email"
+      subtitle={`Enter the 6-character code sent to ${email}`}
+      image="https://images.unsplash.com/photo-1576487248805-cf45f6bcc67f?q=80&w=2000&auto=format&fit=crop"
+      maxWidth="max-w-sm"
+    >
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="p-3 bg-red-50 text-red-600 text-xs rounded-lg border border-red-100 flex items-center gap-2"
+          >
+            <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
+            {error}
+          </motion.div>
+        )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="relative">
-            <KeyRound
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-emerald-500"
-              size={18}
-            />
+        {success && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="p-3 bg-emerald-50 text-emerald-600 text-xs rounded-lg border border-emerald-100 flex items-center gap-2"
+          >
+            <CheckCircle className="w-4 h-4" />
+            Email verified successfully! Redirecting...
+          </motion.div>
+        )}
+
+        <div className="space-y-2">
+          <label className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+            Verification Code
+          </label>
+          <div className="group">
             <input
               type="text"
               value={code}
-              onChange={(e) => setCode(e.target.value.toUpperCase())}
-              placeholder="A1B2C3"
+              onChange={(e) => {
+                setCode(e.target.value.toUpperCase());
+                setError("");
+              }}
+              placeholder="XXXXXX"
               maxLength={6}
-              className="w-full pl-10 pr-3 py-3 text-center text-xl tracking-widest border border-emerald-300 rounded-lg focus:border-emerald-500 focus:outline-none"
+              className="w-full px-4 py-4 text-center text-3xl tracking-[0.5em] font-mono bg-slate-50 border border-slate-200 rounded-xl focus:border-emerald-500 focus:bg-white focus:ring-1 focus:ring-emerald-500 outline-none transition-all placeholder:text-slate-300 text-slate-900 uppercase"
             />
           </div>
+          <p className="text-center text-xs text-slate-400">
+            Check your spam folder if you don't see the email.
+          </p>
+        </div>
 
-          {error && <p className="text-red-600 text-center text-sm">{error}</p>}
-          {success && (
-            <p className="text-green-600 text-center text-sm flex items-center justify-center gap-2">
-              <CheckCircle size={16} /> Verified! Redirecting...
-            </p>
+        <button
+          type="submit"
+          disabled={loading || success}
+          className="w-full py-3.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-xl font-bold shadow-lg shadow-emerald-500/20 transition-all transform hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm"
+        >
+          {loading ? (
+            <LoadingSpinner size="small" />
+          ) : (
+            <>
+              Verify Account
+              <ArrowRight className="w-4 h-4" />
+            </>
           )}
+        </button>
 
+        <div className="text-center pt-2">
           <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-semibold rounded-lg hover:from-emerald-700 hover:to-teal-700 transition-colors disabled:opacity-70"
+            type="button"
+            onClick={handleResend}
+            disabled={resending}
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-emerald-600 transition-colors disabled:opacity-50"
           >
-            {loading ? "Verifying..." : "Verify Code"}
+            <RotateCcw className={`w-3 h-3 ${resending ? "animate-spin" : ""}`} />
+            {resending ? "Resending..." : "Resend Code"}
           </button>
-        </form>
-      </div>
-    </div>
+        </div>
+
+        <div className="relative pt-4">
+          <div className="absolute inset-0 flex items-center pt-4">
+            <span className="w-full border-t border-slate-200" />
+          </div>
+          <div className="relative flex justify-center text-[10px] uppercase tracking-widest pt-4">
+            <span className="bg-white px-2 text-slate-400">
+              Or
+            </span>
+          </div>
+        </div>
+
+        <p className="text-center text-slate-500 text-xs">
+          Back to{" "}
+          <Link to="/login" className="text-emerald-600 font-bold hover:text-emerald-700 hover:underline">
+            Login
+          </Link>
+        </p>
+      </form>
+    </AuthLayout>
   );
 }

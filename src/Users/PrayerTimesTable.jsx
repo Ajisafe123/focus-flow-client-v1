@@ -12,6 +12,8 @@ import {
 const DEFAULT_LAT = 7.3775;
 const DEFAULT_LON = 3.947;
 
+import LoadingSpinner from "../Components/Common/LoadingSpinner";
+
 export default function PrayerTimesTable() {
   const [prayerData, setPrayerData] = useState(null);
   const [countdown, setCountdown] = useState("");
@@ -43,7 +45,7 @@ export default function PrayerTimesTable() {
         arrayBuffer
       );
       setAudioUnlocked(true);
-    } catch {}
+    } catch { }
   }, [isAuthenticated]);
 
   const playAzan = useCallback(async () => {
@@ -276,15 +278,7 @@ export default function PrayerTimesTable() {
   if (!prayerData) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-emerald-900 via-emerald-800 to-teal-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="mb-8">
-            <div className="w-24 h-24 border-4 border-white/30 border-t-white rounded-full animate-spin"></div>
-          </div>
-          <p className="text-white text-2xl font-semibold">
-            Loading Prayer Times...
-          </p>
-          <p className="text-emerald-200 mt-2">Please wait</p>
-        </div>
+        <LoadingSpinner fullScreen />
       </div>
     );
   }
@@ -402,17 +396,15 @@ export default function PrayerTimesTable() {
             return (
               <div
                 key={name}
-                className={`px-8 py-7 flex items-center justify-between border-b border-white/10 last:border-0 ${
-                  isNext ? "bg-white/20" : ""
-                }`}
+                className={`px-8 py-7 flex items-center justify-between border-b border-white/10 last:border-0 ${isNext ? "bg-white/20" : ""
+                  }`}
               >
                 <div className="flex items-center gap-6">
                   <span className="text-5xl">{prayerIcons[name]}</span>
                   <div>
                     <h3
-                      className={`text-2xl font-bold text-white ${
-                        isNext ? "text-amber-300" : ""
-                      }`}
+                      className={`text-2xl font-bold text-white ${isNext ? "text-amber-300" : ""
+                        }`}
                     >
                       {name}
                     </h3>
@@ -423,9 +415,8 @@ export default function PrayerTimesTable() {
                 </div>
                 <div className="text-right">
                   <p
-                    className={`text-3xl font-extrabold ${
-                      isNext ? "text-amber-300" : "text-white"
-                    }`}
+                    className={`text-3xl font-extrabold ${isNext ? "text-amber-300" : "text-white"
+                      }`}
                   >
                     {info.time_12h || info.time}
                   </p>

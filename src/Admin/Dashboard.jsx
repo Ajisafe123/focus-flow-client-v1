@@ -14,6 +14,8 @@ import ProfilePage from "./Profile/Profile";
 import LogoutModal from "../Components/Authentications/LogoutModal";
 import CreateCategoryModal from "./CreateCategoryModal";
 import VideoLecturesInterface from "./VideoLectures/VideoLectures";
+import NotificationsPage from "./NotificationsPage";
+import AdminMessagesPage from "./Contact/AdminMessagesPage";
 
 const NibrasAdminDashboard = () => {
   const getInitialPage = () => {
@@ -50,7 +52,7 @@ const NibrasAdminDashboard = () => {
       case "lectures":
         return <VideoLecturesInterface />;
       case "audio":
-        return <AudioLectureModal/>;
+        return <AudioLectureModal />;
       case "duas":
         return <DuasAdhkarPage />;
       case "categories":
@@ -63,6 +65,10 @@ const NibrasAdminDashboard = () => {
         return <SettingsPage />;
       case "profile":
         return <ProfilePage />;
+      case "contacts":
+        return <AdminMessagesPage />;
+      case "notifications":
+        return <NotificationsPage />;
       default:
         return <DashboardContent />;
     }
@@ -83,13 +89,12 @@ const NibrasAdminDashboard = () => {
       )}
 
       <div
-        className={`flex-1 transition-all duration-300 ${
-          isChatPage
-            ? "w-full"
-            : sidebarOpen
+        className={`flex-1 transition-all duration-300 ${isChatPage
+          ? "w-full"
+          : sidebarOpen
             ? "ml-0 lg:ml-64"
             : "ml-0 lg:ml-20"
-        }`}
+          }`}
       >
         {!isChatPage && (
           <Navbar

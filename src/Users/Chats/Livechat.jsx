@@ -5,7 +5,10 @@ import {
   createConversation,
   fetchConversationMessages,
   sendChatMessage,
+  updateMessage,
+  deleteMessage,
   fetchProfileMe,
+  markMessagesRead,
 } from "../Service/apiService";
 
 export default function IslamicUserChat() {
@@ -30,6 +33,14 @@ export default function IslamicUserChat() {
   const wsRef = useRef(null);
   const [conversationId, setConversationId] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
+  const isOpenRef = useRef(isOpen);
+
+  useEffect(() => {
+    isOpenRef.current = isOpen;
+    if (isOpen && conversationId) {
+      markMessagesRead(conversationId).catch(console.error);
+    }
+  }, [isOpen, conversationId]);
 
   const token = useMemo(() => localStorage.getItem("token"), []);
 
@@ -96,19 +107,65 @@ export default function IslamicUserChat() {
       try {
         const { event: evt, data } = JSON.parse(event.data);
         if (evt === "receive_message") {
-          setMessages((prev) => [
-            ...prev,
-            {
-              id: data.id || Date.now(),
-              text: data.message_text || data.message || data.text,
-              sender: data.sender_type || data.sender,
-              time: new Date().toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-              }),
-              status: data.status || "sent",
-            },
-          ]);
+          if (isOpenRef.current && (data.sender_type === "admin" || data.sender === "admin")) {
+            markMessagesRead(convId).catch(console.error);
+          } else if (!isOpenRef.current && (data.sender_type === "admin" || data.sender === "admin")) {
+            const notification = document.createElement("div");
+            notification.className = "fixed bottom-24 right-4 bg-white border-l-4 border-emerald-500 shadow-xl p-4 rounded-lg z-[60] flex items-center gap-3 animate-slide-up max-w-sm cursor-pointer hover:bg-gray-50 transition-colors";
+            notification.style.animation = "slide-up 0.5s ease-out";
+            notification.innerHTML = `
+                 <div class="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center flex-shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-600"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                 </div>
+                 <div>
+                    <h4 class="font-bold text-gray-800 text-sm">New Message</h4>
+                    <p class="text-xs text-gray-600 truncate max-w-[200px]">${data.message_text || "Sent a message"}</p>
+                 </div>
+              `;
+            document.body.appendChild(notification);
+
+            const timer = setTimeout(() => {
+              if (document.body.contains(notification)) notification.remove();
+            }, 5000);
+
+            notification.onclick = () => {
+              setIsOpen(true);
+              if (document.body.contains(notification)) notification.remove();
+              clearTimeout(timer);
+            };
+          }
+
+          setMessages((prev) => {
+            if (prev.some(m => m.id === data.id)) return prev;
+
+            if (data.tempId && prev.some(m => m.id === Number(data.tempId) || m.id === data.tempId)) {
+              return prev.map(m => (m.id === Number(data.tempId) || m.id === data.tempId) ? {
+                ...m,
+                id: data.id,
+                text: data.message_text || data.message || data.text,
+                status: data.status || "sent",
+                time: new Date(data.created_at || Date.now()).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+              } : m);
+            }
+
+            return [
+              ...prev,
+              {
+                id: data.id || Date.now(),
+                text: data.message_text || data.message || data.text,
+                sender: data.sender_type || data.sender,
+                time: new Date().toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                }),
+                status: data.status || "sent",
+              },
+            ]
+          });
+        } else if (evt === "messages_read") {
+          setMessages(prev => prev.map(m => ({ ...m, status: "read" })));
+        } else if (evt === "admin_status") {
+          setAdminOnline(data.status === "online");
         }
       } catch (e) {
         console.error("ws parse error", e);
@@ -176,9 +233,12 @@ export default function IslamicUserChat() {
         userEmail: me?.email,
         userName: me?.name || "Guest",
       });
-      setConversationId(conv.id);
-      connectSocket(conv.id);
-      return conv.id;
+      const id = conv.id || conv._id;
+      if (!id) throw new Error("Failed to create conversation");
+
+      setConversationId(id);
+      connectSocket(id);
+      return id;
     } catch (err) {
       setChatError(err.message || "Unable to start chat right now.");
       throw err;
@@ -192,6 +252,7 @@ export default function IslamicUserChat() {
     let convId = conversationId;
     try {
       convId = await ensureConversation();
+      if (!convId) throw new Error("Conversation initialization failed");
     } catch {
       setIsSending(false);
       return;
@@ -201,23 +262,55 @@ export default function IslamicUserChat() {
       text,
       sender: "user",
       time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-      status: "sent",
+      status: "sending",
     };
     setMessages((prev) => [...prev, optimistic]);
     setMessage("");
     setShowEmojiPicker(false);
     try {
-      await sendChatMessage({
+      const resp = await sendChatMessage({
         conversationId: convId,
         text,
         senderId: currentUser?.userId,
         senderType: "user",
+        tempId: optimistic.id,
       });
+
+      setMessages((prev) =>
+        prev.map(m => m.id === optimistic.id ? {
+          ...m,
+          id: resp.id,
+          status: "sent",
+          time: new Date(resp.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+        } : m)
+      );
     } catch (err) {
       console.error("send failed", err);
       setChatError("Message not sent. Please try again.");
+      setMessages(prev => prev.filter(m => m.id !== optimistic.id));
     }
     setIsSending(false);
+  };
+
+  const onEditMessage = async (msgId, newText) => {
+    try {
+      await updateMessage(msgId, newText);
+      setMessages((prev) =>
+        prev.map((m) => (m.id === msgId ? { ...m, text: newText } : m))
+      );
+    } catch (err) {
+      console.error("Edit failed", err);
+    }
+  };
+
+  const onDeleteMessage = async (msgId) => {
+    if (!window.confirm("Delete this message?")) return;
+    try {
+      await deleteMessage(msgId);
+      setMessages((prev) => prev.filter((m) => m.id !== msgId));
+    } catch (err) {
+      console.error("Delete failed", err);
+    }
   };
 
   const startVoiceRecording = () => {
@@ -265,7 +358,7 @@ export default function IslamicUserChat() {
   };
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 font-sans">
+    <div className="fixed bottom-4 right-4 z-[60] font-sans">
       <style>{`
         @keyframes fade-in {
           from { opacity: 0; transform: translateY(10px); }
@@ -331,6 +424,8 @@ export default function IslamicUserChat() {
           quickQuestions={quickQuestions}
           chatError={chatError}
           isSending={isSending}
+          onEditMessage={onEditMessage}
+          onDeleteMessage={onDeleteMessage}
         />
       )}
     </div>

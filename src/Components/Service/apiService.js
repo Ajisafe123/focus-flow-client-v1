@@ -133,6 +133,22 @@ class ApiService {
     return this.handleResponse(res);
   }
 
+  /* ======================== CONTACT ======================== */
+  async getContactMessages() {
+    const res = await fetch(`${API_BASE_URL}/contact`, {
+      headers: await this.getAuthHeaders(),
+    });
+    return this.handleResponse(res);
+  }
+
+  async deleteContactMessage(messageId) {
+    const res = await fetch(`${API_BASE_URL}/contact/${messageId}`, {
+      method: "DELETE",
+      headers: await this.getAuthHeaders(),
+    });
+    return this.handleResponse(res);
+  }
+
   /* ======================== Landing & Shared ======================== */
   async getTeachingCategories() {
     const res = await fetch(`${API_BASE_URL}/api/teaching-categories`);

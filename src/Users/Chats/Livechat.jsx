@@ -98,11 +98,34 @@ export default function IslamicUserChat() {
     };
   }, [isRecording]);
 
+  const retryTimeoutRef = useRef(null);
+  const isMountedRef = useRef(true);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+      if (retryTimeoutRef.current) clearTimeout(retryTimeoutRef.current);
+    };
+  }, []);
+
   const connectSocket = (convId) => {
     if (!convId) return;
+
+    if (wsRef.current) {
+      wsRef.current.close();
+      wsRef.current = null;
+    }
+
     const wsUrl = (import.meta.env.VITE_API_BASE_URL || "https://focus-flow-server-v1.onrender.com")
       .replace(/^http/, "ws") + `/ws/chat/${convId}`;
+
     wsRef.current = new WebSocket(wsUrl);
+
+    wsRef.current.onopen = () => {
+      console.log("User WS Connected");
+    };
+
     wsRef.current.onmessage = (event) => {
       try {
         const { event: evt, data } = JSON.parse(event.data);
@@ -171,9 +194,17 @@ export default function IslamicUserChat() {
         console.error("ws parse error", e);
       }
     };
+
     wsRef.current.onclose = () => {
-      wsRef.current = null;
+      console.log("User WS Disconnected, reconnecting in 3s...");
+      if (isMountedRef.current) {
+        retryTimeoutRef.current = setTimeout(() => connectSocket(convId), 3000);
+      }
     };
+
+    wsRef.current.onerror = () => {
+      if (wsRef.current) wsRef.current.close();
+    }
   };
 
   useEffect(() => {

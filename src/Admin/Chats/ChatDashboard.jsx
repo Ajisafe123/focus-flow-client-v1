@@ -129,31 +129,52 @@ const ChatDashboard = ({ setActivePage }) => {
     };
     load();
 
-    // WebSocket Connection
-    const wsUrl = (API_BASE_URL || "https://focus-flow-server-v1.onrender.com").replace(/^http/, "ws") + "/ws/chat/admin";
-    wsRef.current = new WebSocket(wsUrl);
+    let retryTimeout;
 
-    wsRef.current.onopen = () => {
-      setIsConnected(true);
-      console.log("Admin WS Connected");
-    };
-
-    wsRef.current.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        handleWebSocketMessage(data);
-      } catch (err) {
-        console.error("WS Parse error", err);
+    const connect = () => {
+      // Clean up existing connection if any
+      if (wsRef.current) {
+        wsRef.current.close();
       }
+
+      const wsUrl = (API_BASE_URL || "https://focus-flow-server-v1.onrender.com").replace(/^http/, "ws") + "/ws/chat/admin";
+      wsRef.current = new WebSocket(wsUrl);
+
+      wsRef.current.onopen = () => {
+        setIsConnected(true);
+        console.log("Admin WS Connected");
+      };
+
+      wsRef.current.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          handleWebSocketMessage(data);
+        } catch (err) {
+          console.error("WS Parse error", err);
+        }
+      };
+
+      wsRef.current.onclose = () => {
+        setIsConnected(false);
+        console.log("Admin WS Disconnected, reconnecting in 3s...");
+        retryTimeout = setTimeout(connect, 3000);
+      };
+
+      wsRef.current.onerror = (err) => {
+        console.error("Admin WS Error:", err);
+        wsRef.current.close(); // Trigger onclose
+      };
     };
 
-    wsRef.current.onclose = () => {
-      setIsConnected(false);
-      console.log("Admin WS Disconnected");
-    };
+    connect();
 
+    // Cleanup on unmount
     return () => {
-      if (wsRef.current) wsRef.current.close();
+      if (retryTimeout) clearTimeout(retryTimeout);
+      if (wsRef.current) {
+        wsRef.current.onclose = null; // Prevent reconnect on unmount
+        wsRef.current.close();
+      }
     };
   }, []);
 

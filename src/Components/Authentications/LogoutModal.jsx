@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import apiService from "../../Services/api";
+import apiService from "../Service/apiService";
 import { LogOut, CheckCircle, XCircle, Loader } from "lucide-react"; 
 
 const LogoutModal = ({ isOpen, onClose, onConfirm }) => {

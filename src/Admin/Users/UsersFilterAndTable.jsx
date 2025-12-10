@@ -23,7 +23,6 @@ const UsersFilterAndTable = ({
   setSearchQuery,
   currentPage,
   setCurrentPage,
-  setShowAddModal,
   setShowDeleteConfirm,
   setUserToDelete,
 }) => {

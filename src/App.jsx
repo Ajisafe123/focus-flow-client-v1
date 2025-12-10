@@ -9,43 +9,44 @@ import {
   useParams,
 } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import Hero from "./Components/Hero";
-import LiveDua from "./Components/LiveDua";
-import LiveChat from "./Components/LiveChat";
-import DailyHadith from "./Components/DailyHadith";
-import About from "./Components/About";
-import Contact from "./Components/Contact";
-import DonationPage from "./Components/DonationPage";
-import Footer from "./Components/Footer";
-import AuthPages from "./Components/Authentications/AuthPage";
+import Hero from "./Components/LandingPage/Hero";
+import LiveDua from "./Components/LandingPage/LiveDua";
+import LiveChat from "./Users/Chats/Livechat";
+import DailyHadith from "./Components/LandingPage/DailyHadith";
+import About from "./Components/LandingPage/About";
+import Contact from "./Components/LandingPage/Contact";
+import DonationPage from "./Users/Donations/DonationPage";
+import Footer from "./Components/LandingPage/Footer";
+import AuthForm from "./Components/Authentications/AuthForm";
+import RegisterPage from "./Components/Authentications/RegisterPage";
 import ForgotPassword from "./Components/Authentications/ForgotPassword";
 import ResetPassword from "./Components/Authentications/ResetPassword";
-import Navigation from "./Components/Navigation";
+import VerifyEmail from "./Components/Authentications/VerifyEmail";
+import Navigation from "./Components/Navigations/Navigation";
 import LogoutModal from "./Components/Authentications/LogoutModal";
-import PrayerTimesTable from "./Components/PrayerTimesTable";
-import Hadith from "./Components/HadithList";
-import IslamicCalendar from "./Components/IslamicCalendar";
-import NamesOfAllah from "./Components/NamesOfAllah";
-import ZakatCalculator from "./Components/ZakatCalculator";
-import QiblaFinder from "./Components/QiblaFinder";
-import SettingsPage from "./Components/Settings";
-import ProfilePage from "./Components/Profile";
-import AdminDashboard from "./Admin/NibrasAdminDashboard";
-import apiService from "./Services/api";
-import ArticlesInterface from "./Admin/ArticlesInterface";
-import QuranPage from "./Components/Quran";
-import DuaCategoryPage from "./Components/DuaList";
-import ArticlesPage from "./Components/ArticlesPage";
-import VideoPlayer from "./Components/VideoPlayer"
-import ShopPage from "./Components/ShopPage";
-import TeachingToolsPage from "./Components/TeachingToolsPage";
-import LessonPlansPage from "./Components/LessonPlansPage";
-import AudioResourcesPage from "./Components/AudioResourcesPage";
-import StudyGuidesPage from "./Components/StudyGuidesPage";
+import PrayerTimesTable from "./Users/PrayerTimesTable";
+import Hadith from "./Users/Hadiths/HadithList";
+import IslamicCalendar from "./Users/IslamicCalendar";
+import NamesOfAllah from "./Users/NamesOfAllah";
+import QiblaFinder from "./Users/QiblaFinder";
+import SettingsPage from "./Users/Settings";
+import ProfilePage from "./Users/Profile/Profile";
+import AdminDashboard from "./Admin/Dashboard";
+import apiService from "./Components/Service/apiService";
+import ArticlesInterface from "./Admin/Articles/Articles";
+import QuranPage from "./Users/Quran/Quran";
+import DuaCategoryPage from "./Users/Duas/DuaList";
+import ArticlesPage from "./Users/Articles/ArticlesPage";
+import VideoPlayer from "./Users/VideoLectures/VideoPlayer";
+import ShopPage from "./Users/Shops/ShopPage";
+import TeachingToolsPage from "./Users/TeachingTools/TeachingToolsPage";
+import LessonPlansPage from "./Users/TeachingTools/LessonPlansPage";
+import AudioResourcesPage from "./Users/AudioLectures/AudioResourcesPage";
+import StudyGuidesPage from "./Users/TeachingTools/StudyGuidesPage";
 import PrivacyPolicy from "./Components/PrivacyPolicy";
 import AppShowcase from "./Components/AppShowCase";
-import NotificationCenter from "./Components/Notification";
-import RamadanPage from "./Components/Ramadan"
+import NotificationCenter from "./Users/Notification";
+import RamadanPage from "./Users/Ramadan";
 const pageVariants = {
   initial: { opacity: 0, y: 10 },
   in: { opacity: 1, y: 0 },
@@ -102,7 +103,7 @@ function AppContent({
   const shouldShowFooter = location.pathname === "/";
 
   const isAdminPage =
-    role === "admin" && location.pathname.startsWith("/admin");
+    role?.toLowerCase() === "admin" && location.pathname.startsWith("/admin");
   const showNavigation = !isAdminPage;
   const showLiveChat = isLoggedIn && location.pathname === "/";
 
@@ -159,6 +160,14 @@ function AppContent({
             }
           />
           <Route
+            path="/livechat"
+            element={
+              <PageWrapper>
+                <LiveChat />
+              </PageWrapper>
+            }
+          />
+          <Route
             path="/donation"
             element={
               <PageWrapper>
@@ -202,7 +211,6 @@ function AppContent({
               </PageWrapper>
             }
           />
-
           <Route
             path="/articles"
             element={
@@ -228,7 +236,7 @@ function AppContent({
             }
           />
           <Route
-            path="/videos"
+            path="/video-lectures"
             element={
               <PageWrapper>
                 <VideoPlayer />
@@ -259,21 +267,11 @@ function AppContent({
               </PageWrapper>
             }
           />
-
           <Route
             path="/study-guides"
             element={
               <PageWrapper>
                 <StudyGuidesPage />
-              </PageWrapper>
-            }
-          />
-
-          <Route
-            path="/zakat-calculator"
-            element={
-              <PageWrapper>
-                <ZakatCalculator />
               </PageWrapper>
             }
           />
@@ -321,7 +319,15 @@ function AppContent({
             path="/login"
             element={
               <PageWrapper>
-                <AuthPages />
+                <AuthForm isLogin />
+              </PageWrapper>
+            }
+          />
+          <Route
+            path="/register"
+            element={
+              <PageWrapper>
+                <RegisterPage />
               </PageWrapper>
             }
           />
@@ -341,7 +347,14 @@ function AppContent({
               </PageWrapper>
             }
           />
-
+          <Route
+            path="/verify-email"
+            element={
+              <PageWrapper>
+                <VerifyEmail />
+              </PageWrapper>
+            }
+          />
           {isLoggedIn && (
             <>
               <Route
@@ -382,7 +395,6 @@ function AppContent({
               />
             </>
           )}
-
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </AnimatePresence>

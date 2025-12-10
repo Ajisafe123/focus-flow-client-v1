@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Bell,
   Search,
@@ -10,14 +10,36 @@ import {
   X,
 } from "lucide-react";
 
+import { fetchNotifications } from "../Users/Service/apiService";
+
 const Navbar = ({
   showProfileMenu,
   setShowProfileMenu,
   setIsMobileSidebarOpen,
   setActivePage,
+  onLogout,
 }) => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [notificationCount] = useState(3);
+  const [notificationCount, setNotificationCount] = useState(0);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const load = async () => {
+      if (!token) return;
+      try {
+        const data = await fetchNotifications(token, 20);
+        const count = Array.isArray(data)
+          ? data.filter((n) => !n.read).length
+          : 0;
+        setNotificationCount(count);
+      } catch {
+        // ignore
+      }
+    };
+    load();
+    const id = setInterval(load, 60000);
+    return () => clearInterval(id);
+  }, []);
 
   const handleMenuClick = () => {
     setIsMobileSidebarOpen((prev) => !prev);
@@ -159,10 +181,10 @@ const Navbar = ({
                   <div className="my-2 border-t border-gray-100"></div>
 
                   <button
-                    onClick={() => {
-                      setActivePage("logout");
-                      setShowProfileMenu(false);
-                    }}
+                  onClick={() => {
+                    setShowProfileMenu(false);
+                    onLogout?.();
+                  }}
                     className="w-full flex items-center gap-3 px-4 py-3 hover:bg-red-50 text-gray-700 hover:text-red-600 transition-all duration-200 group"
                   >
                     <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center group-hover:bg-red-200 transition-colors duration-200">

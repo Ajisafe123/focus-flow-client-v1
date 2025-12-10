@@ -1,19 +1,19 @@
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&family=Nunito:ital,wght@0,200..1000;1,200..1000&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Quicksand:wght@300..700&family=Roboto:ital,wght@0,100..900;1,100..900&family=Noto+Nastaliq+Urdu:wght@700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&family=Nunito:ital,wght@0,200..1000;1,200..1000&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Quicksand:wght@300..700&family=Roboto:ital,wght@0,100..900;1,100..900&family=Noto+Nastaliq+Urdu:wght@700&display=swap");
 
-.header-text{
-    font-family: "Playfair Display", serif;
-    font-optical-sizing: auto;
-    font-weight: 500;
-    font-style: normal;
+.header-text {
+  font-family: "Playfair Display", serif;
+  font-optical-sizing: auto;
+  font-weight: 500;
+  font-style: normal;
 }
 .font-arabic {
-    font-family: 'Amiri', serif;
-    font-feature-settings: "liga" 0;
-    -webkit-font-feature-settings: "liga" 0;
-    -moz-font-feature-settings: "liga" 0;
+  font-family: "Amiri", serif;
+  font-feature-settings: "liga" 0;
+  -webkit-font-feature-settings: "liga" 0;
+  -moz-font-feature-settings: "liga" 0;
 }
-.logo-nastaliq{
+.logo-nastaliq {
   font-family: "Yesteryear", cursive;
   font-weight: 400;
   font-style: normal;
@@ -23,55 +23,51 @@
   font-weight: 400;
   font-style: normal;
 }
-.loading {
- --speed-of-animation: 0.9s;
- --gap: 6px;
- --first-color: #4c86f9;
- --second-color: #49a84c;
- --third-color: #f6bb02;
- --fourth-color: #f6bb02;
- --fifth-color: #2196f3;
- display: flex;
- justify-content: center;
- align-items: center;
- width: 100px;
- gap: 6px;
- height: 100px;
+
+.loader {
+  color: #fff;
+  font-size: 10px;
+  width: 1em;
+  height: 1em;
+  border-radius: 50%;
+  position: relative;
+  text-indent: -9999em;
+  animation: mulShdSpin 1.3s infinite linear;
+  transform: translateZ(0);
 }
 
-.loading span {
- width: 4px;
- height: 50px;
- background: var(--first-color);
- animation: scale var(--speed-of-animation) ease-in-out infinite;
-}
-
-.loading span:nth-child(2) {
- background: var(--second-color);
- animation-delay: -0.8s;
-}
-
-.loading span:nth-child(3) {
- background: var(--third-color);
- animation-delay: -0.7s;
-}
-
-.loading span:nth-child(4) {
- background: var(--fourth-color);
- animation-delay: -0.6s;
-}
-
-.loading span:nth-child(5) {
- background: var(--fifth-color);
- animation-delay: -0.5s;
-}
-
-@keyframes scale {
- 0%, 40%, 100% {
-  transform: scaleY(0.05);
- }
-
- 20% {
-  transform: scaleY(1);
- }
+@keyframes mulShdSpin {
+  0%,
+  100% {
+    box-shadow: 0 -3em 0 0.2em, 2em -2em 0 0em, 3em 0 0 -1em, 2em 2em 0 -1em,
+      0 3em 0 -1em, -2em 2em 0 -1em, -3em 0 0 -1em, -2em -2em 0 0;
+  }
+  12.5% {
+    box-shadow: 0 -3em 0 0, 2em -2em 0 0.2em, 3em 0 0 0, 2em 2em 0 -1em,
+      0 3em 0 -1em, -2em 2em 0 -1em, -3em 0 0 -1em, -2em -2em 0 -1em;
+  }
+  25% {
+    box-shadow: 0 -3em 0 -0.5em, 2em -2em 0 0, 3em 0 0 0.2em, 2em 2em 0 0,
+      0 3em 0 -1em, -2em 2em 0 -1em, -3em 0 0 -1em, -2em -2em 0 -1em;
+  }
+  37.5% {
+    box-shadow: 0 -3em 0 -1em, 2em -2em 0 -1em, 3em 0em 0 0, 2em 2em 0 0.2em,
+      0 3em 0 0em, -2em 2em 0 -1em, -3em 0em 0 -1em, -2em -2em 0 -1em;
+  }
+  50% {
+    box-shadow: 0 -3em 0 -1em, 2em -2em 0 -1em, 3em 0 0 -1em, 2em 2em 0 0em,
+      0 3em 0 0.2em, -2em 2em 0 0, -3em 0em 0 -1em, -2em -2em 0 -1em;
+  }
+  62.5% {
+    box-shadow: 0 -3em 0 -1em, 2em -2em 0 -1em, 3em 0 0 -1em, 2em 2em 0 -1em,
+      0 3em 0 0, -2em 2em 0 0.2em, -3em 0 0 0, -2em -2em 0 -1em;
+  }
+  75% {
+    box-shadow: 0em -3em 0 -1em, 2em -2em 0 -1em, 3em 0em 0 -1em, 2em 2em 0 -1em,
+      0 3em 0 -1em, -2em 2em 0 0, -3em 0em 0 0.2em, -2em -2em 0 0;
+  }
+  87.5% {
+    box-shadow: 0em -3em 0 0, 2em -2em 0 -1em, 3em 0 0 -1em, 2em 2em 0 -1em,
+      0 3em 0 -1em, -2em 2em 0 0, -3em 0em 0 0, -2em -2em 0 0.2em;
+  }
 }

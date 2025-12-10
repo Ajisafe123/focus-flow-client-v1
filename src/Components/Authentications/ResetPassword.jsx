@@ -8,6 +8,7 @@ import {
   ShieldCheck,
   CheckCircle,
 } from "lucide-react";
+import apiService from "../Service/apiService";
 
 function ResetPassword() {
   const [code, setCode] = useState("");
@@ -20,8 +21,6 @@ function ResetPassword() {
   const [success, setSuccess] = useState(false);
   const [verifiedMessage, setVerifiedMessage] = useState("");
   const [noToken, setNoToken] = useState(false);
-  const [touchDots, setTouchDots] = useState([]);
-  const [floatingElements, setFloatingElements] = useState([]);
   const [step, setStep] = useState(1);
   const [verified, setVerified] = useState(false);
 
@@ -31,34 +30,7 @@ function ResetPassword() {
 
   useEffect(() => {
     if (!email) setNoToken(true);
-
-    const elements = Array.from({ length: 15 }, (_, i) => ({
-      id: i,
-      size: Math.random() * 8 + 4,
-      x: Math.random() * 100,
-      y: Math.random() * 100,
-      duration: Math.random() * 20 + 20,
-      delay: Math.random() * 10,
-    }));
-    setFloatingElements(elements);
   }, [email]);
-
-  const handleTouch = (e) => {
-    if (window.innerWidth <= 768) {
-      const touch = e.touches[0];
-      const newDot = {
-        id: Date.now() + Math.random(),
-        x: touch.clientX,
-        y: touch.clientY,
-      };
-      setTouchDots((prev) => [...prev, newDot]);
-      setTimeout(
-        () =>
-          setTouchDots((prev) => prev.filter((dot) => dot.id !== newDot.id)),
-        1000
-      );
-    }
-  };
 
   const validatePasswords = () => {
     const errs = {};
@@ -81,19 +53,7 @@ function ResetPassword() {
     setIsLoading(true);
     setErrors({});
     try {
-      const res = await fetch(
-        "https://focus-flow-server-v1.onrender.com/auth/verify-code",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, code }),
-        }
-      );
-
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.detail || "Invalid or expired code");
-      }
+      await apiService.verifyCode({ email, code });
 
       setVerified(true);
       setVerifiedMessage("Code verified successfully!");
@@ -117,19 +77,11 @@ function ResetPassword() {
     setIsLoading(true);
     setErrors({});
     try {
-      const res = await fetch(
-        "https://focus-flow-server-v1.onrender.com/auth/reset-password",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, code, new_password: newPassword }),
-        }
-      );
-
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.detail || "Password reset failed");
-      }
+      await apiService.resetPassword({
+        email,
+        code,
+        new_password: newPassword,
+      });
 
       setSuccess(true);
       setTimeout(() => navigate("/login"), 2000);
@@ -142,37 +94,9 @@ function ResetPassword() {
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center p-2 relative"
-      onTouchStart={handleTouch}
+      className="min-h-screen flex items-center justify-center px-4 py-10 bg-emerald-50"
     >
-      {touchDots.map((dot) => (
-        <div
-          key={dot.id}
-          className="fixed w-8 h-8 pointer-events-none z-50 animate-ping"
-          style={{ left: dot.x - 16, top: dot.y - 16 }}
-        >
-          <div className="w-full h-full bg-gradient-to-r from-emerald-400 to-teal-400 rounded-full opacity-75"></div>
-        </div>
-      ))}
-
-      {floatingElements.map((el) => (
-        <div
-          key={el.id}
-          className="absolute opacity-20 pointer-events-none"
-          style={{
-            left: `${el.x}%`,
-            top: `${el.y}%`,
-            width: `${el.size}px`,
-            height: `${el.size}px`,
-            animation: `float ${el.duration}s ease-in-out infinite`,
-            animationDelay: `${el.delay}s`,
-          }}
-        >
-          <div className="w-full h-full bg-emerald-500 rounded-full blur-sm"></div>
-        </div>
-      ))}
-
-      <div className="flex flex-col w-full max-w-sm bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl overflow-hidden relative z-10 p-6 border border-gray-100">
+      <div className="flex flex-col w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden relative z-10 p-6 border border-emerald-100">
         <div className="text-center mb-6">
           <div className="inline-flex items-center justify-center w-14 h-14 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-full mb-3 shadow-lg">
             <ShieldCheck className="w-7 h-7 text-white" />
@@ -353,12 +277,6 @@ function ResetPassword() {
       </div>
 
       <style>{`
-        @keyframes float {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          25% { transform: translateY(-10px) rotate(90deg); }
-          50% { transform: translateY(-20px) rotate(180deg); }
-          75% { transform: translateY(-10px) rotate(270deg); }
-        }
         @keyframes slideIn {
           from { opacity: 0; transform: translateY(-10px); }
           to { opacity: 1; transform: translateY(0); }

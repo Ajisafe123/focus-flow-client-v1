@@ -1,38 +1,30 @@
-import React, { useState, useCallback, useRef } from "react";
+import React, { useState, useRef } from "react";
 import {
   X,
   Tag,
   ListPlus,
   Plus,
-  Loader2,
   Edit,
   Trash2,
   Check,
   ImageIcon,
 } from "lucide-react";
 
-import DeleteConfirmModal from "./DeleteConfirmModal";
+import DeleteConfirmModal from "./DeleteModal";
+import apiService, { API_BASE_URL as API_BASE } from "../Components/Service/apiService";
 
 const GRADIENT_CLASS = "bg-gradient-to-r from-emerald-600 to-green-700";
 const HOVER_GRADIENT_CLASS = "hover:from-emerald-700 hover:to-green-800";
-const API_BASE = "https://focus-flow-server-v1.onrender.com";
 
 const getFullImageUrl = (relativePath) => {
   if (!relativePath) return null;
-
-  if (relativePath.startsWith("http")) {
-    return relativePath;
-  }
+  if (relativePath.startsWith("http")) return relativePath;
 
   let path = relativePath.trim();
-
   if (!path.startsWith("/static/")) {
     path = `/static/category_images/${path}`;
   }
-
-  if (path.startsWith("//")) {
-    path = path.replace(/^\/+/, "/");
-  }
+  if (path.startsWith("//")) path = path.replace(/^\/+/, "/");
 
   return `${API_BASE}${path}`;
 };
@@ -66,19 +58,6 @@ const CreateCategoryModal = ({
 
   const isEditing = formData.id !== null;
 
-  const getApiPath = useCallback(
-    (id = null) => {
-      let basePath;
-      if (categoryType === "hadith") {
-        basePath = `${API_BASE}/api/hadith-categories`;
-      } else {
-        basePath = `${API_BASE}/api/dua-categories`;
-      }
-      return id ? `${basePath}/${id}` : basePath;
-    },
-    [categoryType]
-  );
-
   if (!show) return null;
 
   const manageableCategories = categories.filter((c) => c.id !== "all");
@@ -101,9 +80,7 @@ const CreateCategoryModal = ({
   const clearImage = () => {
     setImageFile(null);
     setImagePreview(getFullImageUrl(formData.image_url));
-    if (imageInputRef.current) {
-      imageInputRef.current.value = "";
-    }
+    if (imageInputRef.current) imageInputRef.current.value = "";
   };
 
   const handleCreateOrUpdate = async (e) => {
@@ -111,60 +88,30 @@ const CreateCategoryModal = ({
     setError(null);
     setIsLoading(true);
 
-    let url;
-    let method;
-    let headers;
-    let body;
-
-    const categoryData = {
-      name: formData.name,
-      description: formData.description,
-      is_active: formData.is_active,
-    };
-
-    if (isEditing && imageFile) {
-      url = `${getApiPath(formData.id)}/image-upload`;
-      method = "POST";
-      headers = {};
-      const formDataPayload = new FormData();
-      formDataPayload.append("image_file", imageFile);
-      body = formDataPayload;
-    } else if (imageFile && !isEditing) {
-      url = getApiPath();
-      method = "POST";
-      headers = {};
-      const formDataPayload = new FormData();
-      formDataPayload.append("name", categoryData.name);
-      formDataPayload.append("description", categoryData.description || "");
-      formDataPayload.append("is_active", categoryData.is_active);
-      formDataPayload.append("image_file", imageFile);
-      body = formDataPayload;
-    } else {
-      url = getApiPath(isEditing ? formData.id : null);
-      method = isEditing ? "PATCH" : "POST";
-      headers = { "Content-Type": "application/json" };
-      body = JSON.stringify(categoryData);
-    }
-
     try {
-      const res = await fetch(url, {
-        method: method,
-        headers: headers,
-        body: body,
-      });
+      let updatedCategory;
 
-      if (!res.ok) {
-        let errorMessage =
-          res.statusText ||
-          `Failed to ${isEditing ? "update" : "create"} category.`;
-        try {
-          const errorData = await res.json();
-          errorMessage = errorData.detail || errorMessage;
-        } catch (e) {}
-        throw new Error(errorMessage);
+      if (isEditing) {
+        updatedCategory = await apiService.updateCategory(categoryType, formData.id, {
+          name: formData.name,
+          description: formData.description,
+          is_active: formData.is_active,
+        });
+
+        if (imageFile) {
+          updatedCategory = await apiService.uploadCategoryImage(
+            categoryType,
+            formData.id,
+            imageFile
+          );
+        }
+      } else {
+        updatedCategory = await apiService.createCategory(
+          categoryType,
+          formData,
+          imageFile
+        );
       }
-
-      const responseData = await res.json();
 
       setFormData(INITIAL_FORM_STATE);
       setImageFile(null);
@@ -172,14 +119,14 @@ const CreateCategoryModal = ({
 
       if (typeof fetchCategories === "function") {
         await fetchCategories({
-          updatedData: responseData,
+          updatedData: updatedCategory,
           action: isEditing ? "UPDATE" : "CREATE",
         });
       }
 
       onSave();
     } catch (err) {
-      setError(err.message);
+      setError(err.message || "Something went wrong");
     } finally {
       setIsLoading(false);
     }
@@ -206,43 +153,29 @@ const CreateCategoryModal = ({
   const executeDelete = async () => {
     if (!deleteTarget) return;
 
-    setShowDeleteConfirm(false);
-
-    const categoryId = deleteTarget.id;
-
     setIsLoading(true);
     setError(null);
 
     try {
-      const res = await fetch(getApiPath(categoryId), {
-        method: "DELETE",
-      });
+      await apiService.deleteCategory(categoryType, deleteTarget.id);
 
-      if (!res.ok) {
-        let errorMessage = res.statusText || "Failed to delete category.";
-        try {
-          const errorData = await res.json();
-          errorMessage = errorData.detail || errorMessage;
-        } catch (e) {}
-        throw new Error(errorMessage);
-      }
-
-      if (formData.id === categoryId) {
+      if (formData.id === deleteTarget.id) {
         setFormData(INITIAL_FORM_STATE);
         setImageFile(null);
         setImagePreview(null);
       }
 
       if (typeof fetchCategories === "function") {
-        await fetchCategories({ deletedId: categoryId, action: "DELETE" });
+        await fetchCategories({ deletedId: deleteTarget.id, action: "DELETE" });
       }
 
       onSave();
-      setDeleteTarget(null);
     } catch (err) {
       setError(err.message);
     } finally {
       setIsLoading(false);
+      setShowDeleteConfirm(false);
+      setDeleteTarget(null);
     }
   };
 
@@ -412,7 +345,7 @@ const CreateCategoryModal = ({
               >
                 {isLoading ? (
                   <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <div className="w-5 h-5 loader" />
                     {isEditing ? "Updating..." : "Saving..."}
                   </>
                 ) : (
@@ -421,7 +354,7 @@ const CreateCategoryModal = ({
                       <Check className="w-5 h-5" />
                     ) : (
                       <Plus className="w-5 h-5" />
-                    )}{" "}
+                    )}
                     {isEditing ? "Update Category" : "Save Category"}
                   </>
                 )}
@@ -529,7 +462,7 @@ const CreateCategoryModal = ({
             type="button"
             onClick={onClose}
             disabled={isLoading}
-            className={`w-full flex items-center justify-center px-5 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium disabled:opacity-50`}
+            className="w-full flex items-center justify-center px-5 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium disabled:opacity-50"
           >
             Close Management
           </button>

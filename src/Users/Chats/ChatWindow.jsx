@@ -229,18 +229,21 @@ export const ChatWindow = ({
                       <MoreVertical className="w-4 h-4" />
                     </button>
                     {menuId === msg.id && (
-                      <div className="absolute bottom-full mb-1 right-0 w-28 bg-white shadow-xl rounded-xl border border-gray-100 overflow-hidden z-20 flex flex-col animate-scale-in origin-bottom-right">
+                      <div className="absolute bottom-full mb-1 right-0 w-36 bg-white shadow-xl rounded-xl border border-gray-100 overflow-hidden z-20 flex flex-col animate-scale-in origin-bottom-right">
                         <button
                           onClick={() => handleStartEdit(msg)}
-                          className="flex items-center gap-2 px-3 py-2.5 hover:bg-emerald-50 text-xs font-medium text-gray-700 text-left transition-colors"
+                          className="flex items-center gap-3 px-4 py-3 hover:bg-emerald-50 text-sm font-medium text-gray-700 text-left transition-colors active:bg-emerald-100"
                         >
-                          <Edit2 className="w-3.5 h-3.5" /> Edit
+                          <Edit2 className="w-4 h-4 text-emerald-600" />
+                          <span className="flex-1">Edit Message</span>
                         </button>
+                        <div className="h-px bg-gray-50 mx-2"></div>
                         <button
                           onClick={() => { setMenuId(null); onDeleteMessage(msg.id); }}
-                          className="flex items-center gap-2 px-3 py-2.5 hover:bg-red-50 text-xs font-medium text-red-500 text-left transition-colors"
+                          className="flex items-center gap-3 px-4 py-3 hover:bg-red-50 text-sm font-medium text-red-500 text-left transition-colors active:bg-red-100"
                         >
-                          <Trash2 className="w-3.5 h-3.5" /> Delete
+                          <Trash2 className="w-4 h-4" />
+                          <span className="flex-1">Delete</span>
                         </button>
                       </div>
                     )}

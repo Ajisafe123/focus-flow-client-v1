@@ -1,5 +1,5 @@
 // src/services/api.js
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://focus-flow-server-v1.onrender.com";
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || (import.meta.env.DEV ? "http://localhost:8000" : "https://focus-flow-server-v1.onrender.com");
 
 class ApiService {
   getToken() {
@@ -165,6 +165,8 @@ class ApiService {
     const res = await fetch(`${API_BASE_URL}/api/duas`, { headers });
     return this.handleResponse(res);
   }
+
+
 
   async getCategorySegments(categoryId) {
     const res = await fetch(

@@ -1,6 +1,6 @@
 // apiService.js
 
-export const API_BASE = import.meta.env.VITE_API_BASE_URL || "https://focus-flow-server-v1.onrender.com";
+export const API_BASE = import.meta.env.VITE_API_BASE_URL || (import.meta.env.DEV ? "http://localhost:8000" : "https://focus-flow-server-v1.onrender.com");
 export const DEFAULT_LIMIT = 10;
 
 const handleError = async (res, defaultMsg) => {
@@ -42,6 +42,7 @@ export const fetchCategories = async () => {
   const res = await fetch(`${API_BASE}/api/dua-categories`);
   if (!res.ok) await handleError(res, "Failed to fetch Dua Categories.");
   const data = await res.json();
+  console.log("Fetched Dua Categories:", data);
   return [
     { id: "all", label: "All Categories", description: "" },
     ...(data || []).map((c) => ({
@@ -104,7 +105,9 @@ export const bulkDeleteDuas = async (idsArray) => {
 const getCategoryBase = (categoryType) =>
   categoryType === "hadith"
     ? `${API_BASE}/api/hadith-categories`
-    : `${API_BASE}/api/dua-categories`;
+    : categoryType === "article"
+      ? `${API_BASE}/api/article-categories`
+      : `${API_BASE}/api/dua-categories`;
 
 export const createCategory = async (
   categoryType,

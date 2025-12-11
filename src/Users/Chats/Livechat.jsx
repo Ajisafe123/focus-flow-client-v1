@@ -13,6 +13,7 @@ import {
 
 export default function IslamicUserChat() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isConnected, setIsConnected] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [message, setMessage] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
@@ -117,74 +118,73 @@ export default function IslamicUserChat() {
       wsRef.current = null;
     }
 
-    const wsUrl = (import.meta.env.VITE_API_BASE_URL || "https://focus-flow-server-v1.onrender.com")
-      .replace(/^http/, "ws") + `/ws/chat/${convId}`;
+    const baseUrl = (import.meta.env.VITE_API_BASE_URL || (import.meta.env.DEV ? "http://localhost:8000" : "https://focus-flow-server-v1.onrender.com")).replace(/\/$/, "");
+    const wsUrl = baseUrl.replace(/^http/, "ws") + `/ws/chat/${convId}`;
 
+    console.log("Connecting WS to:", wsUrl);
     wsRef.current = new WebSocket(wsUrl);
 
     wsRef.current.onopen = () => {
       console.log("User WS Connected");
+      setIsConnected(true);
+    };
+
+    wsRef.current.onclose = () => {
+      console.log("User WS Disconnected");
+      setIsConnected(false);
+      if (isMountedRef.current) {
+        retryTimeoutRef.current = setTimeout(() => connectSocket(convId), 3000);
+      }
     };
 
     wsRef.current.onmessage = (event) => {
       try {
+        console.log("WS Message:", event.data); // DEBUG LOG
         const { event: evt, data } = JSON.parse(event.data);
         if (evt === "receive_message") {
+          // Force re-render with new array reference to ensure UI updates
+          setMessages((prev) => {
+            // Deduplication logic
+            if (prev.some(m => m.id === data.id)) return prev;
+
+            const newMessage = {
+              id: data.id || Date.now(),
+              text: data.message_text || data.message || data.text,
+              sender: data.sender_type || data.sender,
+              time: new Date(data.created_at || Date.now()).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+              status: data.status || "sent",
+            };
+
+            // Handle optimistic replacement
+            if (data.tempId) {
+              const exists = prev.some(m => m.id === Number(data.tempId) || m.id === data.tempId);
+              if (exists) {
+                return prev.map(m => (m.id === Number(data.tempId) || m.id === data.tempId) ? newMessage : m);
+              }
+            }
+            return [...prev, newMessage];
+          });
+          // Update other states
           if (isOpenRef.current && (data.sender_type === "admin" || data.sender === "admin")) {
             markMessagesRead(convId).catch(console.error);
           } else if (!isOpenRef.current && (data.sender_type === "admin" || data.sender === "admin")) {
+            // Show notification...
             const notification = document.createElement("div");
             notification.className = "fixed bottom-24 right-4 bg-white border-l-4 border-emerald-500 shadow-xl p-4 rounded-lg z-[60] flex items-center gap-3 animate-slide-up max-w-sm cursor-pointer hover:bg-gray-50 transition-colors";
             notification.style.animation = "slide-up 0.5s ease-out";
             notification.innerHTML = `
-                 <div class="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-600"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-                 </div>
-                 <div>
-                    <h4 class="font-bold text-gray-800 text-sm">New Message</h4>
-                    <p class="text-xs text-gray-600 truncate max-w-[200px]">${data.message_text || "Sent a message"}</p>
-                 </div>
-              `;
+                  <div class="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center flex-shrink-0">
+                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-600"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                  </div>
+                  <div>
+                     <h4 class="font-bold text-gray-800 text-sm">New Message</h4>
+                     <p class="text-xs text-gray-600 truncate max-w-[200px]">${data.message_text || "Sent a message"}</p>
+                  </div>
+               `;
             document.body.appendChild(notification);
-
-            const timer = setTimeout(() => {
-              if (document.body.contains(notification)) notification.remove();
-            }, 5000);
-
-            notification.onclick = () => {
-              setIsOpen(true);
-              if (document.body.contains(notification)) notification.remove();
-              clearTimeout(timer);
-            };
+            setTimeout(() => notification.remove(), 5000);
+            notification.onclick = () => { setIsOpen(true); notification.remove(); };
           }
-
-          setMessages((prev) => {
-            if (prev.some(m => m.id === data.id)) return prev;
-
-            if (data.tempId && prev.some(m => m.id === Number(data.tempId) || m.id === data.tempId)) {
-              return prev.map(m => (m.id === Number(data.tempId) || m.id === data.tempId) ? {
-                ...m,
-                id: data.id,
-                text: data.message_text || data.message || data.text,
-                status: data.status || "sent",
-                time: new Date(data.created_at || Date.now()).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-              } : m);
-            }
-
-            return [
-              ...prev,
-              {
-                id: data.id || Date.now(),
-                text: data.message_text || data.message || data.text,
-                sender: data.sender_type || data.sender,
-                time: new Date().toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                }),
-                status: data.status || "sent",
-              },
-            ]
-          });
         } else if (evt === "messages_read") {
           setMessages(prev => prev.map(m => ({ ...m, status: "read" })));
         } else if (evt === "admin_status") {
@@ -192,13 +192,6 @@ export default function IslamicUserChat() {
         }
       } catch (e) {
         console.error("ws parse error", e);
-      }
-    };
-
-    wsRef.current.onclose = () => {
-      console.log("User WS Disconnected, reconnecting in 3s...");
-      if (isMountedRef.current) {
-        retryTimeoutRef.current = setTimeout(() => connectSocket(convId), 3000);
       }
     };
 
@@ -254,6 +247,7 @@ export default function IslamicUserChat() {
       }
     };
   }, [token]);
+
 
   const ensureConversation = async () => {
     if (conversationId) return conversationId;
@@ -424,6 +418,7 @@ export default function IslamicUserChat() {
         <ChatWindow
           isMinimized={isMinimized}
           setIsMinimized={setIsMinimized}
+          isConnected={isConnected}
           setIsOpen={setIsOpen}
           adminOnline={adminOnline}
           currentUser={

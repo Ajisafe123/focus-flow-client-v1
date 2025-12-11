@@ -29,6 +29,7 @@ import {
 import LoadingSpinner from "../../Common/LoadingSpinner";
 import ArticleModal from "./ArticleModal";
 import DeleteModal from "../DeleteModal";
+import CreateCategoryModal from "../CreateCategoryModal";
 
 const Articles = () => {
   const [articles, setArticles] = useState([]);
@@ -48,6 +49,7 @@ const Articles = () => {
   const [currentArticle, setCurrentArticle] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteTargetId, setDeleteTargetId] = useState(null);
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -73,7 +75,7 @@ const Articles = () => {
       setArticles(Array.isArray(articlesData) ? articlesData : []);
       setCategories(categoriesData || []);
       setStats(statsData);
-      
+
       // Calculate pagination (if API doesn't return it)
       if (Array.isArray(articlesData)) {
         setTotalItems(articlesData.length);
@@ -115,25 +117,25 @@ const Articles = () => {
 
   const statsData = stats
     ? [
-        { icon: BookOpen, title: "Total Articles", value: stats.total_articles || totalArticles },
-        { icon: CheckCircle, title: "Published", value: stats.total_articles || publishedCount },
-        { icon: Edit, title: "Drafts", value: draftsCount },
-        {
-          icon: TrendingUp,
-          title: "Total Views",
-          value: `${((stats.total_views || totalViews) / 1000).toFixed(1)}k`,
-        },
-      ]
+      { icon: BookOpen, title: "Total Articles", value: stats.total_articles || totalArticles },
+      { icon: CheckCircle, title: "Published", value: stats.total_articles || publishedCount },
+      { icon: Edit, title: "Drafts", value: draftsCount },
+      {
+        icon: TrendingUp,
+        title: "Total Views",
+        value: `${((stats.total_views || totalViews) / 1000).toFixed(1)}k`,
+      },
+    ]
     : [
-        { icon: BookOpen, title: "Total Articles", value: totalArticles },
-        { icon: CheckCircle, title: "Published", value: publishedCount },
-        { icon: Edit, title: "Drafts", value: draftsCount },
-        {
-          icon: TrendingUp,
-          title: "Total Views",
-          value: `${(totalViews / 1000).toFixed(1)}k`,
-        },
-      ];
+      { icon: BookOpen, title: "Total Articles", value: totalArticles },
+      { icon: CheckCircle, title: "Published", value: publishedCount },
+      { icon: Edit, title: "Drafts", value: draftsCount },
+      {
+        icon: TrendingUp,
+        title: "Total Views",
+        value: `${(totalViews / 1000).toFixed(1)}k`,
+      },
+    ];
 
   const handleOpenAddModal = () => {
     setIsEdit(false);
@@ -262,6 +264,13 @@ const Articles = () => {
             <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
             Add Article
           </button>
+          <button
+            onClick={() => setShowCategoryModal(true)}
+            className="flex items-center justify-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 bg-white text-emerald-600 rounded-lg hover:bg-emerald-50 transition-all duration-200 font-semibold shadow-md hover:shadow-lg text-sm sm:text-base"
+          >
+            <Tag className="w-4 h-4 sm:w-5 sm:h-5" />
+            Manage Categories
+          </button>
         </div>
       </div>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
@@ -329,19 +338,17 @@ const Articles = () => {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`px-3 py-2 font-semibold transition-all duration-200 whitespace-nowrap rounded-lg text-sm ${
-                    activeTab === tab.id
-                      ? "bg-emerald-600 text-white shadow-sm"
-                      : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-                  }`}
+                  className={`px-3 py-2 font-semibold transition-all duration-200 whitespace-nowrap rounded-lg text-sm ${activeTab === tab.id
+                    ? "bg-emerald-600 text-white shadow-sm"
+                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                    }`}
                 >
                   {tab.label}
                   <span
-                    className={`ml-2 px-2 py-0.5 text-xs rounded-full ${
-                      activeTab === tab.id
-                        ? "bg-white/20 text-white"
-                        : "bg-gray-100 text-gray-600"
-                    }`}
+                    className={`ml-2 px-2 py-0.5 text-xs rounded-full ${activeTab === tab.id
+                      ? "bg-white/20 text-white"
+                      : "bg-gray-100 text-gray-600"
+                      }`}
                   >
                     {tab.count}
                   </span>
@@ -376,17 +383,15 @@ const Articles = () => {
                     <div className="flex gap-1 flex-shrink-0">
                       <button
                         onClick={() => handleToggleFeatured(article.id)}
-                        className={`p-2 rounded-lg transition-colors ${
-                          article.featured
-                            ? "text-yellow-600 hover:bg-yellow-50"
-                            : "text-gray-600 hover:bg-gray-50"
-                        }`}
+                        className={`p-2 rounded-lg transition-colors ${article.featured
+                          ? "text-yellow-600 hover:bg-yellow-50"
+                          : "text-gray-600 hover:bg-gray-50"
+                          }`}
                         title={article.featured ? "Unfeature" : "Feature"}
                       >
                         <Star
-                          className={`w-4 h-4 ${
-                            article.featured ? "fill-yellow-500" : ""
-                          }`}
+                          className={`w-4 h-4 ${article.featured ? "fill-yellow-500" : ""
+                            }`}
                         />
                       </button>
                       <button
@@ -519,6 +524,18 @@ const Articles = () => {
         itemTitle={
           articles.find((a) => a.id === deleteTargetId)?.title || "this Article"
         }
+      />
+
+      <CreateCategoryModal
+        show={showCategoryModal}
+        onClose={() => setShowCategoryModal(false)}
+        onSave={() => {
+          fetchAllData();
+          setShowCategoryModal(false);
+        }}
+        categories={categories}
+        fetchCategories={fetchArticleCategories}
+        categoryType="article"
       />
     </div>
   );

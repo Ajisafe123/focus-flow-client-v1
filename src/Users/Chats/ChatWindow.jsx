@@ -55,6 +55,7 @@ export const ChatWindow = ({
   isSending,
   onEditMessage,
   onDeleteMessage,
+  isConnected = true,
 }) => {
   const [editingId, setEditingId] = useState(null);
   const [editText, setEditText] = useState("");
@@ -131,6 +132,8 @@ export const ChatWindow = ({
         </div>
 
         <div className="flex items-center gap-1 flex-shrink-0 relative z-10">
+          {/* Connection Status Indicator */}
+          <div className={`w-2.5 h-2.5 rounded-full border-2 border-white/20 mr-1 ${isConnected ? 'bg-green-400' : 'bg-red-500 animate-pulse'}`} title={isConnected ? "Server Connected" : "Disconnected - Trying to reconnect..."}></div>
           <button
             onClick={() => setIsMinimized(!isMinimized)}
             className="p-2 hover:bg-white/20 rounded-xl transition-all duration-300 hover:scale-110 active:scale-95"
@@ -229,27 +232,26 @@ export const ChatWindow = ({
                       <MoreVertical className="w-4 h-4" />
                     </button>
                     {menuId === msg.id && (
-                      <div className="absolute bottom-full mb-1 right-0 w-36 bg-white shadow-xl rounded-xl border border-gray-100 overflow-hidden z-20 flex flex-col animate-scale-in origin-bottom-right">
-                        <button
-                          onClick={() => handleStartEdit(msg)}
-                          className="flex items-center gap-3 px-4 py-3 hover:bg-emerald-50 text-sm font-medium text-gray-700 text-left transition-colors active:bg-emerald-100"
-                        >
-                          <Edit2 className="w-4 h-4 text-emerald-600" />
-                          <span className="flex-1">Edit Message</span>
-                        </button>
-                        <div className="h-px bg-gray-50 mx-2"></div>
-                        <button
-                          onClick={() => { setMenuId(null); onDeleteMessage(msg.id); }}
-                          className="flex items-center gap-3 px-4 py-3 hover:bg-red-50 text-sm font-medium text-red-500 text-left transition-colors active:bg-red-100"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                          <span className="flex-1">Delete</span>
-                        </button>
-                      </div>
-                    )}
-                    {/* Backdrop for menu */}
-                    {menuId === msg.id && (
-                      <div className="fixed inset-0 z-10" onClick={() => setMenuId(null)} />
+                      <>
+                        <div className="fixed inset-0 z-[10000] bg-black/20 backdrop-blur-[1px]" onClick={() => setMenuId(null)} />
+                        <div className="fixed inset-x-4 bottom-4 z-[10001] bg-white shadow-2xl rounded-2xl border border-gray-100 overflow-hidden flex flex-col animate-slide-up sm:w-64 sm:left-auto sm:right-4 sm:bottom-20">
+                          <button
+                            onClick={() => handleStartEdit(msg)}
+                            className="flex items-center gap-3 px-6 py-4 hover:bg-emerald-50 text-base font-medium text-gray-700 text-left transition-colors active:bg-emerald-100"
+                          >
+                            <Edit2 className="w-5 h-5 text-emerald-600" />
+                            <span className="flex-1">Edit Message</span>
+                          </button>
+                          <div className="h-px bg-gray-50 mx-2"></div>
+                          <button
+                            onClick={() => { setMenuId(null); onDeleteMessage(msg.id); }}
+                            className="flex items-center gap-3 px-6 py-4 hover:bg-red-50 text-base font-medium text-red-500 text-left transition-colors active:bg-red-100"
+                          >
+                            <Trash2 className="w-5 h-5" />
+                            <span className="flex-1">Delete Message</span>
+                          </button>
+                        </div>
+                      </>
                     )}
                   </div>
                 )}

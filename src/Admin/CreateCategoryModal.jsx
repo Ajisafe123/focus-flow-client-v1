@@ -11,7 +11,8 @@ import {
 } from "lucide-react";
 
 import DeleteConfirmModal from "./DeleteModal";
-import apiService, { API_BASE_URL as API_BASE } from "../Components/Service/apiService";
+import * as apiService from "./apiService";
+const { API_BASE } = apiService;
 
 const GRADIENT_CLASS = "bg-gradient-to-r from-emerald-600 to-green-700";
 const HOVER_GRADIENT_CLASS = "hover:from-emerald-700 hover:to-green-800";
@@ -190,9 +191,8 @@ const CreateCategoryModal = ({
           setDeleteTarget(null);
         }}
         onDelete={executeDelete}
-        itemType={`${
-          categoryType.charAt(0).toUpperCase() + categoryType.slice(1)
-        } Category`}
+        itemType={`${categoryType.charAt(0).toUpperCase() + categoryType.slice(1)
+          } Category`}
         itemTitle={deleteTarget?.label || "this category"}
       />
 
@@ -203,12 +203,10 @@ const CreateCategoryModal = ({
           <h2 className="text-xl font-bold text-white flex items-center gap-2">
             <ListPlus className="w-6 h-6" />
             {isEditing
-              ? `Edit ${
-                  categoryType.charAt(0).toUpperCase() + categoryType.slice(1)
-                } Category`
-              : `Create New ${
-                  categoryType.charAt(0).toUpperCase() + categoryType.slice(1)
-                } Category`}
+              ? `Edit ${categoryType.charAt(0).toUpperCase() + categoryType.slice(1)
+              } Category`
+              : `Create New ${categoryType.charAt(0).toUpperCase() + categoryType.slice(1)
+              } Category`}
           </h2>
           <button
             onClick={onClose}
@@ -240,11 +238,10 @@ const CreateCategoryModal = ({
                   required
                   value={formData.name}
                   onChange={(e) => handleChange("name", e.target.value)}
-                  className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${
-                    isEditing
+                  className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${isEditing
                       ? "border-amber-400 focus:ring-amber-500 bg-amber-50"
                       : "border-gray-300 focus:ring-emerald-500"
-                  }`}
+                    }`}
                   placeholder="e.g., Daily Duas"
                 />
               </div>
@@ -257,11 +254,10 @@ const CreateCategoryModal = ({
                   rows="2"
                   value={formData.description}
                   onChange={(e) => handleChange("description", e.target.value)}
-                  className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${
-                    isEditing
+                  className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${isEditing
                       ? "border-amber-400 focus:ring-amber-500 bg-amber-50"
                       : "border-gray-300 focus:ring-emerald-500"
-                  }`}
+                    }`}
                   placeholder="Duas and Adhkar recommended for daily recitation."
                 />
               </div>
@@ -272,11 +268,10 @@ const CreateCategoryModal = ({
                   Image (Optional)
                 </label>
                 <div
-                  className={`border rounded-lg p-3 transition-colors flex items-center gap-4 ${
-                    isEditing
+                  className={`border rounded-lg p-3 transition-colors flex items-center gap-4 ${isEditing
                       ? "border-amber-400 focus-within:ring-amber-500 bg-amber-50"
                       : "border-gray-300 focus-within:ring-emerald-500"
-                  }`}
+                    }`}
                 >
                   {currentImageUrl && (
                     <div className="flex-shrink-0 relative">
@@ -284,7 +279,7 @@ const CreateCategoryModal = ({
                         src={currentImageUrl}
                         alt="Category Preview"
                         className="w-16 h-16 object-cover rounded-md border border-gray-200"
-                        onError={(e) => {}}
+                        onError={(e) => { }}
                       />
                       <button
                         type="button"
@@ -382,20 +377,18 @@ const CreateCategoryModal = ({
                   return (
                     <div
                       key={cat.id}
-                      className={`p-3 rounded-lg border transition-all flex flex-col ${
-                        formData.id === cat.id
+                      className={`p-3 rounded-lg border transition-all flex flex-col ${formData.id === cat.id
                           ? "bg-amber-100 border-amber-500 shadow-md ring-2 ring-amber-200"
                           : "bg-gray-50 border-gray-200 hover:bg-gray-100"
-                      }`}
+                        }`}
                     >
                       <div className="flex justify-between items-start gap-3">
                         <div className="min-w-0 flex items-center gap-3">
                           <div
-                            className={`w-6 h-6 rounded-full flex-shrink-0 border flex items-center justify-center overflow-hidden ${
-                              cat.is_active
+                            className={`w-6 h-6 rounded-full flex-shrink-0 border flex items-center justify-center overflow-hidden ${cat.is_active
                                 ? "border-emerald-600"
                                 : "border-gray-400"
-                            } ${isImageAvailable ? "bg-white" : "bg-gray-200"}`}
+                              } ${isImageAvailable ? "bg-white" : "bg-gray-200"}`}
                           >
                             <img
                               src={imageUrl}
@@ -408,11 +401,10 @@ const CreateCategoryModal = ({
                           </div>
 
                           <p
-                            className={`font-semibold text-base truncate ${
-                              cat.is_active
+                            className={`font-semibold text-base truncate ${cat.is_active
                                 ? "text-gray-900"
                                 : "text-gray-500 line-through"
-                            }`}
+                              }`}
                           >
                             {cat.label}{" "}
                             <span className="font-mono text-xs text-gray-500">
@@ -424,11 +416,10 @@ const CreateCategoryModal = ({
                           <button
                             type="button"
                             onClick={() => loadCategoryForEdit(cat)}
-                            className={`p-1.5 rounded-lg transition-colors ${
-                              isEditing && formData.id === cat.id
+                            className={`p-1.5 rounded-lg transition-colors ${isEditing && formData.id === cat.id
                                 ? "text-white bg-amber-500"
                                 : "text-emerald-600 hover:bg-emerald-50"
-                            }`}
+                              }`}
                             title="Edit Category"
                             disabled={isLoading}
                           >

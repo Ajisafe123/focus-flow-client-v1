@@ -137,7 +137,8 @@ const ChatDashboard = ({ setActivePage }) => {
         wsRef.current.close();
       }
 
-      const wsUrl = (API_BASE_URL || "https://focus-flow-server-v1.onrender.com").replace(/^http/, "ws") + "/ws/chat/admin";
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || (import.meta.env.DEV ? "http://localhost:8000" : "https://focus-flow-server-v1.onrender.com");
+      const wsUrl = baseUrl.replace(/^http/, "ws") + "/ws/chat/admin";
       wsRef.current = new WebSocket(wsUrl);
 
       wsRef.current.onopen = () => {

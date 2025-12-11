@@ -3,7 +3,7 @@ import Navbar from "./Navbar";
 import MainSidebar from "./Sidebar";
 import DashboardContent from "./DashboardContent";
 import AnalyticsDashboard from "./AnalyticsDashboard";
-import ChatDashboard from "./Chats/ChatDashboard";
+import AdminChatInterface from "./Chats/AdminChatInterface";
 import ArticlesPage from "./Articles/Articles";
 import AudioLectureModal from "./AudioLectures/AudioLectures";
 import DuasAdhkarPage from "./Duas/DuasManagements";
@@ -23,7 +23,7 @@ const NibrasAdminDashboard = () => {
     return savedPage || "dashboard";
   };
 
-  const [activePage, setActivePageState] = useState(getInitialPage);
+  const [activePage, setActivePageState] = useState(getInitialPage());
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
@@ -37,8 +37,6 @@ const NibrasAdminDashboard = () => {
     setActivePageState(page);
   };
 
-  const isChatPage = activePage === "chat";
-
   const renderPage = () => {
     switch (activePage) {
       case "dashboard":
@@ -46,7 +44,7 @@ const NibrasAdminDashboard = () => {
       case "analytics":
         return <AnalyticsDashboard />;
       case "chat":
-        return <ChatDashboard setActivePage={setActivePage} />;
+        return <AdminChatInterface />;
       case "articles":
         return <ArticlesPage />;
       case "lectures":
@@ -76,41 +74,31 @@ const NibrasAdminDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
-      {!isChatPage && (
-        <MainSidebar
-          activePage={activePage}
-          setActivePage={setActivePage}
-          sidebarOpen={sidebarOpen}
-          setSidebarOpen={setSidebarOpen}
-          isMobileSidebarOpen={isMobileSidebarOpen}
-          setIsMobileSidebarOpen={setIsMobileSidebarOpen}
-          onLogout={() => setShowLogoutModal(true)}
-        />
-      )}
+      <MainSidebar
+        activePage={activePage}
+        setActivePage={setActivePage}
+        sidebarOpen={sidebarOpen}
+        setSidebarOpen={setSidebarOpen}
+        isMobileSidebarOpen={isMobileSidebarOpen}
+        setIsMobileSidebarOpen={setIsMobileSidebarOpen}
+        onLogout={() => setShowLogoutModal(true)}
+      />
 
       <div
-        className={`flex-1 transition-all duration-300 ${isChatPage
-          ? "w-full"
-          : sidebarOpen
-            ? "ml-0 lg:ml-64"
-            : "ml-0 lg:ml-20"
+        className={`flex-1 transition-all duration-300 ${sidebarOpen ? "ml-0 lg:ml-64" : "ml-0 lg:ml-20"
           }`}
       >
-        {!isChatPage && (
-          <Navbar
-            sidebarOpen={sidebarOpen}
-            setSidebarOpen={setSidebarOpen}
-            showProfileMenu={showProfileMenu}
-            setShowProfileMenu={setShowProfileMenu}
-            setIsMobileSidebarOpen={setIsMobileSidebarOpen}
-            setActivePage={setActivePage}
-            onLogout={() => setShowLogoutModal(true)}
-          />
-        )}
+        <Navbar
+          sidebarOpen={sidebarOpen}
+          setSidebarOpen={setSidebarOpen}
+          showProfileMenu={showProfileMenu}
+          setShowProfileMenu={setShowProfileMenu}
+          setIsMobileSidebarOpen={setIsMobileSidebarOpen}
+          setActivePage={setActivePage}
+          onLogout={() => setShowLogoutModal(true)}
+        />
 
-        <main className={isChatPage ? "p-0" : "p-4 sm:p-6"}>
-          {renderPage()}
-        </main>
+        <main className="p-4 sm:p-6">{renderPage()}</main>
       </div>
       {showLogoutModal && (
         <LogoutModal

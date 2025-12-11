@@ -241,9 +241,9 @@ const DuasManagements = () => {
       ...dua,
       category: String(
         dua.category_id ||
-          dua.category ||
-          categories.find((c) => c.id !== "all")?.id ||
-          ""
+        dua.category ||
+        categories.find((c) => c.id !== "all")?.id ||
+        ""
       ),
       translitration: dua.translitration || "",
     });
@@ -427,6 +427,37 @@ const DuasManagements = () => {
               Dua List and Filters
             </h3>
 
+            {/* Category Pills/Tabs */}
+            <div className="flex flex-wrap gap-2 mb-4 pb-4 border-b border-gray-100">
+              {categories.map((cat) => {
+                const duaCount = cat.id === "all"
+                  ? duas.length
+                  : duas.filter((d) => String(d.category_id) === String(cat.id)).length;
+
+                return (
+                  <button
+                    key={cat.id}
+                    onClick={() => {
+                      setSelectedCategory(cat.id);
+                      setCurrentDuaIndex(0);
+                    }}
+                    className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all flex items-center gap-2 ${selectedCategory === cat.id
+                      ? "bg-gradient-to-br from-emerald-500 to-green-600 text-white shadow-md"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                      }`}
+                  >
+                    <span>{cat.label}</span>
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${selectedCategory === cat.id
+                      ? "bg-white/20 text-white"
+                      : "bg-gray-200 text-gray-600"
+                      }`}>
+                      {duaCount}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
             <div className="flex flex-col md:flex-row md:items-center gap-3">
               <div className="relative flex-1 min-w-[150px]">
                 <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
@@ -442,7 +473,7 @@ const DuasManagements = () => {
               <select
                 value={selectedCategory}
                 onChange={handleCategoryChange}
-                className="px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm bg-white flex-shrink-0"
+                className="px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm bg-white flex-shrink-0 min-w-[200px]"
               >
                 {categories.map((cat) => (
                   <option key={cat.id} value={cat.id}>
@@ -450,8 +481,8 @@ const DuasManagements = () => {
                     {cat.id === "all"
                       ? duas.length
                       : duas.filter(
-                          (d) => String(d.category_id) === String(cat.id)
-                        ).length}
+                        (d) => String(d.category_id) === String(cat.id)
+                      ).length}
                     )
                   </option>
                 ))}
@@ -473,11 +504,10 @@ const DuasManagements = () => {
                     setSelectMode(!selectMode);
                     if (selectMode) setSelectedDuas(new Set());
                   }}
-                  className={`px-3 py-2 rounded-lg transition-all font-medium text-sm flex items-center justify-center gap-1 ${
-                    selectMode
-                      ? "bg-emerald-600 text-white hover:bg-emerald-700"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                  }`}
+                  className={`px-3 py-2 rounded-lg transition-all font-medium text-sm flex items-center justify-center gap-1 ${selectMode
+                    ? "bg-emerald-600 text-white hover:bg-emerald-700"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    }`}
                 >
                   {selectMode ? "Cancel Select" : "Toggle Select Mode"}
                 </button>
@@ -591,8 +621,8 @@ const DuasManagements = () => {
           deleteTargetType === "Category"
             ? handleDeleteCategory
             : isBulkDelete
-            ? deleteSelectedDuas
-            : () => handleDeleteDua(deleteTarget?.id)
+              ? deleteSelectedDuas
+              : () => handleDeleteDua(deleteTarget?.id)
         }
         itemTitle={deleteTarget?.title || ""}
         itemType={deleteTargetType}

@@ -97,13 +97,13 @@ const DuaModal = ({
       setError(null);
       setShowAdditional(
         isEdit &&
-          (initialFormData?.notes ||
-            initialFormData?.benefits ||
-            initialFormData?.source ||
-            initialFormData?.featured ||
-            initialFormData?.arabic_segments_json ||
-            initialFormData?.transliteration_segments_json ||
-            initialFormData?.translation_segments_json)
+        (initialFormData?.notes ||
+          initialFormData?.benefits ||
+          initialFormData?.source ||
+          initialFormData?.featured ||
+          initialFormData?.arabic_segments_json ||
+          initialFormData?.transliteration_segments_json ||
+          initialFormData?.translation_segments_json)
       );
     }
   }, [show, isEdit, initialFormData, categories.length, categoryUpdatedKey]);
@@ -131,9 +131,13 @@ const DuaModal = ({
       return;
     }
 
+    // Make sure category_id is properly set
+    const categoryId = formData.category;
+    console.log("📝 Saving dua with category:", categoryId, typeof categoryId);
+
     const duaData = {
       ...formData,
-      category_id: parseInt(formData.category) || null,
+      category_id: categoryId, // Keep as is - backend will handle type
       transliteration: formData.transliteration || "",
       category: undefined,
     };
@@ -167,12 +171,19 @@ const DuaModal = ({
     }
 
     try {
-      await createOrUpdateDua(duaData, isEdit, initialFormData?.id);
+      const result = await createOrUpdateDua(duaData, isEdit, initialFormData?.id);
+      console.log("✅ Dua saved successfully:", result);
 
+      // Force refresh of data
       onSave();
       onClose();
+
+      // Small delay to ensure backend has processed
+      setTimeout(() => {
+        window.location.reload();
+      }, 500);
     } catch (err) {
-      console.error("Dua operation error:", err.message);
+      console.error("❌ Dua operation error:", err.message);
       setError(err.message);
     } finally {
       setIsLoading(false);
@@ -289,11 +300,10 @@ const DuaModal = ({
                     type="button"
                     key={t.key}
                     onClick={() => setTab(t.key)}
-                    className={`flex-1 py-2 px-3 rounded-lg font-medium transition-colors text-sm ${
-                      tab === t.key
+                    className={`flex-1 py-2 px-3 rounded-lg font-medium transition-colors text-sm ${tab === t.key
                         ? "bg-emerald-100 text-emerald-800 shadow-inner"
                         : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                    }`}
+                      }`}
                     disabled={isLoading}
                   >
                     {t.label}
@@ -367,11 +377,10 @@ const DuaModal = ({
               <button
                 type="submit"
                 disabled={isLoading || (tab !== "audio" && !hasCategories)}
-                className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 text-white rounded-lg font-medium shadow-md ${
-                  (tab !== "audio" && !hasCategories) || isLoading
+                className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 text-white rounded-lg font-medium shadow-md ${(tab !== "audio" && !hasCategories) || isLoading
                     ? "bg-gray-400 cursor-not-allowed"
                     : `${GRADIENT_CLASS} ${HOVER_GRADIENT_CLASS}`
-                }`}
+                  }`}
               >
                 {isLoading ? <div className="w-4 h-4 loader" /> : null}
                 {getSubmitButtonText()}

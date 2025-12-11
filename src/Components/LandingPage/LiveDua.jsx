@@ -58,8 +58,8 @@ export default function LiveDua() {
     !t || isNaN(t)
       ? "00:00"
       : `${String(Math.floor(t / 60)).padStart(2, "0")}:${String(
-          Math.floor(t % 60)
-        ).padStart(2, "0")}`;
+        Math.floor(t % 60)
+      ).padStart(2, "0")}`;
 
   const getFullImageUrl = (relativePath) => {
     if (!relativePath) return null;
@@ -74,9 +74,13 @@ export default function LiveDua() {
     return `${STATIC_BASE_URL}${path}`;
   };
 
+  const [morningId, setMorningId] = useState(null);
+  const [eveningId, setEveningId] = useState(null);
+
   const fetchSegmentsData = useCallback(
     async (categoryId) => {
       try {
+        if (!categoryId) return [];
         const data = await apiService.getCategorySegments(categoryId);
         return data?.arabic_segments || [];
       } catch {
@@ -86,50 +90,58 @@ export default function LiveDua() {
     []
   );
 
-  const fetchAdkar = useCallback(async () => {
+  const fetchData = useCallback(async () => {
     const token = localStorage.getItem("token");
-
     try {
+      // 1. Fetch Categories first to find IDs
+      const cats = await apiService.getDuaCategories();
+      const morningCat = cats.find(c => c.name.toLowerCase().includes("morning"));
+      const eveningCat = cats.find(c => c.name.toLowerCase().includes("evening"));
+
+      const mId = morningCat ? morningCat.id : 5;
+      const eId = eveningCat ? eveningCat.id : 6;
+
+      setMorningId(mId);
+      setEveningId(eId);
+
+      // Filter out Morning/Evening from the "Explore More" list
+      const filtered = (cats || [])
+        .filter((cat) => cat.id !== mId && cat.id !== eId)
+        .slice(0, 6);
+      setCategories(filtered);
+
+      // 2. Fetch Duas
       const data = await apiService.getDuas(token);
-      if (!Array.isArray(data)) return;
+      if (Array.isArray(data)) {
+        // Robust ID comparison (handle string vs int)
+        const morning = data.filter((d) => String(d.category_id) === String(mId));
+        const evening = data.filter((d) => String(d.category_id) === String(eId));
 
-      const morning = data.filter((d) => d.category_id === 5);
-      const evening = data.filter((d) => d.category_id === 6);
+        setMorningAdkar(morning);
+        setEveningAdkar(evening);
 
-      setMorningAdkar(morning);
-      setEveningAdkar(evening);
-      setMorningSegments(await fetchSegmentsData(5));
-      setEveningSegments(await fetchSegmentsData(6));
-
-      if (morning.length > 0) {
-        setIsMorningLiked(morning[0].is_favorite || false);
-        setMorningFavoriteCount(morning[0].favorite_count || 0);
+        if (morning.length > 0) {
+          setIsMorningLiked(morning[0].is_favorite || false);
+          setMorningFavoriteCount(morning[0].favorite_count || 0);
+        }
+        if (evening.length > 0) {
+          setIsEveningLiked(evening[0].is_favorite || false);
+          setEveningFavoriteCount(evening[0].favorite_count || 0);
+        }
       }
-      if (evening.length > 0) {
-        setIsEveningLiked(evening[0].is_favorite || false);
-        setEveningFavoriteCount(evening[0].favorite_count || 0);
-      }
+
+      // 3. Fetch Segments using correct IDs
+      setMorningSegments(await fetchSegmentsData(mId));
+      setEveningSegments(await fetchSegmentsData(eId));
+
     } catch (err) {
-      console.error("Failed to fetch adkar", err);
+      console.error("Failed to fetch adkar data", err);
     }
   }, [fetchSegmentsData]);
 
-  const fetchCategories = useCallback(async () => {
-    try {
-      const data = await apiService.getDuaCategories();
-      const filtered = (data || [])
-        .filter((cat) => cat.id !== 5 && cat.id !== 6)
-        .slice(0, 6);
-      setCategories(filtered);
-    } catch (err) {
-      console.error("Failed to fetch dua categories", err);
-    }
-  }, []);
-
   useEffect(() => {
-    fetchAdkar();
-    fetchCategories();
-  }, [fetchAdkar, fetchCategories]);
+    fetchData();
+  }, [fetchData]);
 
   const resetAudioState = (isMorning) => {
     setAudioError(false);
@@ -176,7 +188,7 @@ export default function LiveDua() {
     if (repeat) {
       if (audioRef.current) {
         audioRef.current.currentTime = 0;
-        audioRef.current.play().catch(() => {});
+        audioRef.current.play().catch(() => { });
       }
     } else {
       resetAudioState(isMorning);
@@ -255,11 +267,10 @@ export default function LiveDua() {
               <span
                 key={`${dua.id}-${i}-${isCurrent}`}
                 ref={(el) => (refs.current[globalIndex] = el)}
-                className={`transition-all duration-200 px-1 rounded ${
-                  isCurrent
+                className={`transition-all duration-200 px-1 rounded ${isCurrent
                     ? "bg-emerald-300 text-emerald-900 font-extrabold"
                     : "bg-transparent text-gray-900"
-                }`}
+                  }`}
               >
                 {segment.text}
               </span>
@@ -383,9 +394,8 @@ export default function LiveDua() {
           <div className="flex items-start justify-between mb-0 border-b border-gray-100 pb-4 pt-6 px-6 bg-gradient-to-r from-emerald-50 to-teal-50">
             <div className="flex items-center gap-3">
               <div
-                className={`p-3 rounded-full shadow-md ${
-                  isMorning ? "bg-amber-500" : "bg-indigo-600"
-                }`}
+                className={`p-3 rounded-full shadow-md ${isMorning ? "bg-amber-500" : "bg-indigo-600"
+                  }`}
               >
                 <Icon className={`w-7 h-7 text-white`} />
               </div>
@@ -409,19 +419,17 @@ export default function LiveDua() {
               </button>
               <button
                 onClick={() => toggleFavorite(type)}
-                className={`p-2 rounded-full transition duration-150 flex items-center gap-1 ${
-                  isLiked
+                className={`p-2 rounded-full transition duration-150 flex items-center gap-1 ${isLiked
                     ? "text-red-500 hover:text-red-600 bg-red-100"
                     : "text-gray-500 hover:text-red-500 hover:bg-gray-100"
-                }`}
+                  }`}
                 title={
                   userIsLoggedIn ? "Toggle Favorite" : "Log in to favorite"
                 }
               >
                 <Heart
-                  className={`w-5 h-5 ${
-                    isLiked ? "fill-red-500" : "fill-none"
-                  }`}
+                  className={`w-5 h-5 ${isLiked ? "fill-red-500" : "fill-none"
+                    }`}
                 />
                 <span className="text-sm font-semibold">{favoriteCount}</span>
               </button>
@@ -436,11 +444,10 @@ export default function LiveDua() {
               <div
                 key={dua.id}
                 ref={(el) => setDuaRef(el, index)}
-                className={`p-5 rounded-xl transition-all duration-300 mb-4 shadow-sm border-2 ${
-                  index === highlightedDuaIndex
+                className={`p-5 rounded-xl transition-all duration-300 mb-4 shadow-sm border-2 ${index === highlightedDuaIndex
                     ? "bg-gradient-to-br from-emerald-50 to-teal-50 border-emerald-400"
                     : "bg-white border-gray-100 hover:border-emerald-200"
-                }`}
+                  }`}
               >
                 {dua.title && (
                   <h4 className="text-sm font-bold text-emerald-700 mb-3 flex items-center gap-2">
@@ -451,11 +458,10 @@ export default function LiveDua() {
                   </h4>
                 )}
                 <div
-                  key={`${dua.id}-${
-                    isMorning
+                  key={`${dua.id}-${isMorning
                       ? highlightedMorningSegmentIndex
                       : highlightedEveningSegmentIndex
-                  }`}
+                    }`}
                   className="text-right font-serif-arabic text-xl leading-loose rounded transition-colors duration-300 text-gray-900"
                 >
                   {renderArabicWithHighlight(dua, isMorning)}
@@ -546,7 +552,7 @@ export default function LiveDua() {
               onClick={() => {
                 if (audioRef.current) {
                   audioRef.current.currentTime = 0;
-                  audioRef.current.play().catch(() => {});
+                  audioRef.current.play().catch(() => { });
                   isMorning
                     ? setIsPlayingMorning(true)
                     : setIsPlayingEvening(true);
@@ -558,11 +564,10 @@ export default function LiveDua() {
             </button>
             <button
               onClick={() => togglePlayPause(type)}
-              className={`p-5 rounded-full shadow-xl transition-all transform hover:scale-105 ${
-                isPlaying
+              className={`p-5 rounded-full shadow-xl transition-all transform hover:scale-105 ${isPlaying
                   ? "bg-gradient-to-r from-red-500 to-red-600"
                   : "bg-gradient-to-r from-emerald-500 to-teal-600"
-              } text-white`}
+                } text-white`}
             >
               {isPlaying ? (
                 <Pause className="w-6 h-6" />
@@ -572,11 +577,10 @@ export default function LiveDua() {
             </button>
             <button
               onClick={() => setRepeat((p) => !p)}
-              className={`p-3 rounded-full transition shadow-md ${
-                repeat
+              className={`p-3 rounded-full transition shadow-md ${repeat
                   ? "bg-emerald-500 hover:bg-emerald-600"
                   : "bg-gray-300 hover:bg-gray-400"
-              }`}
+                }`}
             >
               <Repeat
                 className={`w-5 h-5 ${repeat ? "text-white" : "text-gray-800"}`}

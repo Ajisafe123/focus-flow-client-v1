@@ -91,10 +91,11 @@ export const deleteDua = async (duaId) => {
 };
 
 export const bulkDeleteDuas = async (idsArray) => {
+  console.log("🗑️ Bulk deleting duas:", idsArray);
   const res = await fetch(`${API_BASE}/api/duas/bulk`, {
     method: "DELETE",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(idsArray),
+    body: JSON.stringify(idsArray), // Send array directly, not wrapped
   });
   if (!res.ok) await handleError(res, "Failed to bulk delete Duas.");
   return res;

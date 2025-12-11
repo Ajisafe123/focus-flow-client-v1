@@ -9,7 +9,8 @@ import {
   deleteMessage,
   fetchProfileMe,
   markMessagesRead,
-} from "../Service/apiService";
+  getWebSocketUrl
+} from "../../services/api";
 
 export default function IslamicUserChat() {
   const [isOpen, setIsOpen] = useState(false);
@@ -113,62 +114,75 @@ export default function IslamicUserChat() {
   const connectSocket = (convId) => {
     if (!convId) return;
 
+    // Close existing connection first
     if (wsRef.current) {
       wsRef.current.close();
       wsRef.current = null;
     }
 
-    const baseUrl = (import.meta.env.VITE_API_BASE_URL || (import.meta.env.DEV ? "http://localhost:8000" : "https://focus-flow-server-v1.onrender.com")).replace(/\/$/, "");
-    const wsUrl = baseUrl.replace(/^http/, "ws") + `/ws/chat/${convId}`;
+    const wsUrl = getWebSocketUrl(`/ws/chat/${convId}`);
+    const ws = new WebSocket(wsUrl);
+    wsRef.current = ws;
 
-    console.log("Connecting WS to:", wsUrl);
-    wsRef.current = new WebSocket(wsUrl);
-
-    wsRef.current.onopen = () => {
-      console.log("User WS Connected");
+    ws.onopen = () => {
       setIsConnected(true);
     };
 
-    wsRef.current.onclose = () => {
-      console.log("User WS Disconnected");
+    ws.onclose = () => {
       setIsConnected(false);
-      if (isMountedRef.current) {
-        retryTimeoutRef.current = setTimeout(() => connectSocket(convId), 3000);
-      }
     };
 
-    wsRef.current.onmessage = (event) => {
+    ws.onerror = () => {
+      // Silent error handling - React StrictMode causes harmless errors
+    };
+
+    ws.onmessage = (event) => {
       try {
-        console.log("WS Message:", event.data); // DEBUG LOG
         const { event: evt, data } = JSON.parse(event.data);
+
         if (evt === "receive_message") {
-          // Force re-render with new array reference to ensure UI updates
+          const newMessage = {
+            id: data.id || data._id,
+            text: data.message_text,
+            sender: data.sender_type,
+            time: new Date(data.created_at || Date.now()).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+            status: data.status || "sent",
+          };
+
           setMessages((prev) => {
-            // Deduplication logic
-            if (prev.some(m => m.id === data.id)) return prev;
+            // FIRST: Check if this exact message ID already exists (prevents duplicates from React StrictMode)
+            const existsById = prev.some(m => String(m.id) === String(newMessage.id));
+            if (existsById) {
+              return prev; // Message already in list, skip
+            }
 
-            const newMessage = {
-              id: data.id || Date.now(),
-              text: data.message_text || data.message || data.text,
-              sender: data.sender_type || data.sender,
-              time: new Date(data.created_at || Date.now()).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-              status: data.status || "sent",
-            };
-
-            // Handle optimistic replacement
+            // SECOND: Check if we need to replace an optimistic message
             if (data.tempId) {
-              const exists = prev.some(m => m.id === Number(data.tempId) || m.id === data.tempId);
-              if (exists) {
-                return prev.map(m => (m.id === Number(data.tempId) || m.id === data.tempId) ? newMessage : m);
+              const tempIdx = prev.findIndex(m => String(m.id) === String(data.tempId));
+              if (tempIdx !== -1) {
+                const updated = [...prev];
+                updated[tempIdx] = newMessage;
+                return updated;
               }
             }
+
+            // THIRD: Add as new message
             return [...prev, newMessage];
           });
-          // Update other states
+
+          // Mark as read if chat is open and message is from admin
           if (isOpenRef.current && (data.sender_type === "admin" || data.sender === "admin")) {
-            markMessagesRead(convId).catch(console.error);
-          } else if (!isOpenRef.current && (data.sender_type === "admin" || data.sender === "admin")) {
-            // Show notification...
+            if (conversationId) {
+              markMessagesRead(conversationId).catch(console.error);
+            } else if (data.conversation_id) {
+              markMessagesRead(data.conversation_id).catch(console.error);
+            }
+          }
+          // Show notification if chat is closed and message is from admin
+          else if (!isOpenRef.current && (data.sender_type === "admin" || data.sender === "admin")) {
             const notification = document.createElement("div");
             notification.className = "fixed bottom-24 right-4 bg-white border-l-4 border-emerald-500 shadow-xl p-4 rounded-lg z-[60] flex items-center gap-3 animate-slide-up max-w-sm cursor-pointer hover:bg-gray-50 transition-colors";
             notification.style.animation = "slide-up 0.5s ease-out";
@@ -180,7 +194,7 @@ export default function IslamicUserChat() {
                      <h4 class="font-bold text-gray-800 text-sm">New Message</h4>
                      <p class="text-xs text-gray-600 truncate max-w-[200px]">${data.message_text || "Sent a message"}</p>
                   </div>
-               `;
+                `;
             document.body.appendChild(notification);
             setTimeout(() => notification.remove(), 5000);
             notification.onclick = () => { setIsOpen(true); notification.remove(); };
@@ -191,13 +205,9 @@ export default function IslamicUserChat() {
           setAdminOnline(data.status === "online");
         }
       } catch (e) {
-        console.error("ws parse error", e);
+        console.error("❌ WS parse error:", e);
       }
     };
-
-    wsRef.current.onerror = () => {
-      if (wsRef.current) wsRef.current.close();
-    }
   };
 
   useEffect(() => {

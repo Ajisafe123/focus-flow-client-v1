@@ -53,6 +53,16 @@ const ago = (ts) => {
 };
 
 const NotificationItem = ({ n, onRead, onDelete }) => {
+  const [timeAgo, setTimeAgo] = useState(ago(n.created_at));
+
+  useEffect(() => {
+    setTimeAgo(ago(n.created_at));
+    const interval = setInterval(() => {
+      setTimeAgo(ago(n.created_at));
+    }, 60000);
+    return () => clearInterval(interval);
+  }, [n.created_at]);
+
   const handleLinkClick = (e) => {
     if (n.link) {
       onRead(n.id);
@@ -85,7 +95,7 @@ const NotificationItem = ({ n, onRead, onDelete }) => {
             )}
           </div>
           <p className="text-sm text-gray-600 mt-1 line-clamp-3">{n.message}</p>
-          <p className="text-xs text-gray-500 mt-2">{ago(n.created_at)}</p>
+          <p className="text-xs text-gray-500 mt-2">{timeAgo}</p>
           {n.link && (
             <a
               href={n.link.startsWith("/") ? n.link : "/" + n.link}
@@ -166,7 +176,13 @@ export default function NotificationCenter() {
       await deleteNotification(id, token);
       setList((l) => l.filter((n) => n.id !== id));
     } catch (err) {
-      setError(err.message || "Failed to delete notification");
+      console.error("Delete error:", err);
+      // If 404, still remove from UI since it doesn't exist on server
+      if (err.status === 404) {
+        setList((l) => l.filter((n) => n.id !== id));
+      } else {
+        setError(err.message || "Failed to delete notification");
+      }
     }
   };
 

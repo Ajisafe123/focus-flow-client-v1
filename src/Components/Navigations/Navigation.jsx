@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import DesktopNavigation from "./DesktopNavigation";
 import MobileNavigation from "./MobileNavigation";
-import { fetchNotifications, markAllNotificationsRead } from "../../Users/Service/apiService";
+import { fetchNotifications, markAllNotificationsRead, fetchProfileMe } from "../../Users/Service/apiService";
 
 import DhikrDuaCardDropdown from "./NavtigationDropDownCard/DhikrAndDuaCardDropdown";
 import TeachingResourceDropdown from "./NavtigationDropDownCard/TeachingResourcesCardDropdown";
@@ -48,6 +48,7 @@ export default function Navigation({ setShowLogoutModal }) {
 
   const [notifications, setNotifications] = useState([]);
   const notificationCount = notifications.filter((n) => !n.read).length;
+  const [userProfile, setUserProfile] = useState(null);
 
   const searchBarRef = useRef(null);
   const dhikrDuaDropdownRef = useRef(null);
@@ -78,6 +79,24 @@ export default function Navigation({ setShowLogoutModal }) {
     load();
     const id = setInterval(load, 60000);
     return () => clearInterval(id);
+  }, [token]);
+
+  useEffect(() => {
+    const loadUserProfile = async () => {
+      if (!token) {
+        setUserProfile(null);
+        return;
+      }
+      try {
+        const data = await fetchProfileMe(token);
+        setUserProfile(data);
+      } catch (err) {
+        console.error("Error fetching user profile:", err);
+        // Fallback: try to extract name from token or use email
+        setUserProfile(null);
+      }
+    };
+    loadUserProfile();
   }, [token]);
 
   useEffect(() => {
@@ -302,6 +321,7 @@ export default function Navigation({ setShowLogoutModal }) {
         TeachingResourceDropdown={TeachingResourceDropdown}
         ArticleDropdown={ArticleDropdown}
         onLogout={() => setShowLogoutModal(true)}
+        userProfile={userProfile}
       />
 
       <div className="md:pt-28 pt-16" />

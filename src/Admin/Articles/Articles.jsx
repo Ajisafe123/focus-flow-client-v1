@@ -406,24 +406,15 @@ const Articles = () => {
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs text-gray-600 pt-3 border-t border-gray-100">
-                  <button
-                    onClick={() => handleToggleLike(article.id)}
-                    className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg transition-colors ${
-                      likedArticles.has(article.id)
-                        ? "bg-red-50 text-red-600"
-                        : "hover:bg-gray-100 text-gray-600"
-                    }`}
-                    title="Like"
+                  <div
+                    className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg opacity-50"
+                    title="Admin cannot like articles"
                   >
-                    <Heart
-                      className={`w-4 h-4 ${
-                        likedArticles.has(article.id) ? "fill-red-600" : ""
-                      }`}
-                    />
-                    <span className="font-medium">
-                      {likedArticles.has(article.id) ? "Liked" : "Like"}
+                    <Heart className="w-4 h-4 text-gray-400" />
+                    <span className="font-medium text-gray-500">
+                      {article.favorite_count || 0} Likes
                     </span>
-                  </button>
+                  </div>
 
                   <button
                     onClick={() => handleShare(article)}

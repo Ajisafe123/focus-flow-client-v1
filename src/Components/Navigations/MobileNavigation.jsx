@@ -20,7 +20,8 @@ import {
   Globe,
   Settings,
   LogOut,
-  ChevronRight,
+  Plus,
+  Minus,
 } from "lucide-react";
 
 const MobileNavigation = ({
@@ -42,6 +43,7 @@ const MobileNavigation = ({
   TeachingResourceDropdown,
   ArticleDropdown,
   onLogout,
+  userProfile,
 }) => {
   const [isMobileDhikrDuaOpen, setIsMobileDhikrDuaOpen] = useState(false);
   const [isMobileTeachingOpen, setIsMobileTeachingOpen] = useState(false);
@@ -171,8 +173,12 @@ const MobileNavigation = ({
                     <User className="w-5 h-5" />
                   </div>
                   <div>
-                    <span className="block font-semibold text-gray-800 text-sm">My Account</span>
-                    <span className="block text-[10px] text-gray-500">Manage profile & settings</span>
+                    <span className="block font-semibold text-gray-800 text-sm">
+                      {userProfile?.name || userProfile?.username || userProfile?.full_name || userProfile?.email?.split('@')[0] || "Account"}
+                    </span>
+                    {userProfile?.email && (
+                      <span className="block text-xs text-gray-500 mt-0.5">{userProfile.email}</span>
+                    )}
                   </div>
                 </div>
                 <ChevronDown
@@ -218,28 +224,34 @@ const MobileNavigation = ({
             <span className="px-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-2">Navigation</span>
 
             {[
-              { name: "Dhikr & Du'a", icon: Layers, state: isMobileDhikrDuaOpen, dropdown: <DhikrDuaCardDropdown setIsDhikrDuaDropdownOpen={setIsMobileDhikrDuaOpen} quickLinksOnly onQuickLinkClick={(href) => { handleNavItemClick(href, "Dhikr & Du'a"); setIsMobileMenuOpen(false); }} /> },
-              { name: "Teaching Resources", icon: PackageOpen, state: isMobileTeachingOpen, dropdown: <TeachingResourceDropdown setIsTeachingDropdownOpen={setIsMobileTeachingOpen} quickLinksOnly onQuickLinkClick={(href) => { handleNavItemClick(href, "Teaching Resources"); setIsMobileMenuOpen(false); }} /> },
-              { name: "Articles", icon: FileText, state: isMobileArticleOpen, dropdown: <ArticleDropdown setIsArticleDropdownOpen={setIsMobileArticleOpen} quickLinksOnly onQuickLinkClick={(href) => { handleNavItemClick(href, "Articles"); setIsMobileMenuOpen(false); }} /> },
+              { name: "Dhikr & Du'a", icon: Layers, href: "/dua", state: isMobileDhikrDuaOpen, dropdown: <DhikrDuaCardDropdown setIsDhikrDuaDropdownOpen={setIsMobileDhikrDuaOpen} quickLinksOnly onQuickLinkClick={(href) => { handleNavItemClick(href, "Dhikr & Du'a"); setIsMobileMenuOpen(false); }} /> },
+              { name: "Teaching Resources", icon: PackageOpen, href: "/teaching-tools", state: isMobileTeachingOpen, dropdown: <TeachingResourceDropdown setIsTeachingDropdownOpen={setIsMobileTeachingOpen} quickLinksOnly onQuickLinkClick={(href) => { handleNavItemClick(href, "Teaching Resources"); setIsMobileMenuOpen(false); }} /> },
+              { name: "Articles", icon: FileText, href: "/articles", state: isMobileArticleOpen, dropdown: <ArticleDropdown setIsArticleDropdownOpen={setIsMobileArticleOpen} quickLinksOnly onQuickLinkClick={(href) => { handleNavItemClick(href, "Articles"); setIsMobileMenuOpen(false); }} /> },
               { name: "About", icon: Building, state: isMobileAboutOpen, subItems: aboutMenuItems },
               { name: "Languages", icon: Globe, state: isLanguageOpen, subItems: languages, isLang: true }
             ].map((item) => (
-              <div key={item.name} className="border-b border-gray-50 last:border-0 pb-1">
-                <button
-                  onClick={() => toggleMobileDropdown(item.name)}
-                  className={`w-full flex items-center justify-between p-3 rounded-xl transition-all ${item.state ? 'bg-gray-100 text-emerald-800' : 'text-gray-700 hover:bg-gray-50'}`}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${item.state ? 'bg-emerald-100 text-emerald-600' : 'bg-gray-100 text-gray-500'}`}>
+              <div key={item.name} className="border-b border-gray-50 last:border-0">
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => { handleNavItemClick(item.href, item.name); setIsMobileMenuOpen(false); }}
+                    className={`flex-1 flex items-center gap-3 p-3 rounded-xl transition-all text-gray-700 hover:bg-gray-50`}
+                  >
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors bg-gray-100 text-gray-500`}>
                       <item.icon className="w-4 h-4" />
                     </div>
                     <span className="font-semibold text-sm">{item.name}</span>
-                  </div>
-                  <ChevronRight className={`w-4 h-4 text-gray-400 transition-transform duration-300 ${item.state ? 'rotate-90 text-emerald-500' : ''}`} />
-                </button>
+                  </button>
+                  <button
+                    onClick={() => toggleMobileDropdown(item.name)}
+                    className={`p-3 rounded-xl transition-colors ${item.state ? 'text-emerald-600 bg-emerald-100' : 'text-gray-400 hover:bg-gray-100'}`}
+                    title={item.state ? `Close ${item.name}` : `Open ${item.name}`}
+                  >
+                    {item.state ? <Minus className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+                  </button>
+                </div>
 
                 <div className={`transition-all duration-300 overflow-hidden ${item.state ? "max-h-[600px] opacity-100" : "max-h-0 opacity-0"}`}>
-                  <div className="p-2 pl-4 border-l-2 border-gray-100 ml-4 mt-1 space-y-1">
+                  <div className="p-2 pl-4 border-l-2 border-emerald-200 ml-4 mt-1 space-y-1 bg-emerald-50/30">
                     {item.dropdown || (item.subItems && item.subItems.map((sub, idx) => (
                       <button
                         key={idx}
@@ -248,7 +260,7 @@ const MobileNavigation = ({
                           else { handleNavItemClick(sub.href, sub.name); }
                           setIsMobileMenuOpen(false);
                         }}
-                        className="flex w-full items-center gap-3 p-2.5 rounded-lg text-sm text-gray-600 hover:bg-emerald-50 hover:text-emerald-700 transition-colors"
+                        className="flex w-full items-center gap-3 p-2.5 rounded-lg text-sm text-gray-600 hover:bg-emerald-100 hover:text-emerald-700 transition-colors"
                       >
                         {item.isLang && <span className="text-lg">{sub.flag}</span>}
                         {sub.icon && <sub.icon className="w-4 h-4 text-emerald-400" />}

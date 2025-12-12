@@ -1,34 +1,46 @@
-/* HTML: <div class="loader"></div> */
 .loader {
-  width: 60px;
-  height: 16px;
-  display: grid;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: inline-block;
+  position: relative;
+  border: 3px solid;
+  border-color: #06b6d4 #06b6d4 transparent;
+  box-sizing: border-box;
+  animation: rotation 1s linear infinite;
 }
-.loader:before,
-.loader:after {
-  content: "";
-  grid-area: 1/1;
-  --c:no-repeat linear-gradient(#10b981 0 0);
-  background: var(--c), var(--c), var(--c);
-  animation: l16-1 1.5s infinite linear, l16-2 1.5s infinite linear;
-  transform: scale(var(--s,1)) translate(3px,-3px);
+.loader::after {
+  content: '';  
+  box-sizing: border-box;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  margin: auto;
+  border: 3px solid;
+  border-color: transparent #0ea5e9 #0ea5e9;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  animation: rotationBack 0.5s linear infinite;
+  transform-origin: center center;
 }
-.loader:after {
-  --s:-1;
-}
-@keyframes l16-1 {
-  0%,
-  3%    {background-size: 0    4px,4px 0   ,0    4px}
-  16.67%{background-size: 100% 4px,4px 0   ,0    4px}
-  33.33%{background-size: 100% 4px,4px 100%,0    4px}
-  46%,
-  54%   {background-size: 100% 4px,4px 100%,100% 4px}
-  66.67%{background-size: 0    4px,4px 100%,100% 4px}
-  83.33%{background-size: 0    4px,4px 0   ,100% 4px}
-  96%,
-  100%  {background-size: 0    4px,4px 0   ,0    4px}
-}
-@keyframes l16-2 {
-  0%,49.9%{background-position: 0    0,100% 0   ,100% 100%}
-  50%,100%{background-position: 100% 0,100% 100%,0    100%}
+
+@keyframes rotation {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+} 
+    
+@keyframes rotationBack {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(-360deg);
+  }
 }

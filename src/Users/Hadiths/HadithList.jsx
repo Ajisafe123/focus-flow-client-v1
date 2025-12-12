@@ -487,7 +487,7 @@ export default function HadithViewer() {
   if (loading && !searchExecuted) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-emerald-50 to-teal-50">
-        <LoadingSpinner size="large" message="Loading Hadiths..." />
+        <LoadingSpinner message="Loading hadiths..." />
       </div>
     );
   }

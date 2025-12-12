@@ -162,9 +162,7 @@ export default function RegisterPage() {
           disabled={loading}
           className="w-full py-3.5 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white rounded-xl font-bold shadow-lg shadow-emerald-500/20 transition-all transform hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm mt-2"
         >
-          {loading ? (
-            <LoadingSpinner size="small" />
-          ) : (
+          {loading ? "Creating account..." : (
             <>
               Create Account
               <ArrowRight className="w-4 h-4" />

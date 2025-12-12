@@ -27,20 +27,23 @@ const Profile = () => {
   });
 
   return (
-    <div className="space-y-4 sm:space-y-6 max-w-10xl mx-auto">
-      <div className="bg-gradient-to-br from-emerald-500 via-emerald-600 to-green-600 rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 text-white shadow-lg relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-32 h-32 sm:w-48 sm:h-48 md:w-64 md:h-64 bg-white/10 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-0 left-0 w-24 h-24 sm:w-32 sm:h-32 md:w-48 md:h-48 bg-white/10 rounded-full blur-3xl"></div>
-        <div className="relative">
-          <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold mb-1 sm:mb-2">
-            Profile Management
-          </h1>
-          <p className="text-emerald-50 text-xs sm:text-sm md:text-base lg:text-lg">
-            Manage your personal information and security
-          </p>
+    <div className="space-y-6 max-w-10xl mx-auto">
+      <div className="bg-gradient-to-br from-emerald-500 via-emerald-600 to-green-600 rounded-2xl p-8 text-white shadow-xl relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full blur-3xl"></div>
+        <div className="relative flex items-center justify-between">
+          <div>
+            <h1 className="text-4xl font-bold mb-2 flex items-center gap-3">
+              <User className="w-9 h-9" />
+              Admin Profile
+            </h1>
+            <p className="text-emerald-50 text-lg">
+              Manage your account settings and information
+            </p>
+          </div>
         </div>
       </div>
-      <div className="bg-white rounded-xl shadow-sm p-4 sm:p-5 md:p-6 border border-gray-100">
+      <div className="bg-white rounded-2xl shadow-sm p-8 border border-gray-100">
         <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-6">
           <div className="relative mx-auto sm:mx-0">
             <div className="w-24 h-24 sm:w-32 sm:h-32 bg-gradient-to-br from-emerald-500 to-green-600 rounded-xl flex items-center justify-center text-white text-4xl sm:text-5xl font-bold shadow-md">

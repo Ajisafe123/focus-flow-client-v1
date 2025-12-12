@@ -8,7 +8,7 @@ import {
   XCircle,
   Trash2,
 } from "lucide-react";
-import LoadingSpinner from "../Components/Common/LoadingSpinner";
+import LoadingSpinner from "../Common/LoadingSpinner";
 import {
   fetchNotifications,
   markAllNotificationsRead,
@@ -52,47 +52,61 @@ const ago = (ts) => {
   return `${Math.floor(diff / 1440)}d ago`;
 };
 
-const NotificationItem = ({ n, onRead, onDelete }) => (
-  <div
-    className={`p-4 border-l-4 ${getBg(
-      n.type
-    )} rounded-r-lg transition-all duration-300 ${!n.read ? "bg-white" : ""}`}
-  >
-    <div className="flex items-start gap-3">
-      <div className="flex-shrink-0 mt-0.5">{getIcon(n.type)}</div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center justify-between gap-2">
-          <p className="text-sm font-semibold text-gray-900">{n.title}</p>
-          {!n.read && (
-            <button
-              onClick={() => onRead(n.id)}
-              className="text-xs font-medium text-emerald-600 hover:text-emerald-700"
+const NotificationItem = ({ n, onRead, onDelete }) => {
+  const handleLinkClick = (e) => {
+    if (n.link) {
+      onRead(n.id);
+      // Ensure proper navigation format
+      if (!n.link.startsWith("/")) {
+        e.preventDefault();
+        window.location.href = "/" + n.link;
+      }
+    }
+  };
+
+  return (
+    <div
+      className={`p-4 border-l-4 ${getBg(
+        n.type
+      )} rounded-r-lg transition-all duration-300 ${!n.read ? "bg-white" : ""}`}
+    >
+      <div className="flex items-start gap-3">
+        <div className="flex-shrink-0 mt-0.5">{getIcon(n.type)}</div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-sm font-semibold text-gray-900">{n.title}</p>
+            {!n.read && (
+              <button
+                onClick={() => onRead(n.id)}
+                className="text-xs font-medium text-emerald-600 hover:text-emerald-700"
+              >
+                Mark read
+              </button>
+            )}
+          </div>
+          <p className="text-sm text-gray-600 mt-1 line-clamp-3">{n.message}</p>
+          <p className="text-xs text-gray-500 mt-2">{ago(n.created_at)}</p>
+          {n.link && (
+            <a
+              href={n.link.startsWith("/") ? n.link : "/" + n.link}
+              onClick={handleLinkClick}
+              className="text-xs font-semibold text-emerald-600 hover:text-emerald-700 inline-block mt-2"
             >
-              Mark read
-            </button>
+              Open Article →
+            </a>
           )}
         </div>
-        <p className="text-sm text-gray-600 mt-1 line-clamp-3">{n.message}</p>
-        <p className="text-xs text-gray-500 mt-2">{ago(n.created_at)}</p>
-        {n.link && (
-          <a
-            href={n.link}
-            className="text-xs font-semibold text-emerald-600 hover:text-emerald-700"
-          >
-            Open
-          </a>
-        )}
+        <button
+          onClick={() => onDelete(n.id)}
+          className="text-gray-400 hover:text-red-500 transition-colors p-1"
+          title="Delete"
+        >
+          <Trash2 className="w-4 h-4" />
+        </button>
       </div>
-      <button
-        onClick={() => onDelete(n.id)}
-        className="text-gray-400 hover:text-red-500 transition-colors p-1"
-        title="Delete"
-      >
-        <Trash2 className="w-4 h-4" />
-      </button>
     </div>
-  </div>
-);
+  );
+};
 
 export default function NotificationCenter() {
   const [list, setList] = useState([]);

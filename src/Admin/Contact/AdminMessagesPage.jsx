@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { Mail, Trash2, Clock, CheckCircle } from "lucide-react";
-import PageHeader from "../../Components/Common/PageHeader";
+import { Mail, Trash2, Clock, ChevronDown, ChevronUp } from "lucide-react";
 import apiService from "../../Components/Service/apiService";
 import LoadingSpinner from "../../Components/Common/LoadingSpinner";
-import EmptyState from "../../Components/Common/EmptyState";
+import PageHeader from "../Components/PageHeader";
+import ModalButton from "../Components/ModalButton";
 
 const AdminMessagesPage = () => {
     const [messages, setMessages] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [expandedId, setExpandedId] = useState(null);
 
     const fetchMessages = async () => {
         try {
@@ -38,82 +39,87 @@ const AdminMessagesPage = () => {
         }
     };
 
-    if (loading) return <LoadingSpinner fullScreen size="large" message="Loading messages..." />;
+    if (loading) return (
+        <div className="flex items-center justify-center min-h-[400px]">
+            <LoadingSpinner message="Loading messages..." />
+        </div>
+    );
 
     return (
-        <div className="min-h-screen bg-gray-50 pb-12">
+        <div className="space-y-6 max-w-10xl mx-auto">
             <PageHeader
                 title="Contact Messages"
-                subtitle="Manage inquiries from users"
-                icon={Mail}
+                subtitle="Manage customer inquiries and messages"
             />
 
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 relative z-20">
-                <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
-                    {error && (
-                        <div className="p-4 bg-red-50 text-red-700 border-b border-red-100">
-                            {error}
-                        </div>
-                    )}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                {error && (
+                    <div className="p-4 sm:p-6 bg-red-50 border-b border-red-100">
+                        <p className="text-red-700 font-medium text-sm sm:text-base">{error}</p>
+                    </div>
+                )}
 
-                    {messages.length === 0 ? (
-                        <div className="p-8">
-                            <EmptyState
-                                icon={Mail}
-                                title="No messages yet"
-                                message="Inquiries sent via the Contact page will appear here."
-                            />
+                {messages.length === 0 ? (
+                    <div className="p-8 sm:p-12 text-center">
+                        <div className="mx-auto w-16 h-16 bg-gradient-to-br from-emerald-500 to-green-600 rounded-xl flex items-center justify-center mb-4">
+                            <Mail className="w-8 h-8 text-white" />
                         </div>
-                    ) : (
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left border-collapse">
-                                <thead>
-                                    <tr className="bg-gray-50 border-b border-gray-200 text-xs uppercase text-gray-500 font-semibold tracking-wider">
-                                        <th className="px-6 py-4">Sender</th>
-                                        <th className="px-6 py-4">Subject</th>
-                                        <th className="px-6 py-4">Message</th>
-                                        <th className="px-6 py-4 w-32">Date</th>
-                                        <th className="px-6 py-4 w-20 text-right">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-100">
-                                    {messages.map((msg) => (
-                                        <tr key={msg.id} className="hover:bg-gray-50/50 transition-colors">
-                                            <td className="px-6 py-4 align-top">
-                                                <div className="font-medium text-gray-900">{msg.name}</div>
-                                                <div className="text-sm text-gray-500">{msg.email}</div>
-                                            </td>
-                                            <td className="px-6 py-4 align-top font-medium text-gray-800">
-                                                {msg.subject}
-                                            </td>
-                                            <td className="px-6 py-4 align-top text-gray-600 text-sm whitespace-pre-wrap max-w-md">
-                                                {msg.message}
-                                            </td>
-                                            <td className="px-6 py-4 align-top text-xs text-gray-500 whitespace-nowrap">
-                                                <div className="flex items-center gap-1.5">
-                                                    <Clock className="w-3.5 h-3.5" />
-                                                    {new Date(msg.created_at).toLocaleDateString()}
-                                                </div>
-                                                <div className="mt-1 text-gray-400">
-                                                    {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4 align-top text-right">
-                                                <button
-                                                    onClick={() => handleDelete(msg.id)}
-                                                    className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
-                                                    title="Delete Message"
-                                                >
-                                                    <Trash2 className="w-4.5 h-4.5" />
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    )}
-                </div>
+                        <h3 className="text-lg font-bold text-gray-900 mb-2">
+                            No messages yet
+                        </h3>
+                        <p className="text-gray-600 text-sm sm:text-base">
+                            Inquiries sent via the Contact page will appear here.
+                        </p>
+                    </div>
+                ) : (
+                    <div className="space-y-2">
+                        {messages.map((msg) => (
+                            <div key={msg.id || msg.email} className="border border-gray-100 rounded-lg overflow-hidden">
+                                <button
+                                    onClick={() => setExpandedId(expandedId === (msg.id || msg.email) ? null : (msg.id || msg.email))}
+                                    className="w-full px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between hover:bg-gray-50 transition-colors text-left"
+                                >
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-sm font-medium text-gray-900 truncate">{msg.email}</p>
+                                        <p className="text-xs text-gray-500 truncate">{msg.name}</p>
+                                    </div>
+                                    <div className="flex items-center gap-2 ml-2">
+                                        {expandedId === (msg.id || msg.email) ? (
+                                            <ChevronUp className="w-4 h-4 text-gray-400" />
+                                        ) : (
+                                            <ChevronDown className="w-4 h-4 text-gray-400" />
+                                        )}
+                                    </div>
+                                </button>
+
+                                {expandedId === (msg.id || msg.email) && (
+                                    <div className="px-4 sm:px-6 py-4 bg-gray-50 border-t border-gray-100 space-y-3">
+                                        <div>
+                                            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Subject</p>
+                                            <p className="text-sm text-gray-900">{msg.subject}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Message</p>
+                                            <p className="text-sm text-gray-700 break-words whitespace-pre-wrap">{msg.message}</p>
+                                        </div>
+                                        <div className="flex items-center justify-between pt-2 border-t border-gray-200">
+                                            <div className="flex items-center gap-1 text-xs text-gray-500">
+                                                <Clock className="w-3 h-3" />
+                                                <span>{new Date(msg.created_at).toLocaleString()}</span>
+                                            </div>
+                                            <button
+                                                onClick={() => handleDelete(msg.id)}
+                                                className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                            >
+                                                <Trash2 className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                )}
             </div>
         </div>
     );

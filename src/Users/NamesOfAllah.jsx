@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Search, BookOpen, X } from "lucide-react";
-import LoadingSpinner from "../Common/LoadingSpinner";
+import LoadingSpinner from "../Components/Common/LoadingSpinner";
 import { fetchAllahNames, searchAllahNames } from "./Service/apiService";
 
 export default function NamesOfAllah() {
@@ -95,7 +95,7 @@ export default function NamesOfAllah() {
           </div>
         </div>
 
-        {loading && <LoadingSpinner size="large" message="Loading Names..." />}
+        {loading && <LoadingSpinner message="Loading names..." />}
 
         {error && !loading && (
           <p className="text-center text-xl text-red-500 font-semibold mt-8">

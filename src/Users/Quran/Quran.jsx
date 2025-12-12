@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import SurahList from "./SurahList";
 import PageHeader from "../../Components/Common/PageHeader";
-import LoadingSpinner from "../../Common/LoadingSpinner";
+import LoadingSpinner from "../../Components/Common/LoadingSpinner";
 import {
   API_BASE_URL,
   fetchQuranPage,
@@ -481,7 +481,7 @@ const SurahDetail = ({ initialPage, onBackToList }) => {
   if (loading) {
     return (
       <div className="flex justify-center items-center py-32">
-        <LoadingSpinner size="large" />
+        <LoadingSpinner message="Loading Quran..." />
       </div>
     );
   }

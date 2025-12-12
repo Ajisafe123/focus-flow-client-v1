@@ -27,7 +27,7 @@ const AddVideoLectureModal = ({
   const submitButtonText = isEditMode ? "Save Changes" : "Add Lecture";
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <div className="sticky top-0 bg-gradient-to-br from-emerald-500 via-emerald-600 to-green-600 p-6 rounded-t-2xl">
           <div className="flex items-center justify-between text-white">
@@ -62,7 +62,7 @@ const AddVideoLectureModal = ({
               value={formData.title}
               onChange={handleChange}
               placeholder="e.g., Understanding the Quran: Surah Al-Baqarah"
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+              className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm transition-all"
             />
           </div>
 
@@ -75,7 +75,7 @@ const AddVideoLectureModal = ({
                 name="category"
                 value={formData.category}
                 onChange={handleChange}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-white"
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white text-sm transition-all"
               >
                 <option value="">Select Category</option>
                 {categories.map((cat) => (
@@ -96,7 +96,7 @@ const AddVideoLectureModal = ({
                 value={formData.speaker}
                 onChange={handleChange}
                 placeholder="e.g., Sheikh Ahmed"
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm transition-all"
               />
             </div>
           </div>
@@ -111,7 +111,7 @@ const AddVideoLectureModal = ({
               value={formData.duration}
               onChange={handleChange}
               placeholder="e.g., 45:30"
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+              className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm transition-all"
             />
             <p className="text-xs text-gray-500 mt-1">
               Format: MM:SS or HH:MM:SS
@@ -128,7 +128,7 @@ const AddVideoLectureModal = ({
               value={formData.videoUrl}
               onChange={handleChange}
               placeholder="https://example.com/video.mp4"
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+              className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm transition-all"
             />
             <p className="text-xs text-gray-500 mt-1">
               Provide a direct link to your video file (MP4, WebM, or OGG)
@@ -145,7 +145,7 @@ const AddVideoLectureModal = ({
               value={formData.thumbnail}
               onChange={handleChange}
               placeholder="https://example.com/thumbnail.jpg"
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+              className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm transition-all"
             />
           </div>
 
@@ -159,21 +159,21 @@ const AddVideoLectureModal = ({
               onChange={handleChange}
               rows="4"
               placeholder="Provide a brief description of the lecture content..."
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent resize-none"
+              className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm resize-none transition-all"
             />
           </div>
 
-          <div className="flex gap-3 pt-4">
+          <div className="flex gap-3 pt-4 border-t border-gray-100">
             <button
               type="button"
               onClick={() => setIsModalOpen(false)}
-              className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-semibold"
+              className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition-all duration-200 font-semibold"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="flex-1 px-6 py-3 bg-gradient-to-br from-emerald-500 to-green-600 text-white rounded-lg hover:shadow-lg transition-all duration-200 font-semibold"
+              className="flex-1 px-6 py-3 bg-gradient-to-br from-emerald-500 to-green-600 text-white rounded-lg hover:shadow-lg transition-all duration-200 font-semibold hover:scale-105"
             >
               {submitButtonText}
             </button>

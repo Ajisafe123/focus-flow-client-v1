@@ -17,10 +17,14 @@ import {
   MoreVertical,
   Heart,
 } from "lucide-react";
-import LoadingSpinner from "../../Common/LoadingSpinner";
+import LoadingSpinner from "../../Components/Common/LoadingSpinner";
 import HadithModal from "./HadithModal";
 import CreateCategoryModal from "../CreateCategoryModal";
 import DeleteModal from "../DeleteModal";
+import PageHeader from "../Components/PageHeader";
+import ModalButton from "../Components/ModalButton";
+import CategoryDropdownCustom from "../Components/CategoryDropdownCustom";
+import StatCardGrid from "../Components/StatCardGrid";
 import {
   fetchHadithCategories as apiFetchCategories,
   fetchHadithStats as apiFetchHadithStats,
@@ -259,7 +263,7 @@ const HadithManagements = () => {
     if (isLoading) {
       return (
         <div className="p-12 text-center flex flex-col items-center justify-center">
-          <LoadingSpinner size="large" message="Loading Hadiths..." />
+          <LoadingSpinner message="Loading hadiths..." />
         </div>
       );
     }
@@ -421,128 +425,88 @@ const HadithManagements = () => {
 
   return (
     <div className="space-y-6 max-w-10xl mx-auto">
-      <div className="bg-gradient-to-br from-emerald-500 via-emerald-600 to-green-600 rounded-2xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-48 h-48 sm:w-64 sm:h-64 bg-white/10 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-0 left-0 w-32 h-32 sm:w-48 sm:h-48 bg-white/10 rounded-full blur-3xl"></div>
-        <div className="relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2">
-              Hadith Management
-            </h1>
-            <p className="text-emerald-50 text-sm sm:text-base md:text-lg">
-              Manage and organize authentic Prophetic traditions
-            </p>
-          </div>
-          <button
-            onClick={handleOpenAddModal}
-            className="flex items-center justify-center gap-2 px-5 py-2.5 bg-white text-emerald-600 rounded-lg hover:bg-emerald-50 transition-all duration-200 font-semibold shadow-md hover:shadow-lg flex-shrink-0"
-          >
-            <Plus className="w-5 h-5" />
-            Add New Hadith
-          </button>
-        </div>
-      </div>
+      <PageHeader
+        title="Hadith Management"
+        subtitle="Manage and organize authentic Prophetic traditions"
+      >
+        <ModalButton
+          onClick={handleOpenAddModal}
+          label="Add Hadith"
+          size="md"
+        />
+        <button
+          onClick={() => setShowCategoryModal(true)}
+          className="flex items-center gap-2 px-4 py-2.5 bg-white border-2 border-emerald-200 text-emerald-700 rounded-lg hover:bg-emerald-50 transition-all duration-200 font-semibold text-sm"
+        >
+          <Tag className="w-4 h-4" />
+          Add Category
+        </button>
+      </PageHeader>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((stat, idx) => {
-          const Icon = statIconMap[stat.title] || BookOpen;
-          return (
-            <div
-              key={idx}
-              className="bg-white rounded-xl shadow-sm p-4 sm:p-5 hover:shadow-md transition-all duration-200 border border-gray-100"
-            >
-              <div className="flex items-center justify-between mb-3">
-                <div className="p-2.5 bg-gradient-to-br from-emerald-500 to-green-600 rounded-lg">
-                  <Icon className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-                </div>
-              </div>
-              <h3 className="text-gray-500 text-xs font-semibold mb-1 uppercase tracking-wide">
-                {stat.title}
-              </h3>
-              <p className="text-xl sm:text-2xl font-bold text-gray-900">
-                {stat.value}
-              </p>
-            </div>
-          );
-        })}
-      </div>
+      <StatCardGrid
+        stats={stats.map((stat) => ({
+          ...stat,
+          icon: statIconMap[stat.title] || BookOpen,
+        }))}
+      />
 
-      <div className="bg-white rounded-xl shadow-sm p-5 sm:p-6 border border-gray-100">
-        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-          <div className="relative flex-1 min-w-0">
-            <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2 pointer-events-none" />
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <h3 className="text-lg font-bold text-gray-900 mb-4">Hadith List</h3>
+        
+        <div className="flex flex-col gap-3 mb-6">
+          <div className="relative">
+            <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
             <input
               type="text"
-              placeholder="Search hadiths by text or narrator..."
+              placeholder="Search hadiths..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+              className="w-full pl-9 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
             />
           </div>
-          <div className="relative w-full sm:w-auto flex-shrink-0">
-            <button
-              onClick={() => setFilterOpen(!filterOpen)}
-              className="w-full flex items-center justify-between sm:justify-center gap-2 px-4 py-2.5 border border-gray-200 rounded-lg hover:bg-gray-50 transition-all font-semibold text-sm whitespace-nowrap"
-            >
-              <Filter className="w-4 h-4" />
-              <span className="flex-1 text-left sm:text-center">
-                {selectedCategoryName}
-              </span>
-              <ChevronDown
-                className={`w-4 h-4 transition-transform ${
-                  filterOpen ? "rotate-180" : ""
-                }`}
-              />
-            </button>
-            {filterOpen && (
-              <div className="absolute right-0 mt-2 w-full sm:w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-10">
-                {categories.map((category) => (
-                  <button
-                    key={category.id}
-                    onClick={() => {
-                      setSelectedCategory(category.id);
-                      setFilterOpen(false);
-                    }}
-                    className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors ${
-                      selectedCategory === category.id
-                        ? "bg-emerald-50 text-emerald-600 font-semibold"
-                        : "text-gray-700"
-                    }`}
-                  >
-                    {category.label}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+          <CategoryDropdownCustom
+            categories={categoryOptions.filter((cat) => cat.id !== "all").map((cat) => ({
+              id: cat.id,
+              label: cat.label,
+            }))}
+            selectedCategory={selectedCategory}
+            onSelectCategory={setSelectedCategory}
+            placeholder="Select Hadith Category"
+          />
         </div>
-        {selectedCategory !== "all" && (
-          <div className="mt-3 flex items-center gap-2">
-            <span className="text-sm text-gray-600">Filtering by:</span>
-            <span className="px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full text-xs font-semibold">
-              {selectedCategoryName}
-            </span>
+
+        {hadiths.length > 0 ? (
+          <div className="bg-transparent rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="p-5 sm:p-6 border-b border-gray-100 bg-white">
+              <h3 className="text-lg font-bold text-gray-900">
+                All Hadiths ({totalItems?.toLocaleString() || "..."})
+              </h3>
+              <p className="text-sm text-gray-600 mt-1">
+                Browse and manage your hadith collection
+              </p>
+            </div>
+
+            {renderContent()}
+          </div>
+        ) : (
+          <div className="text-center py-12 px-4 bg-white rounded-xl shadow-sm border border-gray-100">
+            <div className="mx-auto w-16 h-16 bg-gradient-to-br from-emerald-500 to-green-600 rounded-xl flex items-center justify-center mb-4">
+              <BookOpen className="w-8 h-8 text-white" />
+            </div>
+            <h3 className="text-base font-bold text-gray-900 mb-2">
+              No hadiths found
+            </h3>
+            <p className="text-sm text-gray-600 mb-4">
+              Try adjusting your filters or create a new hadith
+            </p>
             <button
-              onClick={() => setSelectedCategory("all")}
-              className="text-xs text-gray-500 hover:text-gray-700 underline"
+              onClick={handleOpenAddModal}
+              className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors font-semibold"
             >
-              Clear filter
+              Create Hadith
             </button>
           </div>
         )}
-      </div>
-
-      <div className="bg-transparent rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="p-5 sm:p-6 border-b border-gray-100 bg-white">
-          <h3 className="text-lg font-bold text-gray-900">
-            All Hadiths ({totalItems?.toLocaleString() || "..."})
-          </h3>
-          <p className="text-sm text-gray-600 mt-1">
-            Browse and manage your hadith collection
-          </p>
-        </div>
-
-        {renderContent()}
       </div>
 
       {totalPages > 1 && !isLoading && (
@@ -609,48 +573,6 @@ const HadithManagements = () => {
           </div>
         </div>
       )}
-
-      <div className="bg-white rounded-xl shadow-sm p-5 sm:p-6 border border-gray-100 h-fit">
-        <h3 className="text-lg font-bold text-gray-900 mb-5">Quick Actions</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          <button
-            onClick={handleOpenAddModal}
-            className="w-full flex items-center gap-3 p-3.5 bg-gradient-to-br from-emerald-500 to-green-600 text-white rounded-lg hover:shadow-md transition-all duration-200 group"
-          >
-            <div className="p-1.5 bg-white/20 rounded-md group-hover:bg-white/30 transition-colors">
-              <Plus className="w-4 h-4" />
-            </div>
-            <span className="font-semibold text-sm">Add New Hadith</span>
-            <ArrowUpRight className="w-4 h-4 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
-          </button>
-
-          <button
-            onClick={() => setSelectedCategory("all")}
-            className="w-full flex items-center gap-3 p-3.5 border-2 border-emerald-100 bg-emerald-50 text-emerald-700 rounded-lg hover:border-emerald-200 hover:bg-emerald-100 transition-all duration-200 group"
-          >
-            <div className="p-1.5 bg-emerald-100 rounded-md group-hover:bg-emerald-200 transition-colors">
-              <BookOpen className="w-4 h-4" />
-            </div>
-            <span className="font-semibold text-sm">
-              View All Hadiths ({totalItems})
-            </span>
-            <ArrowUpRight className="w-4 h-4 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
-          </button>
-
-          <button
-            onClick={() => setShowCategoryModal(true)}
-            className="w-full flex items-center gap-3 p-3.5 border-2 border-emerald-100 bg-emerald-50 text-emerald-700 rounded-lg hover:border-emerald-200 hover:bg-emerald-100 transition-all duration-200 group"
-          >
-            <div className="p-1.5 bg-emerald-100 rounded-md group-hover:bg-emerald-200 transition-colors">
-              <Tag className="w-4 h-4" />
-            </div>
-            <span className="font-semibold text-sm">
-              Manage Categories ({totalCategories})
-            </span>
-            <ArrowUpRight className="w-4 h-4 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
-          </button>
-        </div>
-      </div>
 
       <HadithModal
         show={showModal}

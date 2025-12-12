@@ -89,19 +89,22 @@ export const UserModal = ({
 
   if (mode === "view") {
     return (
-      <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-emerald-100">
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
           <div
-            className={`${GRADIENT_CLASS} p-6 sticky top-0 flex justify-between items-center`}
+            className={`bg-gradient-to-br from-emerald-500 via-emerald-600 to-green-600 p-6 sticky top-0 flex justify-between items-center rounded-t-2xl`}
           >
-            <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-              <UserCheck className="w-6 h-6" /> User Details
-            </h2>
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-white/20 rounded-lg">
+                <UserCheck className="w-6 h-6 text-white" />
+              </div>
+              <h2 className="text-2xl font-bold text-white">User Details</h2>
+            </div>
             <button
               onClick={onClose}
-              className="p-2 bg-white/20 hover:bg-white/30 rounded-full"
+              className="p-2 hover:bg-white/20 rounded-lg transition-colors"
             >
-              <X className="w-5 h-5 text-white" />
+              <X className="w-6 h-6 text-white" />
             </button>
           </div>
 
@@ -139,24 +142,24 @@ export const UserModal = ({
               </div>
             </div>
 
-            <div className="flex gap-3 pt-4 border-t">
+            <div className="flex gap-3 pt-4 border-t border-gray-100">
               <button
                 onClick={() => onSave?.(user, "edit")}
-                className="flex-1 flex items-center justify-center gap-2 py-3 bg-gradient-to-br from-emerald-600 to-teal-700 text-white rounded-lg hover:opacity-90 font-semibold"
+                className="flex-1 flex items-center justify-center gap-2 py-3 bg-gradient-to-br from-emerald-500 to-green-600 text-white rounded-lg hover:shadow-lg transition-all duration-200 font-semibold hover:scale-105"
               >
                 <Edit className="w-4 h-4" /> Edit User
               </button>
               {user?.status === "active" ? (
                 <button
                   onClick={() => onSave?.(user, "suspend")}
-                  className="flex-1 flex items-center justify-center gap-2 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 font-semibold"
+                  className="flex-1 flex items-center justify-center gap-2 py-3 bg-gradient-to-br from-red-500 to-red-600 text-white rounded-lg hover:shadow-lg transition-all duration-200 font-semibold hover:scale-105"
                 >
                   <Ban className="w-4 h-4" /> Suspend
                 </button>
               ) : (
                 <button
                   onClick={() => onSave?.(user, "activate")}
-                  className="flex-1 flex items-center justify-center gap-2 py-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 font-semibold"
+                  className="flex-1 flex items-center justify-center gap-2 py-3 bg-gradient-to-br from-emerald-500 to-green-600 text-white rounded-lg hover:shadow-lg transition-all duration-200 font-semibold hover:scale-105"
                 >
                   <UserCheck className="w-4 h-4" /> Activate
                 </button>
@@ -169,18 +172,22 @@ export const UserModal = ({
   }
 
   return (
-    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl max-w-md w-full shadow-2xl border border-emerald-100">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl">
         <div
-          className={`${GRADIENT_CLASS} p-4 flex justify-between items-center`}
+          className={`bg-gradient-to-br from-emerald-500 via-emerald-600 to-green-600 p-6 flex justify-between items-center rounded-t-2xl`}
         >
-          <h2 className="text-xl font-bold text-white flex items-center gap-2">
-            <UserCheck className="w-5 h-5" />
-            {mode === "edit" ? "Edit User" : "Add New User"}
-          </h2>
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-white/20 rounded-lg">
+              <UserCheck className="w-5 h-5 text-white" />
+            </div>
+            <h2 className="text-xl font-bold text-white">
+              {mode === "edit" ? "Edit User" : "Add New User"}
+            </h2>
+          </div>
           <button
             onClick={onClose}
-            className="p-2 bg-white/20 hover:bg-white/30 rounded-full"
+            className="p-2 hover:bg-white/20 rounded-lg transition-colors"
           >
             <X className="w-5 h-5 text-white" />
           </button>
@@ -188,13 +195,13 @@ export const UserModal = ({
 
         <form onSubmit={handleSubmit} className="p-6 space-y-5">
           {error && (
-            <div className="p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm">
+            <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
               {error}
             </div>
           )}
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
               Username
             </label>
             <input
@@ -202,12 +209,12 @@ export const UserModal = ({
               value={formData.username}
               onChange={(e) => handleChange("username", e.target.value)}
               required
-              className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500"
+              className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm transition-all"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
               Email
             </label>
             <input
@@ -215,12 +222,12 @@ export const UserModal = ({
               value={formData.email}
               onChange={(e) => handleChange("email", e.target.value)}
               required
-              className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500"
+              className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm transition-all"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
               Password{" "}
               {mode === "edit" && (
                 <span className="text-xs text-gray-500">
@@ -233,18 +240,18 @@ export const UserModal = ({
               value={formData.password}
               onChange={(e) => handleChange("password", e.target.value)}
               required={mode === "add"}
-              className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500"
+              className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm transition-all"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
               Role
             </label>
             <select
               value={formData.role}
               onChange={(e) => handleChange("role", e.target.value)}
-              className="w-full px-3 py-2 border rounded-lg bg-white"
+              className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white text-sm transition-all"
             >
               <option value="user">User</option>
               <option value="editor">Editor</option>
@@ -253,13 +260,13 @@ export const UserModal = ({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
               Status
             </label>
             <select
               value={formData.status}
               onChange={(e) => handleChange("status", e.target.value)}
-              className="w-full px-3 py-2 border rounded-lg bg-white"
+              className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white text-sm transition-all"
             >
               <option value="active">Active</option>
               <option value="inactive">Inactive</option>
@@ -267,20 +274,20 @@ export const UserModal = ({
             </select>
           </div>
 
-          <div className="flex gap-3 pt-4 border-t">
+          <div className="flex gap-3 pt-4 border-t border-gray-100">
             <button
               type="button"
               onClick={onClose}
               disabled={isLoading}
-              className="flex-1 py-2.5 border-2 border-gray-300 rounded-lg hover:bg-gray-50"
+              className="flex-1 py-3 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition-all duration-200 font-semibold disabled:opacity-50"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isLoading}
-              className={`flex-1 py-2.5 text-white rounded-lg ${
-                isLoading ? "bg-gray-400" : GRADIENT_CLASS
+              className={`flex-1 py-3 text-white rounded-lg font-semibold transition-all duration-200 ${
+                isLoading ? "bg-gray-400" : "bg-gradient-to-br from-emerald-500 to-green-600 hover:shadow-lg hover:scale-105"
               }`}
             >
               {isLoading

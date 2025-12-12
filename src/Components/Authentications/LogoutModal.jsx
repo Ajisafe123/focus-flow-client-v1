@@ -73,15 +73,9 @@ const LogoutModal = ({ isOpen, onClose, onConfirm }) => {
               <button
                 onClick={handleLogout}
                 disabled={isLoading}
-                className="px-4 py-3 rounded-xl bg-red-600 text-white font-semibold hover:bg-red-700 transition-colors shadow-lg shadow-red-200 disabled:opacity-70 flex items-center justify-center gap-2"
+                className="px-4 py-3 rounded-xl bg-red-600 text-white font-semibold hover:bg-red-700 transition-colors shadow-lg shadow-red-200 disabled:opacity-70"
               >
-                {isLoading ? (
-                  <>
-                    <LoadingSpinner size="small" />
-                  </>
-                ) : (
-                  "Sign Out"
-                )}
+                {isLoading ? "Signing out..." : "Sign Out"}
               </button>
             </div>
           </div>

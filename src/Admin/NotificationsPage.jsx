@@ -123,21 +123,30 @@ const NotificationsPage = () => {
     };
 
     return (
-        <div className="space-y-6">
-            <div className="flex items-center justify-between">
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-800">Notifications</h1>
-                    <p className="text-gray-500 mt-1">Manage your alerts and messages</p>
+        <div className="space-y-6 max-w-10xl mx-auto">
+            <div className="bg-gradient-to-br from-emerald-500 via-emerald-600 to-green-600 rounded-2xl p-8 text-white shadow-xl relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
+                <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full blur-3xl"></div>
+                <div className="relative flex items-center justify-between">
+                    <div>
+                        <h1 className="text-4xl font-bold mb-2 flex items-center gap-3">
+                            <Bell className="w-9 h-9" />
+                            Notifications
+                        </h1>
+                        <p className="text-emerald-50 text-lg">
+                            Manage your alerts and messages
+                        </p>
+                    </div>
+                    {notifications.length > 0 && (
+                        <button
+                            onClick={handleMarkAllRead}
+                            className="flex items-center gap-2 px-6 py-3 bg-white text-emerald-600 rounded-lg hover:bg-emerald-50 transition-all duration-200 font-semibold shadow-md hover:shadow-lg"
+                        >
+                            <CheckCheck size={18} />
+                            <span>Mark all as read</span>
+                        </button>
+                    )}
                 </div>
-                {notifications.length > 0 && (
-                    <button
-                        onClick={handleMarkAllRead}
-                        className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors shadow-sm"
-                    >
-                        <CheckCheck size={18} />
-                        <span className="text-sm font-medium">Mark all as read</span>
-                    </button>
-                )}
             </div>
 
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">

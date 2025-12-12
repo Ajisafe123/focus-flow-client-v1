@@ -3,7 +3,7 @@ import { ListRestart, UserCheck, LockKeyhole, Settings } from "lucide-react";
 import General from "./General";
 import Account from "./Account";
 import Security from "./Security";
-import LoadingSpinner from "../Common/LoadingSpinner";
+import LoadingSpinner from "../Components/Common/LoadingSpinner";
 
 const ConfirmationModal = ({
   isOpen,
@@ -143,7 +143,7 @@ export default function SettingsPage() {
   if (loading)
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
-        <LoadingSpinner size="large" message="Loading Settings..." />
+        <LoadingSpinner message="Loading settings..." />
       </div>
     );
 

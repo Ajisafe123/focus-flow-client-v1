@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { ChevronRight, ImageIcon, BookOpen, Compass, Smartphone, Heart } from "lucide-react";
-import LoadingSpinner from "../../../Common/LoadingSpinner";
+import LoadingSpinner from "../../../Components/Common/LoadingSpinner";
 import apiService, { API_BASE_URL } from "../../Service/apiService";
 
 const IMAGE_BASE = API_BASE_URL;
@@ -97,7 +97,7 @@ export default function DhikrDuaCardDropdown({
   if (loading) {
     return (
       <div className="absolute z-[80] top-full left-1/2 -translate-x-1/2 mt-3 w-[720px] bg-white rounded-md shadow-2xl border border-gray-100 p-8 flex items-center justify-center h-56 pointer-events-auto">
-        <LoadingSpinner size="medium" />
+        <LoadingSpinner />
       </div>
     );
   }

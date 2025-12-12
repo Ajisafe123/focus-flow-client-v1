@@ -41,9 +41,7 @@ export default function ArticleDropdown({
 
   const Card = ({ name, id, image_url }) => {
     const fullImageUrl = getFullImageUrl(image_url);
-    const href = `/article-category/${id}/${name
-      .replace(/\s/g, "-")
-      .toLowerCase()}`;
+    const href = `/articles?category=${encodeURIComponent(name)}`;
 
     return (
       <Link
@@ -83,7 +81,7 @@ export default function ArticleDropdown({
   if (loading) {
     return (
       <div className="absolute z-[80] top-full left-1/2 -translate-x-1/2 mt-3 w-[720px] bg-white rounded-md shadow-2xl border border-gray-100 p-8 flex items-center justify-center h-56 pointer-events-auto">
-        <LoadingSpinner size="medium" />
+        <LoadingSpinner />
       </div>
     );
   }

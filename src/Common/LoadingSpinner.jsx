@@ -1,15 +1,15 @@
 import React from "react";
+import "./LoadingSpinner.css";
 
-const LoadingSpinner = ({ size = "medium", message = "Loading..." }) => {
-  const sizeClasses = {
-    small: "w-8 h-8",
-    medium: "w-12 h-12",
-    large: "w-16 h-16",
-  };
-
+const LoadingSpinner = ({ message = "Loading..." }) => {
   return (
-    <div className="flex flex-col items-center justify-center gap-3">
-      <div className={`${sizeClasses[size]} loader`} />
+    <div className="flex flex-col items-center justify-center gap-4">
+      <div className="loader"></div>
+      {message && (
+        <p className="text-sm text-gray-600 font-medium">
+          {message}
+        </p>
+      )}
     </div>
   );
 };

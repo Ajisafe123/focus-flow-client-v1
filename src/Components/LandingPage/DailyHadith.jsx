@@ -51,7 +51,7 @@ export default function DailyHadith() {
   if (!hadith) {
     return (
       <div className="bg-gradient-to-b from-teal-50 to-emerald-50 py-12 px-4 min-h-screen flex items-center justify-center">
-        <LoadingSpinner size="large" />
+        <LoadingSpinner message="Loading daily hadith..." />
       </div>
     );
   }

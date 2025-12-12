@@ -13,7 +13,7 @@ import {
   X,
   ArrowLeft,
 } from "lucide-react";
-import LoadingSpinner from "../../Common/LoadingSpinner.jsx";
+import LoadingSpinner from "../../Common/LoadingSpinner";
 import { API_BASE_URL } from "../../Components/Service/apiService.js";
 import {
   fetchDuaCategories,
@@ -569,7 +569,7 @@ const DuaCategoryPage = ({ categoryId }) => {
   if (loading && !searchExecuted) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-emerald-50 to-teal-50">
-        <LoadingSpinner size="large" message="Loading..." />
+        <LoadingSpinner message="Loading duas..." />
       </div>
     );
   }

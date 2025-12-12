@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Clock, ChevronDown, ChevronUp } from "lucide-react";
-import LoadingSpinner from "../../Common/LoadingSpinner";
+import LoadingSpinner from "../../Components/Common/LoadingSpinner";
 import { fetchSurahs as fetchSurahsApi } from "../Service/apiService";
 const HISTORY_KEY = "quran_history";
 
@@ -112,7 +112,7 @@ const SurahList = ({ onSelectSurah }) => {
   if (loading) {
     return (
       <div className="flex justify-center items-center py-32">
-        <LoadingSpinner size="large" />
+        <LoadingSpinner message="Loading surahs..." />
       </div>
     );
   }

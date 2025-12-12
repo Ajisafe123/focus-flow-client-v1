@@ -26,16 +26,20 @@ export default function LoginPage() {
                 password: password,
             });
 
-            // Dispatch event to update app state
+            // Dispatch event to update app state immediately
             window.dispatchEvent(new Event("loginStatusChanged"));
 
+            // Navigate immediately without waiting for email
             const role = localStorage.getItem("role");
+            setLoading(false);
+            
             if (role === "admin") {
                 navigate("/admin");
             } else {
                 navigate("/");
             }
         } catch (err) {
+            setLoading(false);
             if (err.status === 403) {
                 // Check if backend provided email
                 const emailToVerify = err.data?.email || (identifier.includes("@") ? identifier : "");
@@ -45,8 +49,6 @@ export default function LoginPage() {
                 }
             }
             setError(err.message || "Invalid credentials");
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -128,7 +130,7 @@ export default function LoginPage() {
                     className="w-full py-3.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-xl font-bold shadow-lg shadow-emerald-500/20 transition-all transform hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm"
                 >
                     {loading ? (
-                        <LoadingSpinner size="small" />
+                        "Signing in..."
                     ) : (
                         <>
                             Bismillah (Start)

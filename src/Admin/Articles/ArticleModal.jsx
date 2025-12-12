@@ -16,19 +16,19 @@ const ArticleModal = ({
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 bg-gradient-to-br from-emerald-900 via-emerald-800 to-teal-900 text-white p-6 rounded-t-2xl border-b border-emerald-700/30">
-          <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold flex items-center gap-2">
-              <BookOpen className="w-6 h-6 text-amber-300" />
-              {title}
-            </h2>
-            <button
-              onClick={onClose}
-              className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-            >
-              <X className="w-6 h-6" />
-            </button>
+        <div className="sticky top-0 bg-gradient-to-br from-emerald-500 via-emerald-600 to-green-600 text-white p-6 rounded-t-2xl flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-white/20 rounded-lg">
+              <BookOpen className="w-6 h-6" />
+            </div>
+            <h2 className="text-2xl font-bold">{title}</h2>
           </div>
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+          >
+            <X className="w-6 h-6" />
+          </button>
         </div>
         <div className="p-6 space-y-6">
           <div>
@@ -42,7 +42,7 @@ const ArticleModal = ({
                 setFormData({ ...formData, title: e.target.value })
               }
               placeholder="Enter article title"
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
+              className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm transition-all"
             />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -55,11 +55,11 @@ const ArticleModal = ({
                 onChange={(e) =>
                   setFormData({ ...formData, category_id: e.target.value })
                 }
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm bg-white"
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm bg-white transition-all"
               >
                 <option value="">Select Category</option>
                 {categories.map((cat) => (
-                  <option key={cat.id} value={cat.id}>
+                  <option key={cat.id} value={cat.name}>
                     {cat.name}
                   </option>
                 ))}
@@ -74,7 +74,7 @@ const ArticleModal = ({
                 onChange={(e) =>
                   setFormData({ ...formData, status: e.target.value })
                 }
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm bg-white"
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm bg-white transition-all"
               >
                 <option value="draft">Draft</option>
                 <option value="published">Published</option>
@@ -92,7 +92,7 @@ const ArticleModal = ({
                 setFormData({ ...formData, author: e.target.value })
               }
               placeholder="Enter author name"
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
+              className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm transition-all"
             />
           </div>
           <div>
@@ -106,7 +106,7 @@ const ArticleModal = ({
               }
               placeholder="Enter article excerpt/summary..."
               rows="3"
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm resize-none"
+              className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm resize-none transition-all"
             />
           </div>
           <div>
@@ -120,10 +120,10 @@ const ArticleModal = ({
               }
               placeholder="Enter article content here..."
               rows="8"
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm resize-none"
+              className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm resize-none transition-all"
             />
           </div>
-          <div className="flex items-center gap-3 p-4 bg-amber-50 rounded-xl border border-amber-200">
+          <div className="flex items-center gap-3 p-4 bg-emerald-50 rounded-lg border border-emerald-200">
             <input
               type="checkbox"
               id="featured"
@@ -137,21 +137,21 @@ const ArticleModal = ({
               htmlFor="featured"
               className="text-sm font-semibold text-gray-700 cursor-pointer flex items-center gap-2"
             >
-              <Star className="w-4 h-4 text-amber-500" />
+              <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
               Mark as Featured Article
             </label>
           </div>
         </div>
-        <div className="sticky bottom-0 bg-gray-50 p-6 rounded-b-2xl border-t border-gray-200 flex gap-3">
+        <div className="sticky bottom-0 bg-gray-50 p-6 border-t border-gray-100 flex gap-3">
           <button
             onClick={onClose}
-            className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-100 transition-colors font-semibold"
+            className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition-all duration-200 font-semibold"
           >
             Cancel
           </button>
           <button
             onClick={onSave}
-            className="flex-1 px-6 py-3 bg-gradient-to-br from-emerald-900 via-emerald-800 to-teal-900 text-white rounded-xl hover:shadow-xl transition-all duration-200 font-semibold hover:scale-105"
+            className="flex-1 px-6 py-3 bg-gradient-to-br from-emerald-500 to-green-600 text-white rounded-lg hover:shadow-lg transition-all duration-200 font-semibold hover:scale-105"
           >
             {isEdit ? "Update Article" : "Create Article"}
           </button>

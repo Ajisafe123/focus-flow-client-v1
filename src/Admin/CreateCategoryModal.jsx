@@ -63,6 +63,28 @@ const CreateCategoryModal = ({
 
   const manageableCategories = categories.filter((c) => c.id !== "all");
 
+  const getCategoryPlaceholder = () => {
+    const placeholders = {
+      article: "e.g., Islamic History",
+      dua: "e.g., Daily Duas",
+      hadith: "e.g., Sahih Bukhari",
+      video: "e.g., Quran Recitation",
+      audio: "e.g., Islamic Lectures",
+    };
+    return placeholders[categoryType] || "e.g., Category Name";
+  };
+
+  const getDescriptionPlaceholder = () => {
+    const placeholders = {
+      article: "Brief description of this article category...",
+      dua: "Brief description of this dua category...",
+      hadith: "Brief description of this hadith category...",
+      video: "Brief description of this video category...",
+      audio: "Brief description of this audio category...",
+    };
+    return placeholders[categoryType] || "Brief description of this category...";
+  };
+
   const handleChange = (field, value) => {
     setFormData({ ...formData, [field]: value });
   };
@@ -242,7 +264,7 @@ const CreateCategoryModal = ({
                       ? "border-amber-400 focus:ring-amber-500 bg-amber-50"
                       : "border-gray-300 focus:ring-emerald-500"
                     }`}
-                  placeholder="e.g., Daily Duas"
+                  placeholder={getCategoryPlaceholder()}
                 />
               </div>
 
@@ -254,11 +276,11 @@ const CreateCategoryModal = ({
                   rows="2"
                   value={formData.description}
                   onChange={(e) => handleChange("description", e.target.value)}
+                  placeholder={getDescriptionPlaceholder()}
                   className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${isEditing
                       ? "border-amber-400 focus:ring-amber-500 bg-amber-50"
                       : "border-gray-300 focus:ring-emerald-500"
                     }`}
-                  placeholder="Duas and Adhkar recommended for daily recitation."
                 />
               </div>
 
@@ -370,13 +392,13 @@ const CreateCategoryModal = ({
                   No categories created yet (besides "All Categories").
                 </p>
               ) : (
-                manageableCategories.map((cat) => {
+                manageableCategories.map((cat, index) => {
                   const imageUrl = getFullImageUrl(cat.image_url);
                   const isImageAvailable = !!imageUrl;
 
                   return (
                     <div
-                      key={cat.id}
+                      key={`${cat.id}-${index}`}
                       className={`p-3 rounded-lg border transition-all flex flex-col ${formData.id === cat.id
                           ? "bg-amber-100 border-amber-500 shadow-md ring-2 ring-amber-200"
                           : "bg-gray-50 border-gray-200 hover:bg-gray-100"

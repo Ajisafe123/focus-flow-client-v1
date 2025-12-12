@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { useSearchParams, useParams } from "react-router-dom";
 import {
   Search,
   Heart,
@@ -12,7 +13,6 @@ import {
   Lightbulb,
 } from "lucide-react";
 import {
-  fetchArticleCategories,
   fetchArticlesPaginated,
   fetchArticle,
   toggleArticleFavorite,
@@ -22,38 +22,6 @@ import LoadingSpinner from "../../Common/LoadingSpinner";
 // Default image fallback
 const DEFAULT_IMAGE = "https://images.pexels.com/photos/261857/pexels-photo-261857.jpeg?auto=compress&cs=tinysrgb&w=800";
 
-const CategoryCard = ({ cat, onClick }) => {
-  return (
-    <button
-      onClick={onClick}
-      className="group cursor-pointer bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden w-full text-left transform hover:-translate-y-0.5 border border-gray-100"
-    >
-      <div className="relative h-36 overflow-hidden">
-        <img
-          src={cat.image_url}
-          alt={cat.name}
-          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-          onError={(e) => {
-            e.currentTarget.src = DEFAULT_IMAGE;
-          }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-      </div>
-
-      <div className="p-4">
-        <h3 className="text-base font-bold text-gray-900 text-center group-hover:text-emerald-600 transition-colors line-clamp-2 mb-1">
-          {cat.name}
-        </h3>
-        <p className="text-xs text-gray-600 text-center line-clamp-2">
-          {cat.description}
-        </p>
-        <p className="text-xs text-gray-500 text-center mt-2 font-medium">
-          {cat.article_count} articles
-        </p>
-      </div>
-    </button>
-  );
-};
 
 const ArticleCard = ({
   article,
@@ -159,13 +127,16 @@ const ArticleCard = ({
 };
 
 const ArticlesPage = ({ categoryId }) => {
+  const [searchParams] = useSearchParams();
+  const { articleId } = useParams();
+  const categoryFromUrl = searchParams.get("category");
+  
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCatId, setSelectedCatId] = useState(categoryId || null);
-  const [view, setView] = useState(categoryId ? "articles" : "categories");
+  const [selectedCatId, setSelectedCatId] = useState(categoryId || categoryFromUrl || null);
+  const [view, setView] = useState(articleId ? "detail" : "articles");
   const [selectedArticle, setSelectedArticle] = useState(null);
   const [localFavorites, setLocalFavorites] = useState(new Set());
   
-  const [categories, setCategories] = useState([]);
   const [articles, setArticles] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -173,15 +144,6 @@ const ArticlesPage = ({ categoryId }) => {
   const token = localStorage.getItem("token");
   const isAuthenticated = !!token;
 
-  const loadCategories = useCallback(async () => {
-    try {
-      const data = await fetchArticleCategories();
-      setCategories(data || []);
-    } catch (err) {
-      console.error("Failed to load categories:", err);
-      setError(err.message);
-    }
-  }, []);
 
   const loadArticles = useCallback(async () => {
     if (!selectedCatId) return;
@@ -200,14 +162,25 @@ const ArticlesPage = ({ categoryId }) => {
   }, [selectedCatId, searchTerm, token]);
 
   useEffect(() => {
-    loadCategories();
-  }, [loadCategories]);
-
-  useEffect(() => {
     if (selectedCatId) {
       loadArticles();
+    } else {
+      setIsLoading(false);
     }
   }, [selectedCatId, loadArticles]);
+
+  useEffect(() => {
+    if (categoryFromUrl && !selectedCatId) {
+      setSelectedCatId(categoryFromUrl);
+      setView("articles");
+    }
+  }, [categoryFromUrl, selectedCatId]);
+
+  useEffect(() => {
+    if (articleId) {
+      readMore({ id: articleId });
+    }
+  }, [articleId]);
 
   const filteredArticles = articles.filter(
     (a) =>
@@ -216,18 +189,6 @@ const ArticlesPage = ({ categoryId }) => {
       a.content?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleCatClick = (id) => {
-    setSelectedCatId(id);
-    setView("articles");
-    setSearchTerm("");
-  };
-
-  const backToCats = () => {
-    setView("categories");
-    setSelectedCatId(null);
-    setSearchTerm("");
-    setSelectedArticle(null);
-  };
 
   const readMore = async (art) => {
     try {
@@ -272,21 +233,11 @@ const ArticlesPage = ({ categoryId }) => {
     }
   };
 
-  const currentCat = categories.find((c) => c.id === selectedCatId);
-
-  const showCategories = view === "categories";
 
   if (view === "detail" && selectedArticle) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-green-50 to-emerald-50 py-10 px-4">
         <div className="max-w-4xl mx-auto">
-          <button
-            onClick={closeDetail}
-            className="flex items-center gap-1 text-gray-600 hover:text-emerald-600 font-medium mb-5 text-sm"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Articles
-          </button>
           <article className="bg-white rounded-xl shadow-xl p-6">
             <h1 className="text-3xl font-bold text-gray-900 mb-4">
               {selectedArticle.title}
@@ -338,11 +289,10 @@ const ArticlesPage = ({ categoryId }) => {
             </div>
             <div>
               <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight">
-                {currentCat?.name || "Islamic Articles"}
+                Islamic Articles
               </h1>
               <p className="text-emerald-100 text-sm sm:text-lg mt-1">
-                {currentCat?.description ||
-                  "Explore insightful articles on Islamic knowledge and guidance"}
+                Explore insightful articles on Islamic knowledge and guidance
               </p>
             </div>
           </div>
@@ -368,50 +318,18 @@ const ArticlesPage = ({ categoryId }) => {
               )}
             </div>
 
-            {!showCategories && (
-              <div className="mt-3 flex justify-start">
-                <button
-                  onClick={backToCats}
-                  className="bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white px-4 py-2 rounded-lg font-semibold text-xs transition-all flex items-center gap-1.5"
-                  aria-label="Back to all categories"
-                >
-                  <ArrowLeft className="w-3.5 h-3.5" />
-                  Back to Categories
-                </button>
-              </div>
-            )}
           </div>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto py-8 px-4">
-        {showCategories ? (
-          isLoading ? (
-            <div className="flex items-center justify-center min-h-[400px]">
-              <LoadingSpinner size="large" message="Loading categories..." />
-            </div>
-          ) : error ? (
-            <div className="text-center py-16">
-              <p className="text-red-600">Error: {error}</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-              {categories.map((c) => (
-                <CategoryCard
-                  key={c.id}
-                  cat={{
-                    ...c,
-                    image_url: c.image_url || DEFAULT_IMAGE,
-                    article_count: c.article_count || 0,
-                  }}
-                  onClick={() => handleCatClick(c.id)}
-                />
-              ))}
-            </div>
-          )
-        ) : isLoading ? (
+        {isLoading ? (
           <div className="flex items-center justify-center min-h-[400px]">
-            <LoadingSpinner size="large" message="Loading articles..." />
+            <LoadingSpinner message="Loading articles..." />
+          </div>
+        ) : error ? (
+          <div className="text-center py-16">
+            <p className="text-red-600">Error: {error}</p>
           </div>
         ) : filteredArticles.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">

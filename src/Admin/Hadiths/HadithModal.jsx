@@ -159,22 +159,25 @@ const HadithModal = ({
 
   return (
     <>
-      <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-opacity duration-300">
-        <div className="bg-white rounded-xl max-w-xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-emerald-100 flex flex-col">
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-opacity duration-300">
+        <div className="bg-white rounded-2xl max-w-xl w-full max-h-[90vh] overflow-y-auto shadow-2xl flex flex-col">
           <div
-            className={`sticky top-0 p-4 flex items-center justify-between rounded-t-xl shadow-md z-10 ${GRADIENT_CLASS}`}
+            className={`sticky top-0 p-6 flex items-center justify-between rounded-t-2xl z-10 bg-gradient-to-br from-emerald-500 via-emerald-600 to-green-600 text-white`}
           >
-            <h2 className="text-xl font-bold text-white flex items-center gap-2">
-              <BookOpen className="w-5 h-5" /> {title}
-            </h2>
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-white/20 rounded-lg">
+                <BookOpen className="w-5 h-5" />
+              </div>
+              <h2 className="text-xl font-bold">{title}</h2>
+            </div>
             <button
               onClick={onClose}
-              className="p-2 w-10 h-10 flex items-center justify-center bg-white/20 hover:bg-white/30 rounded-full transition-colors"
+              className="p-2 hover:bg-white/20 rounded-lg transition-colors"
             >
-              <X className="w-6 h-6 text-white" />
+              <X className="w-6 h-6" />
             </button>
           </div>
-          <div className="p-3 border-b border-gray-200 flex-shrink-0">
+          <div className="p-4 border-b border-gray-100 flex-shrink-0">
             <div className="flex space-x-2">
               {[
                 { key: "manual", label: "Manual Entry" },
@@ -185,9 +188,9 @@ const HadithModal = ({
                   <button
                     key={t.key}
                     onClick={() => setTab(t.key)}
-                    className={`flex-1 py-2 px-3 rounded-lg font-medium transition-colors text-sm ${
+                    className={`flex-1 py-2 px-3 rounded-lg font-medium transition-all text-sm ${
                       tab === t.key
-                        ? "bg-emerald-100 text-emerald-800 shadow-inner"
+                        ? "bg-emerald-600 text-white shadow-md"
                         : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                     }`}
                     disabled={isLoading}
@@ -233,22 +236,22 @@ const HadithModal = ({
                 setShowCategoryModal={setShowCategoryModal}
               />
             )}
-            <div className="flex gap-3 pt-4 border-t border-gray-200 mt-4">
+            <div className="flex gap-3 pt-4 border-t border-gray-100 mt-4">
               <button
                 type="button"
                 onClick={onClose}
                 disabled={isLoading}
-                className="flex-1 px-4 py-2 border-2 border-gray-300 rounded-lg hover:bg-gray-100 transition-colors font-medium text-gray-700 shadow-sm disabled:opacity-50"
+                className="flex-1 px-4 py-2 border-2 border-gray-300 rounded-lg hover:bg-gray-100 transition-all duration-200 font-medium text-gray-700 disabled:opacity-50"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={isLoading || !hasCategories}
-                className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 text-white rounded-lg font-medium shadow-md ${
+                className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 text-white rounded-lg font-medium transition-all duration-200 ${
                   !hasCategories || isLoading
                     ? "bg-gray-400 cursor-not-allowed"
-                    : `${GRADIENT_CLASS} ${HOVER_GRADIENT_CLASS}`
+                    : "bg-gradient-to-br from-emerald-500 to-green-600 hover:shadow-lg hover:scale-105"
                 }`}
               >
                 {isLoading ? <div className="w-4 h-4 loader" /> : null}

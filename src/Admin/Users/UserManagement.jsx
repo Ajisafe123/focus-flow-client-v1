@@ -22,7 +22,9 @@ import {
   activateUser,
   fetchUserStats,
 } from "../apiService";
-import LoadingSpinner from "../../Common/LoadingSpinner";
+import LoadingSpinner from "../../Components/Common/LoadingSpinner";
+import PageHeader from "../Components/PageHeader";
+import ModalButton from "../Components/ModalButton";
 
 const ActionsDropdown = ({ user, onEdit, onSuspend, onActivate, onDelete }) => {
   const [open, setOpen] = useState(false);
@@ -156,35 +158,24 @@ const UsersManagement = () => {
   if (loading)
     return (
       <div className="flex justify-center items-center h-64">
-        <LoadingSpinner size="medium" />
+        <LoadingSpinner />
       </div>
     );
 
   return (
-    <div className="space-y-4 sm:space-y-6 max-w-10xl mx-auto">
-      <div className="bg-gradient-to-br from-emerald-500 via-emerald-600 to-green-600 rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 text-white shadow-lg relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-32 h-32 sm:w-48 sm:h-48 md:w-64 md:h-64 bg-white/10 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-0 left-0 w-24 h-24 sm:w-32 sm:h-32 md:w-48 md:h-48 bg-white/10 rounded-full blur-3xl"></div>
-        <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold mb-1 sm:mb-2 flex items-center gap-2 sm:gap-3">
-              <Users className="w-5 h-5 sm:w-7 sm:h-7 md:w-9 md:h-9" />
-              Users Management
-            </h1>
-            <p className="text-emerald-50 text-xs sm:text-sm md:text-base lg:text-lg">
-              Manage platform users, roles, and permissions
-            </p>
-          </div>
-          <button
-            onClick={() => openModal("add")}
-            className="flex items-center justify-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 bg-white text-emerald-600 rounded-lg hover:bg-emerald-50 transition font-semibold shadow-md hover:shadow-lg text-sm sm:text-base"
-          >
-            <Plus className="w-4 h-4 sm:w-5 sm:h-5" /> Add User
-          </button>
-        </div>
-      </div>
+    <div className="space-y-6 max-w-10xl mx-auto">
+      <PageHeader
+        title="Users Management"
+        subtitle="Manage platform users, roles, and permissions"
+      >
+        <ModalButton
+          onClick={() => openModal("add")}
+          label="Add User"
+          size="md"
+        />
+      </PageHeader>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
           { icon: Users, title: "Total Users", value: stats.total_users },
           { icon: UserCheck, title: "Active Users", value: stats.active_users },
@@ -195,17 +186,17 @@ const UsersManagement = () => {
           return (
             <div
               key={i}
-              className="bg-white rounded-xl shadow-sm p-4 sm:p-5 hover:shadow-md transition border border-gray-100"
+              className="bg-white rounded-xl shadow-sm p-5 hover:shadow-md transition-all duration-200 border border-gray-100"
             >
-              <div className="flex justify-between mb-2 sm:mb-3">
-                <div className="p-2 sm:p-2.5 bg-gradient-to-br from-emerald-500 to-green-600 rounded-lg">
-                  <Icon className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+              <div className="flex justify-between mb-3">
+                <div className="p-2.5 bg-gradient-to-br from-emerald-500 to-green-600 rounded-lg">
+                  <Icon className="w-5 h-5 text-white" />
                 </div>
               </div>
               <h3 className="text-gray-500 text-xs font-semibold uppercase tracking-wide mb-1">
                 {s.title}
               </h3>
-              <p className="text-xl sm:text-2xl font-bold text-gray-900 break-words">
+              <p className="text-2xl font-bold text-gray-900 break-words">
                 {s.value}
               </p>
             </div>
@@ -308,23 +299,6 @@ const UsersManagement = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm p-5 sm:p-6 border border-gray-100">
-          <h3 className="text-lg font-bold text-gray-900 mb-5">
-            Quick Actions
-          </h3>
-          <div className="space-y-3">
-            <button
-              onClick={() => openModal("add")}
-              className="w-full flex items-center gap-3 p-3.5 bg-gradient-to-br from-emerald-500 to-green-600 text-white rounded-lg hover:shadow-md transition group"
-            >
-              <div className="p-1.5 bg-white/20 rounded-md group-hover:bg-white/30 transition">
-                <Plus className="w-4 h-4" />
-              </div>
-              <span className="font-semibold text-sm">Add New User</span>
-              <ArrowUpRight className="w-4 h-4 ml-auto opacity-0 group-hover:opacity-100 transition" />
-            </button>
-          </div>
-        </div>
       </div>
 
       <UserModal

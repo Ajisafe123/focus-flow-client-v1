@@ -30,7 +30,9 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { fetchAnalyticsData, exportAnalyticsData } from "./apiService";
-import LoadingSpinner from "../Common/LoadingSpinner";
+import LoadingSpinner from "../Components/Common/LoadingSpinner";
+import PageHeader from "./Components/PageHeader";
+import StatCardGrid from "./Components/StatCardGrid";
 
 const AnalyticsDashboard = () => {
   const [analyticsData, setAnalyticsData] = useState(null);
@@ -89,7 +91,7 @@ const AnalyticsDashboard = () => {
     }
   };
 
-  // Mock data for charts (can be replaced with real time-series data later)
+  // Sample data for charts - will be replaced with API data
   const trafficData = [
     { month: "Jan", users: 1200, articles: 45, duas: 120 },
     { month: "Feb", users: 1900, articles: 52, duas: 145 },
@@ -97,14 +99,6 @@ const AnalyticsDashboard = () => {
     { month: "Apr", users: 2800, articles: 75, duas: 210 },
     { month: "May", users: 3500, articles: 89, duas: 250 },
     { month: "Jun", users: 4200, articles: 102, duas: 290 },
-  ];
-
-  const categoryData = [
-    { name: "Aqeedah", value: 145, color: "#10b981" },
-    { name: "Fiqh", value: 230, color: "#14b8a6" },
-    { name: "Tafsir", value: 180, color: "#eab308" },
-    { name: "Hadith", value: 165, color: "#f59e0b" },
-    { name: "Seerah", value: 95, color: "#06b6d4" },
   ];
 
   const engagementData = [
@@ -117,10 +111,18 @@ const AnalyticsDashboard = () => {
     { day: "Sun", views: 4900, comments: 68, shares: 38 },
   ];
 
+  const categoryData = [
+    { name: "Aqeedah", value: 145, color: "#10b981" },
+    { name: "Fiqh", value: 230, color: "#14b8a6" },
+    { name: "Tafsir", value: 180, color: "#eab308" },
+    { name: "Hadith", value: 165, color: "#f59e0b" },
+    { name: "Seerah", value: 95, color: "#06b6d4" },
+  ];
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <LoadingSpinner size="large" message="Loading analytics..." />
+        <LoadingSpinner message="Loading analytics..." />
       </div>
     );
   }
@@ -201,17 +203,25 @@ const AnalyticsDashboard = () => {
                 <ChevronDown className={`w-3 h-3 sm:w-4 sm:h-4 transition-transform ${showExportMenu ? "rotate-180" : ""}`} />
               </button>
               {showExportMenu && (
-                <div className="absolute right-0 top-full mt-2 w-40 sm:w-44 bg-white rounded-lg shadow-xl border border-gray-200 py-1 z-50 min-w-[160px]">
+                <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-lg shadow-2xl border border-gray-200 py-2 z-50">
+                  <div className="px-4 py-2 border-b border-gray-100">
+                    <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Export Data</p>
+                  </div>
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       handleExport("json");
                       setShowExportMenu(false);
                     }}
-                    className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 transition-colors flex items-center gap-2"
+                    className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 transition-colors flex items-center gap-3 group"
                   >
-                    <Download className="w-4 h-4" />
-                    Export as JSON
+                    <div className="p-2 bg-emerald-50 rounded-lg group-hover:bg-emerald-100 transition-colors">
+                      <Download className="w-4 h-4 text-emerald-600" />
+                    </div>
+                    <div>
+                      <p className="font-semibold">JSON Format</p>
+                      <p className="text-xs text-gray-500">Structured data format</p>
+                    </div>
                   </button>
                   <button
                     onClick={(e) => {
@@ -219,10 +229,15 @@ const AnalyticsDashboard = () => {
                       handleExport("csv");
                       setShowExportMenu(false);
                     }}
-                    className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 transition-colors flex items-center gap-2 border-t border-gray-100"
+                    className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 transition-colors flex items-center gap-3 group border-t border-gray-100"
                   >
-                    <Download className="w-4 h-4" />
-                    Export as CSV
+                    <div className="p-2 bg-emerald-50 rounded-lg group-hover:bg-emerald-100 transition-colors">
+                      <Download className="w-4 h-4 text-emerald-600" />
+                    </div>
+                    <div>
+                      <p className="font-semibold">CSV Format</p>
+                      <p className="text-xs text-gray-500">Spreadsheet compatible</p>
+                    </div>
                   </button>
                 </div>
               )}

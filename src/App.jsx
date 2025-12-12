@@ -223,6 +223,46 @@ function AppContent({
             }
           />
           <Route
+            path="/articles/trending"
+            element={
+              <PageWrapper>
+                <ArticlesPage />
+              </PageWrapper>
+            }
+          />
+          <Route
+            path="/articles/latest"
+            element={
+              <PageWrapper>
+                <ArticlesPage />
+              </PageWrapper>
+            }
+          />
+          <Route
+            path="/articles/popular"
+            element={
+              <PageWrapper>
+                <ArticlesPage />
+              </PageWrapper>
+            }
+          />
+          <Route
+            path="/articles/saved"
+            element={
+              <PageWrapper>
+                <ArticlesPage />
+              </PageWrapper>
+            }
+          />
+          <Route
+            path="/article/:articleId"
+            element={
+              <PageWrapper>
+                <ArticlesPage />
+              </PageWrapper>
+            }
+          />
+          <Route
             path="/islamic-calendar"
             element={
               <PageWrapper>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Navbar from "./Navbar";
-import MainSidebar from "./Sidebar";
+import SidebarNew from "./SidebarNew";
 import DashboardContent from "./DashboardContent";
 import AnalyticsDashboard from "./AnalyticsDashboard";
 import AdminChatInterface from "./Chats/AdminChatInterface";
@@ -16,6 +16,9 @@ import CreateCategoryModal from "./CreateCategoryModal";
 import VideoLecturesInterface from "./VideoLectures/VideoLectures";
 import NotificationsPage from "./NotificationsPage";
 import AdminMessagesPage from "./Contact/AdminMessagesPage";
+import ShopManagement from "./Shops/ShopManagement";
+import DonationManagement from "./Donations/DonationManagement";
+import TeachingResources from "./TeachingResources/TeachingResources";
 
 const NibrasAdminDashboard = () => {
   const getInitialPage = () => {
@@ -67,6 +70,12 @@ const NibrasAdminDashboard = () => {
         return <AdminMessagesPage />;
       case "notifications":
         return <NotificationsPage />;
+      case "Shops":
+        return <ShopManagement />;
+      case "Donations":
+        return <DonationManagement />;
+      case "resources":
+        return <TeachingResources />;
       default:
         return <DashboardContent />;
     }
@@ -74,11 +83,9 @@ const NibrasAdminDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
-      <MainSidebar
+      <SidebarNew
         activePage={activePage}
         setActivePage={setActivePage}
-        sidebarOpen={sidebarOpen}
-        setSidebarOpen={setSidebarOpen}
         isMobileSidebarOpen={isMobileSidebarOpen}
         setIsMobileSidebarOpen={setIsMobileSidebarOpen}
         onLogout={() => setShowLogoutModal(true)}

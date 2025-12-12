@@ -10,7 +10,7 @@ import {
   Users,
   Lightbulb,
 } from "lucide-react";
-import LoadingSpinner from "../../../Common/LoadingSpinner";
+import LoadingSpinner from "../../../Components/Common/LoadingSpinner";
 import apiService from "../../Service/apiService";
 
 export default function TeachingResourceDropdown({
@@ -121,7 +121,7 @@ export default function TeachingResourceDropdown({
   if (loading) {
     return (
       <div className="absolute z-50 top-full left-1/2 -translate-x-1/2 mt-3 w-[820px] bg-white rounded-md shadow-2xl border border-gray-100 p-8 flex items-center justify-center h-56">
-        <LoadingSpinner size="medium" message="Loading resources..." />
+        <LoadingSpinner message="Loading resources..." />
       </div>
     );
   }

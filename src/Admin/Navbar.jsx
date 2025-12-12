@@ -21,6 +21,7 @@ const Navbar = ({
 }) => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [notificationCount, setNotificationCount] = useState(0);
+  const [adminUser, setAdminUser] = useState({ name: "Admin User", email: "admin@example.com" });
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -39,6 +40,42 @@ const Navbar = ({
     load();
     const id = setInterval(load, 60000);
     return () => clearInterval(id);
+  }, []);
+
+  useEffect(() => {
+    const fetchAdminUser = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+        const apiBase = import.meta.env.VITE_API_BASE || "http://localhost:5000";
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
+        
+        try {
+          const response = await fetch(`${apiBase}/api/auth/me`, {
+            headers: { Authorization: `Bearer ${token}` },
+            signal: controller.signal,
+          });
+          clearTimeout(timeoutId);
+          
+          if (response.ok) {
+            const userData = await response.json();
+            setAdminUser({
+              name: userData.username || userData.name || "Admin User",
+              email: userData.email || "admin@example.com",
+            });
+          }
+        } catch (fetchError) {
+          clearTimeout(timeoutId);
+          if (fetchError.name !== 'AbortError') {
+            console.warn("Backend API unavailable, using default user info");
+          }
+        }
+      } catch (error) {
+        console.error("Error in fetchAdminUser:", error);
+      }
+    };
+    fetchAdminUser();
   }, []);
 
   const handleMenuClick = () => {
@@ -123,10 +160,10 @@ const Navbar = ({
                     </div>
                     <div>
                       <p className="font-semibold text-gray-800 text-sm">
-                        Admin User
+                        {adminUser.name}
                       </p>
                       <p className="text-xs text-gray-500 mt-0.5">
-                        admin@example.com
+                        {adminUser.email}
                       </p>
                     </div>
                   </div>

@@ -103,12 +103,33 @@ export const bulkDeleteDuas = async (idsArray) => {
 
 /* ======================== CATEGORY CRUD (DUA & HADITH) ======================== */
 
-const getCategoryBase = (categoryType) =>
-  categoryType === "hadith"
-    ? `${API_BASE}/api/hadith-categories`
-    : categoryType === "article"
-      ? `${API_BASE}/api/article-categories`
-      : `${API_BASE}/api/dua-categories`;
+const getCategoryBase = (categoryType) => {
+  const categoryMap = {
+    hadith: `${API_BASE}/api/hadith-categories`,
+    article: `${API_BASE}/api/article-categories`,
+    dua: `${API_BASE}/api/dua-categories`,
+    video: `${API_BASE}/api/video-categories`,
+    audio: `${API_BASE}/api/audio-categories`,
+  };
+  return categoryMap[categoryType] || `${API_BASE}/api/dua-categories`;
+};
+
+export const fetchCategoriesByType = async (categoryType) => {
+  const url = getCategoryBase(categoryType);
+  const res = await fetch(url);
+  if (!res.ok) await handleError(res, `Failed to fetch ${categoryType} categories`);
+  const data = await res.json();
+  return [
+    { id: "all", label: "All Categories", description: "" },
+    ...(data || []).map((c) => ({
+      id: String(c.id),
+      label: c.name,
+      description: c.description || "",
+      is_active: c.is_active ?? true,
+      image_url: c.image_url || null,
+    })),
+  ];
+};
 
 export const createCategory = async (
   categoryType,
@@ -562,20 +583,30 @@ export const deleteTeachingResource = async (id) => {
 };
 
 export const createArticle = async (articleData) => {
+  const payload = { ...articleData };
+  // Ensure category_id is removed if not set or is "all"
+  if (!payload.category_id || payload.category_id === "all" || payload.category_id === "") {
+    delete payload.category_id;
+  }
   const res = await fetch(`${API_BASE}/api/articles`, {
     method: "POST",
     headers: getAuthHeaders(),
-    body: JSON.stringify(articleData),
+    body: JSON.stringify(payload),
   });
   if (!res.ok) await handleError(res, "Failed to create article");
   return res.json();
 };
 
 export const updateArticle = async (articleId, articleData) => {
+  const payload = { ...articleData };
+  // Ensure category_id is removed if not set or is "all"
+  if (!payload.category_id || payload.category_id === "all" || payload.category_id === "") {
+    delete payload.category_id;
+  }
   const res = await fetch(`${API_BASE}/api/articles/${articleId}`, {
     method: "PATCH",
     headers: getAuthHeaders(),
-    body: JSON.stringify(articleData),
+    body: JSON.stringify(payload),
   });
   if (!res.ok) await handleError(res, "Failed to update article");
   return res.json();

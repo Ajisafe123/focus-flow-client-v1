@@ -41,23 +41,26 @@ const Settings = () => {
   });
 
   return (
-    <div className="space-y-4 sm:space-y-6 max-w-10xl mx-auto">
+    <div className="space-y-6 max-w-10xl mx-auto">
       {/* Welcome Header */}
-      <div className="bg-gradient-to-br from-emerald-500 via-emerald-600 to-green-600 rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 text-white shadow-lg relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-32 h-32 sm:w-48 sm:h-48 md:w-64 md:h-64 bg-white/10 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-0 left-0 w-24 h-24 sm:w-32 sm:h-32 md:w-48 md:h-48 bg-white/10 rounded-full blur-3xl"></div>
-        <div className="relative">
-          <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold mb-1 sm:mb-2">
-            Settings
-          </h1>
-          <p className="text-emerald-50 text-sm sm:text-base md:text-lg">
-            Configure your site preferences and options
-          </p>
+      <div className="bg-gradient-to-br from-emerald-500 via-emerald-600 to-green-600 rounded-2xl p-8 text-white shadow-xl relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full blur-3xl"></div>
+        <div className="relative flex items-center justify-between">
+          <div>
+            <h1 className="text-4xl font-bold mb-2 flex items-center gap-3">
+              <SettingsIcon className="w-9 h-9" />
+              Settings
+            </h1>
+            <p className="text-emerald-50 text-lg">
+              Manage system settings and preferences
+            </p>
+          </div>
         </div>
       </div>
 
       {/* Site Settings */}
-      <div className="bg-white rounded-xl shadow-sm p-5 sm:p-6 border border-gray-100">
+      <div className="bg-white rounded-2xl shadow-sm p-8 border border-gray-100">
         <div className="flex items-center gap-3 mb-5">
           <div className="p-2.5 bg-gradient-to-br from-emerald-500 to-green-600 rounded-lg">
             <SettingsIcon className="w-5 h-5 text-white" />

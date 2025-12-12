@@ -13,7 +13,7 @@ import {
   LogOut,
 } from "lucide-react";
 import LogoutModal from "../../Components/Authentications/LogoutModal";
-import LoadingSpinner from "../../Common/LoadingSpinner";
+import LoadingSpinner from "../../Components/Common/LoadingSpinner";
 import apiService, {
   API_BASE_URL,
   logout as apiLogout,
@@ -218,14 +218,13 @@ export default function ProfilePage({
           </div>
         </div >
 
-        {
-          loading ? (
-            <div className="flex justify-center items-center py-32" >
-              <LoadingSpinner size="large" />
-            </div>
-          ) : (
-            <>
-              <div className="backdrop-blur-xl bg-white/80 rounded-3xl border border-white/40 overflow-hidden mb-8 shadow-2xl">
+        {loading ? (
+          <div className="flex justify-center items-center py-32">
+            <LoadingSpinner message="Loading profile..." />
+          </div>
+        ) : (
+          <>
+            <div className="backdrop-blur-xl bg-white/80 rounded-3xl border border-white/40 overflow-hidden mb-8 shadow-2xl">
                 <div className="h-48 bg-gradient-to-br from-emerald-600 via-teal-500 to-emerald-700 relative overflow-hidden">
                   <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
                   <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>

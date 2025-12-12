@@ -119,14 +119,7 @@ export default function VerifyEmail() {
           disabled={loading || success}
           className="w-full py-3.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-xl font-bold shadow-lg shadow-emerald-500/20 transition-all transform hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm"
         >
-          {loading ? (
-            <LoadingSpinner size="small" />
-          ) : (
-            <>
-              Verify Account
-              <ArrowRight className="w-4 h-4" />
-            </>
-          )}
+          {loading ? "Verifying..." : "Verify Email"}
         </button>
 
         <div className="text-center pt-2">

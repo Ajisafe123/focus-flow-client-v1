@@ -45,11 +45,40 @@ const getBg = (type) => {
 };
 
 const ago = (ts) => {
-  const diff = Math.floor((Date.now() - new Date(ts)) / 60000);
-  if (diff < 1) return "Just now";
-  if (diff < 60) return `${diff}m ago`;
-  if (diff < 1440) return `${Math.floor(diff / 60)}h ago`;
-  return `${Math.floor(diff / 1440)}d ago`;
+  try {
+    // Parse timestamp - handle both ISO and Unix formats
+    let date = new Date(ts);
+    
+    // If timestamp is a number (Unix timestamp in milliseconds or seconds)
+    if (typeof ts === 'number') {
+      // If it's less than 10^11, it's likely in seconds, convert to milliseconds
+      date = new Date(ts < 10000000000 ? ts * 1000 : ts);
+    }
+    
+    // Validate the date
+    if (isNaN(date.getTime())) {
+      return "Recently";
+    }
+    
+    const now = Date.now();
+    const diffMs = now - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    
+    if (diffMins < 1) return "Just now";
+    if (diffMins < 60) return `${diffMins}m ago`;
+    
+    const diffHours = Math.floor(diffMins / 60);
+    if (diffHours < 24) return `${diffHours}h ago`;
+    
+    const diffDays = Math.floor(diffHours / 24);
+    if (diffDays < 30) return `${diffDays}d ago`;
+    
+    // For older notifications, show the actual date
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  } catch (err) {
+    console.error('Error parsing notification time:', err);
+    return "Recently";
+  }
 };
 
 const NotificationItem = ({ n, onRead, onDelete }) => {

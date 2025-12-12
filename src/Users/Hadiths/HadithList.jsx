@@ -86,9 +86,11 @@ const HadithItem = ({
   openDetails,
   setOpenDetails,
   generateShareLink,
+  onDelete,
 }) => {
   const [shareUrl, setShareUrl] = useState(null);
   const [isSharing, setIsSharing] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const isFavorite = isAuthenticated
     ? hadith.is_favorite || false
@@ -121,6 +123,19 @@ const HadithItem = ({
     } finally {
       setIsSharing(false);
       setTimeout(() => setShareUrl(null), 5000);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!window.confirm("Are you sure you want to delete this hadith?")) return;
+    setIsDeleting(true);
+    try {
+      await onDelete(hadith.id);
+    } catch (e) {
+      console.error("Failed to delete hadith:", e);
+      alert("Failed to delete hadith");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -162,7 +177,7 @@ const HadithItem = ({
   };
 
   return (
-    <article className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 p-6">
+    <article className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border border-emerald-100 hover:border-emerald-300">
       <style>{`
         @keyframes fadeIn {
           from { opacity: 0; transform: translateY(-10px); }
@@ -171,96 +186,156 @@ const HadithItem = ({
         .animate-fadeIn { animation: fadeIn .3s ease-out; }
       `}</style>
 
-      <div className="mb-4 flex justify-between items-start">
-        <h3 className="text-lg font-bold text-gray-900 flex-1 pr-2">
-          Hadith #{hadith.number || hadith.id}
-        </h3>
-        <div className="flex space-x-2">
-          <button
-            onClick={handleShareClick}
-            disabled={isSharing}
-            className="p-2 rounded-full hover:bg-emerald-50 transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-400"
-            aria-label="Share Hadith"
-          >
-            {isSharing ? (
-              <div className="w-5 h-5 loader" />
-            ) : (
-              <Share2
-                className={`w-5 h-5 ${shareUrl
-                    ? "text-emerald-500 fill-emerald-100"
-                    : "text-gray-400 hover:text-emerald-500"
-                  }`}
-              />
-            )}
-          </button>
-
-          <button
-            onClick={handleLikeClick}
-            className="p-2 rounded-full hover:bg-red-50 transition-colors focus:outline-none focus:ring-2 focus:ring-red-400"
-            aria-label={isFavorite ? "Remove favorite" : "Add favorite"}
-          >
-            <Heart
-              className={`w-5 h-5 ${isFavorite
-                  ? "fill-red-500 text-red-500"
-                  : "text-gray-400 hover:text-red-500"
-                }`}
-            />
-          </button>
-        </div>
-      </div>
-
-      <div className="space-y-3 border-b border-gray-100 pb-5 mb-4">
-        <div
-          dir="rtl"
-          className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl p-4"
-        >
-          <p
-            className="text-xl text-right text-gray-900 leading-loose"
-            style={{
-              fontFamily: "Amiri, 'Times New Roman', serif",
-              lineHeight: "2.2",
-            }}
-          >
-            {hadith.arabic}
-          </p>
-        </div>
-
-        {(hadith.narrator || hadith.book) && (
-          <div className="flex gap-2 text-xs text-gray-600">
-            {hadith.book && (
-              <span className="flex items-center gap-1">
-                <BookOpen className="w-3 h-3" />
-                {hadith.book}
-              </span>
-            )}
+      <div className="bg-gradient-to-r from-emerald-50 to-teal-50 px-6 py-4 border-b border-emerald-100">
+        <div className="flex justify-between items-start gap-4">
+          <div className="flex-1">
+            <h3 className="text-xl font-bold text-emerald-900">
+              Hadith #{hadith.number || hadith.id}
+            </h3>
             {hadith.narrator && (
-              <span className="flex items-center gap-1">
-                <Tag className="w-3 h-3" />
-                {hadith.narrator}
-              </span>
+              <p className="text-sm text-emerald-700 mt-1 flex items-center gap-2">
+                <Tag className="w-4 h-4" />
+                Narrated by: <span className="font-semibold">{hadith.narrator}</span>
+              </p>
             )}
           </div>
-        )}
+          <div className="flex gap-2">
+            <button
+              onClick={handleShareClick}
+              disabled={isSharing}
+              className="p-2.5 rounded-full hover:bg-emerald-100 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-400"
+              aria-label="Share Hadith"
+              title="Share this hadith"
+            >
+              {isSharing ? (
+                <div className="w-5 h-5 animate-spin border-2 border-emerald-400 border-t-emerald-600 rounded-full" />
+              ) : (
+                <Share2
+                  className={`w-5 h-5 transition-colors ${shareUrl
+                      ? "text-emerald-600 fill-emerald-200"
+                      : "text-gray-500 hover:text-emerald-600"
+                    }`}
+                />
+              )}
+            </button>
+
+            <button
+              onClick={handleLikeClick}
+              className="p-2.5 rounded-full hover:bg-red-100 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-400"
+              aria-label={isFavorite ? "Remove favorite" : "Add favorite"}
+              title={isFavorite ? "Remove from favorites" : "Add to favorites"}
+            >
+              <Heart
+                className={`w-5 h-5 transition-all ${isFavorite
+                    ? "fill-red-500 text-red-500"
+                    : "text-gray-500 hover:text-red-500"
+                  }`}
+              />
+            </button>
+
+            {onDelete && (
+              <button
+                onClick={handleDelete}
+                disabled={isDeleting}
+                className="p-2.5 rounded-full hover:bg-red-100 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-400"
+                aria-label="Delete Hadith"
+                title="Delete this hadith"
+              >
+                {isDeleting ? (
+                  <div className="w-5 h-5 animate-spin border-2 border-red-400 border-t-red-600 rounded-full" />
+                ) : (
+                  <X className="w-5 h-5 text-gray-500 hover:text-red-600 transition-colors" />
+                )}
+              </button>
+            )}
+          </div>
+        </div>
       </div>
 
-      <div className="space-y-1">
-        {renderDetail(
-          "translation",
-          "Translation",
-          hadith.translation,
-          <BookOpen className="w-4 h-4 text-emerald-600" />
+      <div className="p-6 space-y-4">
+        {hadith.arabic ? (
+          <div
+            dir="rtl"
+            className="bg-gradient-to-br from-emerald-50 via-teal-50 to-green-50 rounded-xl p-5 border border-emerald-200"
+          >
+            <p className="text-xs font-semibold text-emerald-700 uppercase tracking-wider mb-3">Arabic Text</p>
+            <p
+              className="text-lg text-right text-gray-900 leading-relaxed"
+              style={{
+                fontFamily: "Amiri, 'Times New Roman', serif",
+                lineHeight: "2.4",
+                letterSpacing: "0.5px",
+              }}
+            >
+              {hadith.arabic}
+            </p>
+          </div>
+        ) : (
+          <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded">
+            <p className="text-sm text-yellow-800">
+              <span className="font-semibold">⚠️ Note:</span> Arabic text not available for this hadith.
+            </p>
+          </div>
         )}
-        {renderDetail(
-          "source",
-          "Source",
-          hadith.source,
-          <Share2 className="w-4 h-4 text-gray-500" />
+
+        {(() => {
+          const englishText = typeof hadith.english === "object" ? hadith.english?.text : hadith.english;
+          const narrator = typeof hadith.english === "object" ? hadith.english?.narrator : null;
+          
+          if (englishText) {
+            return (
+              <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-5 border border-blue-200">
+                <p className="text-xs font-semibold text-blue-700 uppercase tracking-wider mb-3">English Translation</p>
+                {narrator && (
+                  <p className="text-sm text-blue-900 font-semibold mb-3 italic">
+                    {narrator}
+                  </p>
+                )}
+                <p className="text-base text-gray-800 leading-relaxed whitespace-pre-wrap">
+                  {englishText}
+                </p>
+              </div>
+            );
+          }
+          
+          if (hadith.translation) {
+            return (
+              <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-5 border border-blue-200">
+                <p className="text-xs font-semibold text-blue-700 uppercase tracking-wider mb-3">Translation</p>
+                <p className="text-base text-gray-800 leading-relaxed whitespace-pre-wrap">
+                  {hadith.translation}
+                </p>
+              </div>
+            );
+          }
+          
+          return null;
+        })()}
+
+        {hadith.book && (
+          <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+            <BookOpen className="w-5 h-5 text-blue-600 flex-shrink-0" />
+            <div>
+              <p className="text-xs font-semibold text-blue-600 uppercase tracking-wider">Source</p>
+              <p className="text-sm text-blue-900 font-medium">{hadith.book}</p>
+            </div>
+          </div>
         )}
+
+        <div className="space-y-2 border-t border-gray-100 pt-4">
+          {renderDetail(
+            "source",
+            "Additional Info",
+            hadith.source,
+            <Share2 className="w-4 h-4 text-gray-500" />
+          )}
+        </div>
       </div>
 
       {shareUrl && !navigator.share && (
-        <div className="mt-4 p-3 bg-emerald-50 rounded-lg text-sm text-emerald-800 break-all border border-emerald-200">
-          Link (Copied!): <strong className="font-mono">{shareUrl}</strong>
+        <div className="mx-6 mb-6 p-4 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-lg text-sm text-emerald-900 break-all border-2 border-emerald-300 shadow-sm">
+          <p className="font-semibold text-emerald-700 mb-2">✓ Link Copied!</p>
+          <p className="font-mono text-xs text-emerald-800 bg-white p-2 rounded border border-emerald-200">{shareUrl}</p>
         </div>
       )}
     </article>
@@ -461,6 +536,31 @@ export default function HadithViewer() {
     }
   };
 
+  const handleDeleteHadith = async (hadithId) => {
+    try {
+      const response = await fetch(`${API_BASE}/hadiths/${hadithId}`, {
+        method: "DELETE",
+        headers: {
+          "Authorization": `Bearer ${AUTH_TOKEN}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete hadith");
+      }
+
+      setCategories((prev) =>
+        prev.map((c) => ({
+          ...c,
+          hadiths: c.hadiths.filter((h) => h.id !== hadithId),
+        }))
+      );
+    } catch (e) {
+      console.error("Error deleting hadith:", e);
+      throw e;
+    }
+  };
+
   const clearSearch = () => {
     setSearchTerm("");
     setSearchExecuted(false);
@@ -597,6 +697,7 @@ export default function HadithViewer() {
                 openDetails={openDetails}
                 setOpenDetails={setOpenDetails}
                 generateShareLink={generateShareLink}
+                onDelete={isAuthenticated ? handleDeleteHadith : null}
               />
             ))}
           </div>

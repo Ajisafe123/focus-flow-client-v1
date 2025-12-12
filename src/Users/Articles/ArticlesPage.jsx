@@ -16,6 +16,8 @@ import {
   fetchArticlesPaginated,
   fetchArticle,
   toggleArticleFavorite,
+  fetchArticleCategories,
+  shareArticle,
 } from "../Service/apiService";
 import LoadingSpinner from "../../Common/LoadingSpinner";
 
@@ -91,7 +93,7 @@ const ArticleCard = ({
             </div>
             <span className={`flex items-center gap-1.5 ${color.tag} px-2.5 py-1 rounded-full font-bold`}>
               <Eye className="w-3 h-3" />
-              {article.views}
+              {article.view_count || article.views || 0}
             </span>
           </div>
           
@@ -100,13 +102,10 @@ const ArticleCard = ({
               <Clock className={`w-3 h-3 ${color.accent}`} />
               {article.read_time} min
             </span>
-            <button
-              onClick={handleShare}
-              className={`p-2 rounded-lg hover:${color.bg} transition-all group/share`}
-              title="Share"
-            >
-              <Share2 className={`w-4 h-4 text-gray-500 group-hover/share:${color.accent} transition-colors`} />
-            </button>
+            <span className={`flex items-center gap-1.5 ${color.tag} px-2.5 py-1 rounded-full font-bold`}>
+              <Share2 className="w-3 h-3" />
+              {article.share_count || 0}
+            </span>
           </div>
         </div>
       </div>
@@ -119,6 +118,7 @@ const ArticlesPage = ({ categoryId }) => {
   const [searchParams] = useSearchParams();
   const { articleId } = useParams();
   const categoryFromUrl = searchParams.get("category");
+  const filterType = searchParams.get("filter") || null; // popular, latest, trending
   
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCatId, setSelectedCatId] = useState(categoryId || categoryFromUrl || null);
@@ -128,6 +128,7 @@ const ArticlesPage = ({ categoryId }) => {
   const [viewedArticles, setViewedArticles] = useState(new Set());
   
   const [articles, setArticles] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   
@@ -148,11 +149,23 @@ const ArticlesPage = ({ categoryId }) => {
     } finally {
       setIsLoading(false);
     }
-  }, [selectedCatId, searchTerm, token]);
+  }, [selectedCatId, searchTerm, token, filterType]);
 
   useEffect(() => {
     loadArticles();
-  }, [selectedCatId, searchTerm, loadArticles]);
+  }, [selectedCatId, searchTerm, loadArticles, filterType]);
+
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const data = await fetchArticleCategories();
+        setCategories(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error("Failed to load categories:", err);
+      }
+    };
+    loadCategories();
+  }, []);
 
   useEffect(() => {
     if (categoryFromUrl && !selectedCatId) {
@@ -167,12 +180,40 @@ const ArticlesPage = ({ categoryId }) => {
     }
   }, [articleId]);
 
-  const filteredArticles = articles.filter(
+  let filteredArticles = articles.filter(
     (a) =>
       a.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       a.excerpt?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       a.content?.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  // Apply filter type sorting
+  if (filterType === "popular") {
+    // Sort by engagement: likes + shares + views
+    filteredArticles = filteredArticles
+      .map(a => ({
+        ...a,
+        engagementScore: (a.favorite_count || 0) + (a.share_count || 0) + (a.view_count || 0)
+      }))
+      .sort((a, b) => b.engagementScore - a.engagementScore)
+      .filter(a => a.engagementScore > 0); // Only show articles with engagement
+  } else if (filterType === "latest") {
+    // Sort by newest first
+    filteredArticles = filteredArticles.sort((a, b) => {
+      const dateA = new Date(a.created_at || a.published_date || 0).getTime();
+      const dateB = new Date(b.created_at || b.published_date || 0).getTime();
+      return dateB - dateA;
+    });
+  } else if (filterType === "trending") {
+    // Sort by recent engagement (views + likes + shares in recent articles)
+    filteredArticles = filteredArticles
+      .map(a => ({
+        ...a,
+        recentEngagement: (a.favorite_count || 0) * 2 + (a.share_count || 0) * 3 + (a.view_count || 0)
+      }))
+      .sort((a, b) => b.recentEngagement - a.recentEngagement)
+      .filter(a => a.recentEngagement > 0);
+  }
 
 
   const readMore = async (art) => {
@@ -265,15 +306,25 @@ const ArticlesPage = ({ categoryId }) => {
       handleToggleFavorite(selectedArticle.id);
     };
 
-    const handleDetailShare = (e) => {
+    const handleDetailShare = async (e) => {
       e.stopPropagation();
       const url = `${window.location.origin}/article/${selectedArticle.id}`;
       navigator.clipboard.writeText(url);
-      // Increment share count
-      setSelectedArticle((prev) => ({
-        ...prev,
-        share_count: (prev.share_count || 0) + 1,
-      }));
+      
+      // Call API to increment share count
+      try {
+        await shareArticle(selectedArticle.id, token);
+        // Refetch article to get updated share count from backend
+        const updatedArticle = await fetchArticle(selectedArticle.id, token);
+        setSelectedArticle(updatedArticle);
+      } catch (err) {
+        console.error("Failed to record share:", err);
+        // Still update local state even if API fails
+        setSelectedArticle((prev) => ({
+          ...prev,
+          share_count: (prev.share_count || 0) + 1,
+        }));
+      }
       alert("Link copied to clipboard!");
     };
 
@@ -455,7 +506,7 @@ const ArticlesPage = ({ categoryId }) => {
             </div>
           </div>
 
-          <div className="mt-5 sm:mt-6">
+          <div className="mt-5 sm:mt-6 space-y-3">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-emerald-500 w-4 h-4 sm:w-5 sm:h-5" />
               <input
@@ -476,6 +527,20 @@ const ArticlesPage = ({ categoryId }) => {
               )}
             </div>
 
+            {categories.length > 0 && (
+              <select
+                value={selectedCatId || ""}
+                onChange={(e) => setSelectedCatId(e.target.value || null)}
+                className="w-full px-3 py-2.5 sm:py-3 rounded-lg border-2 border-white/30 focus:border-white text-gray-900 shadow-md transition-all bg-white text-sm font-medium"
+              >
+                <option value="">All Categories</option>
+                {categories.map((cat) => (
+                  <option key={cat.id} value={cat.id || cat.name}>
+                    {cat.name}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
         </div>
       </div>

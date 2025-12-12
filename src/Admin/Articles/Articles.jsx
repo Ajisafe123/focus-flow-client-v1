@@ -407,35 +407,29 @@ const Articles = () => {
 
                 <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs text-gray-600 pt-3 border-t border-gray-100">
                   <div
-                    className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg opacity-50"
+                    className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-gray-50 text-gray-600"
                     title="Admin cannot like articles"
                   >
-                    <Heart className="w-4 h-4 text-gray-400" />
-                    <span className="font-medium text-gray-500">
-                      {article.favorite_count || 0} Likes
+                    <Heart className="w-4 h-4" />
+                    <span className="font-medium">
+                      {article.favorite_count || 0}
                     </span>
                   </div>
 
-                  <button
-                    onClick={() => handleShare(article)}
-                    className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-600"
-                    title="Share"
+                  <div
+                    className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-gray-50 text-gray-600"
+                    title="Admin cannot share articles"
                   >
                     <Share2 className="w-4 h-4" />
-                    <span className="font-medium">Share</span>
-                  </button>
+                    <span className="font-medium">
+                      {article.share_count || 0}
+                    </span>
+                  </div>
 
                   <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-gray-50 text-gray-600">
                     <Eye className="w-4 h-4" />
                     <span className="font-medium">
                       {article.view_count?.toLocaleString() || 0}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-gray-50 text-gray-600">
-                    <MessageSquare className="w-4 h-4" />
-                    <span className="font-medium">
-                      {article.comment_count || 0}
                     </span>
                   </div>
                 </div>

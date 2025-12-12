@@ -79,6 +79,16 @@ export const toggleArticleFavorite = async (articleId, token) =>
     })
   );
 
+export const shareArticle = async (articleId, token) =>
+  handleJson(
+    await fetch(`${API_BASE}/articles/${articleId}/share`, {
+      method: "POST",
+      headers: {
+        ...withAuth(token),
+      },
+    })
+  );
+
 /* ======================== CHAT ======================== */
 const isUuid = (value) =>
   typeof value === "string" &&
